@@ -2,22 +2,36 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        try {
+            // Disable foreign key checks
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+            // Seed basic tables first
+            $this->call([
+                \Database\Seeders\GenderSeeder::class,
+                \Database\Seeders\CasesSeeder::class,
+                \Database\Seeders\StatusSeeder::class,
+                \Database\Seeders\IsAStudentSeeder::class,
+                \Database\Seeders\IsAPwdSeeder::class,
+                \Database\Seeders\UserRoleSeeder::class,
+                \Database\Seeders\UserSeeder::class,
+                LocationSeeder::class,
+            ]);
+
+            // Re-enable foreign key checks
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+        } catch (\Exception $e) {
+            Log::error('Database seeding failed: ' . $e->getMessage());
+            throw $e;
+        }
     }
 }
