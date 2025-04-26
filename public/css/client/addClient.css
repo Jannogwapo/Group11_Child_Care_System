@@ -1,0 +1,97 @@
+/* Container styling */
+.container {
+    width: 70%;
+    max-width: 800px;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Slightly stronger shadow for better visibility */
+    text-align: center;
+    margin: 50px auto;
+    box-sizing: border-box;
+}
+
+/* Input fields and dropdowns */
+input[type="text"],
+input[type="tel"],
+input[type="date"],
+select {
+    width: 100%;
+    padding: 12px; /* Slightly larger padding for better usability */
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 16px; /* Ensure consistent font size */
+    color: #333; /* Ensure text is visible */
+    background-color: #f9f9f9; /* Light background for better contrast */
+}
+
+input[type="text"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus,
+select:focus {
+    border-color: #8acdf3; /* Highlight border on focus */
+    outline: none; /* Remove default outline */
+    background-color: #fff; /* Make background white on focus */
+}
+
+/* Form buttons container */
+.form-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Submit button */
+button[type="submit"] {
+    background-color: #8acdf3;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    flex: 1;
+    transition: background-color 0.3s ease; /* Smooth hover transition */
+}
+
+button[type="submit"]:hover {
+    background-color: #6ec3f5;
+}
+
+/* Reset button */
+button[type="reset"] {
+    background-color: #f44336;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    flex: 1;
+    transition: background-color 0.3s ease; /* Smooth hover transition */
+}
+
+button[type="reset"]:hover {
+    background-color: #d32f2f;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .container {
+        width: 90%; /* Adjust container width for smaller screens */
+        margin-left: auto; /* Center the container */
+    }
+
+    .form-buttons {
+        flex-direction: column; /* Stack buttons vertically */
+    }
+
+    button[type="submit"],
+    button[type="reset"] {
+        width: 100%; /* Full width buttons */
+        margin-bottom: 10px; /* Add spacing between buttons */
+    }
+}

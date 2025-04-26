@@ -1,0 +1,44 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 50px;
+}
+
+
+.container {
+    max-width: 600px;
+    margin: auto;
+    margin-top: 80px;
+}
+
+.input-box {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.upload-box {
+    width: 150px;
+    height: 150px;
+    border: 2px dashed #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin: auto;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
+.button {
+    background-color: #add8e6;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
