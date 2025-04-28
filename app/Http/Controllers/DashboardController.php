@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use App\Models\Client;
 use App\Models\CalendarHearing;
 use App\Models\Activity;
@@ -36,52 +37,38 @@ class DashboardController extends Controller
         // Get calendar data
         $calendarData = $this->getCalendarData();
 
-        if ($role === 'Admin') {
-            $data = [
-                'totalClients' => Client::count(),
-                'upcomingHearings' => CalendarHearing::where('hearing_date', '>=', now())->count(),
-                'activeEvents' => Activity::where('activity_date', '>=', now())->count(),
-                'totalUsers' => User::count(),
-                'clientStats' => $clientStats,
-                'dischargeStats' => $dischargeStats,
-                'caseStatusStats' => $caseStatusStats,
-                'currentMonth' => $calendarData['currentMonth'],
-                'previousMonth' => $calendarData['previousMonth'],
-                'nextMonth' => $calendarData['nextMonth'],
-                'calendarDays' => $calendarData['calendarDays']
-            ];
-            return view('admin.dashboard', $data);
-        } else {
-            // For Social Workers and House Parents
-            $clientCount = Client::where('user_id', $user->id)->count();
-            
-            // If user is a social worker, get clients based on their gender
-            if ($user->role_id == 1) { // Assuming 1 is the role_id for social workers
-                $userGender = Gender::find($user->clientgender);
-                if ($userGender) {
-                    $clientCount = Client::where('clientgender', $user->clientgender)->count();
-                }
-            }
+        // Initialize client count
+        $clientCount = 0;
+        $totalClients = 0; // Initialize total clients as 0
 
-            $data = [
-                'myClients' => $clientCount,
-                'myHearings' => CalendarHearing::whereHas('client', function($query) use ($user) {
-                    $query->where('user_id', $user->id);
-                })->where('hearing_date', '>=', now())->count(),
-                'myEvents' => Activity::where('user_id', $user->id)
-                    ->where('activity_date', '>=', now())
-                    ->count(),
-                'role' => $role,
-                'clientStats' => $clientStats,
-                'dischargeStats' => $dischargeStats,
-                'caseStatusStats' => $caseStatusStats,
-                'currentMonth' => $calendarData['currentMonth'],
-                'previousMonth' => $calendarData['previousMonth'],
-                'nextMonth' => $calendarData['nextMonth'],
-                'calendarDays' => $calendarData['calendarDays']
-            ];
-            return view('dashboard', $data);
+        // If user is admin, show total count of all clients
+        if ($user->role_id == 1) { // Admin role is 1
+            $clientCount = Client::count();
+            $totalClients = $clientCount; // Only admin gets to see total count
+        } 
+        // If user is social worker, show only clients with same gender
+        else if ($user->role_id == 2) { // Social Worker role is 2
+            $clientCount = Client::where('clientgender', $user->gender_id)->count();
+            $totalClients = $clientCount; // Social workers only see their gender-matched clients
         }
+
+        $data = [
+            'myClients' => $clientCount,
+            'totalClients' => $totalClients,
+            'myHearings' => CalendarHearing::where('hearing_date', '>=', now())->count(),
+            'myEvents' => Activity::where('activity_date', '>=', now())->count(),
+            'role' => $role,
+            'isAdmin' => $user->role_id == 1,
+            'clientStats' => $clientStats,
+            'dischargeStats' => $dischargeStats,
+            'caseStatusStats' => $caseStatusStats,
+            'currentMonth' => $calendarData['currentMonth'],
+            'previousMonth' => $calendarData['previousMonth'],
+            'nextMonth' => $calendarData['nextMonth'],
+            'calendarDays' => $calendarData['calendarDays']
+        ];
+
+        return view('dashboard', $data);
     }
 
     private function getCaseStatusStats($user)
@@ -89,8 +76,8 @@ class DashboardController extends Controller
         $query = Client::query();
         
         // If user is a social worker, filter by their gender
-        if ($user->role_id == 1) {
-            $query->where('clientgender', $user->clientgender);
+        if ($user->role_id == 2) { // Social Worker role is 2
+            $query->where('clientgender', $user->gender_id);
         }
         
         // Get status counts
@@ -160,5 +147,15 @@ class DashboardController extends Controller
             'nextMonth' => $date->copy()->addMonth()->format('Y-m'),
             'calendarDays' => $hearings
         ];
+    }
+
+    public function testAdmin()
+    {
+        if (Gate::allows('admin')) {
+            dd('not allowed');
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+        }
+        dd('allowed');
+        return 'Admin gate is working!';
     }
 } 

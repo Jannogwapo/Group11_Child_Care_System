@@ -6,7 +6,7 @@
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Calendar Hearing</h1>
-        @if(auth()->user()->role_id == 1)
+        @if(auth()->user()->role_id == 2)
             <a href="{{ route('hearings.create') }}" class="px-4 py-2 rounded-full bg-pink-500 text-black hover:bg-pink-600 ml-auto">
                 Add Hearing
             </a>

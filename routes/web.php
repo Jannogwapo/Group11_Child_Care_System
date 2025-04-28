@@ -10,6 +10,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\AddHearing;
+use Illuminate\Support\Facades\Gate;
 
 // Public Routes
 Route::middleware('guest')->group(function () {
@@ -26,7 +27,6 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/boy', [DashboardController::class, 'boy'])->name('dashboard.boy');
 
     // Client Management
     Route::prefix('clients')->group(function () {
@@ -72,13 +72,38 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Admin Routes
-    Route::middleware(['admin'])->group(function () {
-        Route::get('/admin/chart', [DashboardController::class, 'chart'])->name('admin.chart');
-        Route::get('/admin/access', [DashboardController::class, 'access'])->name('admin.access');
-        Route::get('/admin/logs', [DashboardController::class, 'logs'])->name('admin.logs');
-    });
+    Route::get('/admin/chart', function () {
+        if (Gate::allows('admin')) {
+            return app(DashboardController::class)->chart();
+        }
+        return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+    })->name('admin.chart');
+
+    Route::get('/admin/access', function () {
+        if (Gate::allows('admin')) {
+            return app(DashboardController::class)->access();
+        }
+        return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+    })->name('admin.access');
+
+    Route::get('/admin/logs', function () {
+        if (Gate::allows('admin')) {
+            return app(DashboardController::class)->logs();
+        }
+        return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+    })->name('admin.logs');
+
+    // Test route for admin gate
+    Route::get('/test-admin', function () {
+        return Gate::allows('isAdmin');
+        // if (Gate::allows('isAdmin', auth()->user())) {
+            
+        //     return 'You are an admin!';
+        // }
+        // return 'You are not an admin.';
+    })->name('test.admin');
 
     // Logout
     Route::post('/logout', [LogInController::class, 'logout'])->name('logout');
     Route::get('/logout', [LogInController::class, 'logout'])->name('logout');
-});
+}); 

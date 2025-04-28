@@ -225,7 +225,7 @@
         <a href="{{ route('events.index') }}" class="sidebar-button {{ request()->routeIs('events.*') ? 'active' : '' }}">
             <i class="bi bi-calendar-event"></i> Events
         </a>
-        @if(auth()->user()->role_id == 2)
+        @if(auth()->user()->role_id == 1)
         <a href="{{ route('admin.chart') }}" class="sidebar-button {{ request()->routeIs('admin.chart') ? 'active' : '' }}">
             <i class="bi bi-bar-chart"></i> Reports
         </a>
