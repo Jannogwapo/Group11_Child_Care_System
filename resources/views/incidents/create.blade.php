@@ -3,7 +3,7 @@
 @section('content')
 <link rel="stylesheet" href="{{ asset('css/create.css') }}">
 <div class="container">
-    <h1 class="form-title">EVENT REPORT</h1>
+    <h1 class="form-title">INCIDENT REPORT</h1>
 
     @if(session('error'))
         <div class="alert alert-danger">
@@ -21,14 +21,14 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('events.store') }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ route('incidents.store') }}" enctype="multipart/form-data">
         @csrf
         <div class="form-group">
-            <input type="date" name="event_date" class="input-date" placeholder="Event Date" required>
+            <input type="date" name="incident_date" class="input-date" placeholder="Incident Date" required>
         </div>
         <div class="form-row">
             <label class="image-upload">
-                <input type="file" name="picture" class="input-file" accept="image/*" onchange="previewImage(this)">
+                <input type="file" name="incident_image" class="input-file" accept="image/*" onchange="previewImage(this)">
                 <div class="image-placeholder" id="imagePreview">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect x="3" y="3" width="18" height="18" rx="2" fill="#e0e0e0"/>
@@ -39,8 +39,8 @@
                 </div>
             </label>
             <div class="event-details">
-                <input type="text" name="event_name" class="input-text" placeholder="EVENT NAME" required>
-                <textarea name="description" class="input-textarea" rows="4" placeholder="DESCRIPTION OF THE EVENT" required></textarea>
+                <input type="text" name="incident_type" class="input-text" placeholder="INCIDENT NAME" required>
+                <textarea name="incident_description" class="input-textarea" rows="4" placeholder="DESCRIPTION OF THE INCIDENT" required></textarea>
             </div>
         </div>
         <div class="form-actions">

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('location')->nullable();
             $table->string('type')->nullable();
             $table->string('status')->default('pending');
+            $table->string('picture')->nullable();
             $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
         });
@@ -26,4 +27,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('events');
     }
-}; 
+};

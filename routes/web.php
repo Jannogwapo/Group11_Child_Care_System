@@ -10,6 +10,8 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\AddHearing;
+use App\Http\Controllers\IncidentController;
+
 
 // Public Routes
 Route::middleware('guest')->group(function () {
@@ -61,6 +63,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [EventController::class, 'index'])->name('events.index');
         Route::get('/create', [EventController::class, 'create'])->name('events.create');
         Route::post('/', [EventController::class, 'store'])->name('events.store');
+        Route::get('/{event}', [EventController::class, 'show'])->name('events.show');
+        Route::delete('/{event}', [EventController::class, 'destroy'])->name('events.destroy');
+    });
+
+    //Indident
+    Route::prefix('incidents')->group(function () {
+        Route::get('/create', [IncidentController::class, 'create'])->name('incidents.create');
+        Route::post('/', [IncidentController::class, 'store'])->name('incidents.store');
+        Route::get('/{incident}', [IncidentController::class, 'show'])->name('incidents.show');
+        Route::delete('/{incident}', [IncidentController::class, 'destroy'])->name('incidents.destroy');
     });
 
     // Reports
