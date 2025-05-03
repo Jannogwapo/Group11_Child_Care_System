@@ -1,6 +1,12 @@
 @extends('layout')
 
-@section('title', 'Social Worker Dashboard')
+@section('title')
+    @can ('isAdmin')
+        Admin Dashboard
+    @else
+        User Dashboard
+    @endcan
+@endsection
 
 @section('content')
 <div class="greeting-section">
@@ -57,7 +63,7 @@
                 </div>
             </div>
         </div>
-
+        @can('isAdmin')
         <div class="col-md-3 mb-4">
             <div class="card">
                 <div class="card-body">
@@ -67,13 +73,14 @@
                 </div>
             </div>
         </div>
+        @endcan
     </div>
 
 <br>
 <br>
 
     <!-- Quick Actions -->
-    @if(auth()->user()->role_id == 2)
+    @cannot('isAdmin')
     <div class="row mt-4">
         <div class="col-12">
             <div class="card">
@@ -107,7 +114,7 @@
             </div>
         </div>
     </div>
-    @endif
+    @endcannot
 <br>
 <br>
 

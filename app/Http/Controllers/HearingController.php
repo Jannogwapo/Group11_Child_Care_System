@@ -11,6 +11,7 @@ use App\Models\Branch;
 use App\Models\Status;
 use Carbon\Carbon;
 use App\Models\CalendarHearing;
+use App\Providers\AuthServiceProvider;
 
 class HearingController extends Controller
 {

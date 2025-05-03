@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Http\Controllers\Admin\EventController;
+use App\Providers\AuthServiceProvider;
 
 class LogInController extends Controller
 {

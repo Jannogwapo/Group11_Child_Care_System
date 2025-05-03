@@ -12,13 +12,14 @@ use App\Models\IsAPwd;
 use App\Models\User;
 use App\Models\Location;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class AddClient extends Controller
 {
     public function showAddClientForm()
     {
         // Check if user is a social worker
-        if (auth()->user()->role_id != 2) {
+        if (Gate::allows('isAdmin')) {
             return redirect()->route('clients.view')->with('error', 'Unauthorized access.');
         }
 
@@ -34,7 +35,7 @@ class AddClient extends Controller
     public function index()
     {
         // Check if user is a social worker
-        if (auth()->user()->role_id != 2) {
+        if (Gate::allows('isAdmin')) {
             return redirect()->route('clients.view')->with('error', 'Unauthorized access.');
         }
 
@@ -51,7 +52,7 @@ class AddClient extends Controller
     public function create()
     {
         // Check if user is a social worker
-        if (auth()->user()->role_id != 2) {
+        if (Gate::allows('isAdmin')) {
             return redirect()->route('clients.view')->with('error', 'Unauthorized access.');
         }
 
@@ -68,7 +69,7 @@ class AddClient extends Controller
     public function store(Request $request)
     {
         // Check if user is a social worker
-        if (auth()->user()->role_id != 2) {
+        if (Gate::allows('isAdmin')) {
             return redirect()->route('clients.view')->with('error', 'Unauthorized access.');
         }
 

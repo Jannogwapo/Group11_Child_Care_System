@@ -10,7 +10,9 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\AddHearing;
+use App\Http\Controllers\AccessController;
 use Illuminate\Support\Facades\Gate;
+use App\Http\Controllers\LogsController;
 
 // Public Routes
 Route::middleware('guest')->group(function () {
@@ -73,35 +75,28 @@ Route::middleware(['auth'])->group(function () {
 
     // Admin Routes
     Route::get('/admin/chart', function () {
-        if (Gate::allows('admin')) {
+        if (Gate::allows('isAdmin', auth()->user())) {
             return app(DashboardController::class)->chart();
         }
         return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
     })->name('admin.chart');
 
     Route::get('/admin/access', function () {
-        if (Gate::allows('admin')) {
-            return app(DashboardController::class)->access();
+        if (Gate::allows('isAdmin', auth()->user())) {
+            return app(AccessController::class)->access();
         }
         return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
     })->name('admin.access');
+    Route::delete('/admin/access/{user}', [AccessController::class, 'delete'])->name('admin.access.delete');
 
     Route::get('/admin/logs', function () {
-        if (Gate::allows('admin')) {
-            return app(DashboardController::class)->logs();
+        if (Gate::allows('isAdmin',auth()->user())) {
+            return app(LogsController::class)->logs();
         }
         return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
     })->name('admin.logs');
 
-    // Test route for admin gate
-    Route::get('/test-admin', function () {
-        return Gate::allows('isAdmin');
-        // if (Gate::allows('isAdmin', auth()->user())) {
-            
-        //     return 'You are an admin!';
-        // }
-        // return 'You are not an admin.';
-    })->name('test.admin');
+    
 
     // Logout
     Route::post('/logout', [LogInController::class, 'logout'])->name('logout');

@@ -1,5 +1,11 @@
 @extends('layout')
-
+@section('title')
+@can('isAdmin')
+    Admin Events
+@else
+    Social Worker Events    
+@endcan
+@endsection
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">

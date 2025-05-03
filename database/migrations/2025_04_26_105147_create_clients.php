@@ -75,6 +75,18 @@ return new class extends Migration
                   ->references('id')
                   ->on('location')
                   ->onDelete('cascade');
+
+            $table->foreign('discharge_id')
+                  ->references('id')
+                  ->on('discharge')
+                  ->onDelete('cascade');
+
+            $table->foreign('escape_id')
+                  ->references('id')
+                  ->on('escape')
+                  ->onDelete('cascade');
+
+
         });
     }
 

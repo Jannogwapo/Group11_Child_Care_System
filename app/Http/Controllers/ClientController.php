@@ -12,6 +12,9 @@ use App\Models\IsAStudent;
 use App\Models\IsAPwd;
 use App\Models\Branch;
 use App\Models\Location;
+use Illuminate\Support\Facades\Gate;
+
+
 use Illuminate\Support\Facades\DB;
 
 class ClientController extends Controller
@@ -34,16 +37,16 @@ class ClientController extends Controller
 
         // Get the current user's role and gender
         $user = auth()->user();
-        $isAdmin = $user->role_id == 1; // Admin role is 1
+        $isAdmin = Gate::allows('isAdmin');
         $userGender = $user->gender_id; // Get the gender_id from user
 
         // If not admin, filter by user's gender
-        if (!$isAdmin) {
+        if (!Gate::allows('isAdmin')) {
             $query->where('clientgender', $userGender);
         }
         
         // Apply gender filter if specified (only for admin)
-        if ($isAdmin && $genderFilter && $genderFilter !== 'all') {
+        if (Gate::allows('isAdmin')&& $genderFilter && $genderFilter !== 'all') {
             $genderId = $genderFilter === 'male' ? 1 : 2; // Assuming 1 is male, 2 is female
             $query->where('clientgender', $genderId);
         }
@@ -92,12 +95,14 @@ class ClientController extends Controller
         }
         
         $clients = $query->get();
+        $cases = Cases::all();
         
         return view('viewClient', compact(
             'clients',
             'currentFilter',
             'genderFilter',
-            'isAdmin'
+            'isAdmin',
+            'cases'
         ));
     }
 
@@ -116,17 +121,16 @@ class ClientController extends Controller
         ]);
 
         // Get the current user's role and gender
-        $user = auth()->user();
-        $isAdmin = $user->role_id == 1; // Admin role is 1
+        $user = auth()->user(); 
         $userGender = $user->gender_id; // Get the gender_id from user
 
         // If not admin, filter by user's gender
-        if (!$isAdmin) {
+        if (!Gate::allows('isAdmin')) {
             $query->where('clientgender', $userGender);
         }
         
         // Apply gender filter if specified (only for admin)
-        if ($isAdmin && $genderFilter && $genderFilter !== 'all') {
+        if (Gate::allows('isAdmin') && $genderFilter && $genderFilter !== 'all') {
             $genderId = $genderFilter === 'male' ? 1 : 2; // Assuming 1 is male, 2 is female
             $query->where('clientgender', $genderId);
         }
@@ -270,7 +274,7 @@ class ClientController extends Controller
     public function edit(Client $client)
     {
         // Check if user is authorized to edit this client
-        if (auth()->user()->role_id != 2) {
+        if (Gate::allows('isAdmin')) {
             return redirect()->route('clients.view')->with('error', 'Unauthorized access.');
         }
 

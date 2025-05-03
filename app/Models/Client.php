@@ -29,7 +29,9 @@ class Client extends Model
         'branch_id',
         'isAPwd',
         'user_id',
-        'location_id'
+        'location_id',
+
+
     ];
 
    /** @var list<string> */
@@ -79,6 +81,8 @@ class Client extends Model
     {
         return $this->belongsTo(Location::class, 'location_id');
     }
+    
+
 }
 
             

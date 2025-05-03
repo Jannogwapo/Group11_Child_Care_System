@@ -42,12 +42,12 @@ class DashboardController extends Controller
         $totalClients = 0; // Initialize total clients as 0
 
         // If user is admin, show total count of all clients
-        if ($user->role_id == 1) { // Admin role is 1
+        if (Gate::allows('isAdmin')) { // Admin role is 1
             $clientCount = Client::count();
             $totalClients = $clientCount; // Only admin gets to see total count
         } 
         // If user is social worker, show only clients with same gender
-        else if ($user->role_id == 2) { // Social Worker role is 2
+        else if (!Gate::allows('isAdmin')) { // Social Worker role is 2
             $clientCount = Client::where('clientgender', $user->gender_id)->count();
             $totalClients = $clientCount; // Social workers only see their gender-matched clients
         }
@@ -58,7 +58,7 @@ class DashboardController extends Controller
             'myHearings' => CalendarHearing::where('hearing_date', '>=', now())->count(),
             'myEvents' => Activity::where('activity_date', '>=', now())->count(),
             'role' => $role,
-            'isAdmin' => $user->role_id == 1,
+            'isAdmin' => Gate::allows('isAdmin'),
             'clientStats' => $clientStats,
             'dischargeStats' => $dischargeStats,
             'caseStatusStats' => $caseStatusStats,
@@ -76,7 +76,7 @@ class DashboardController extends Controller
         $query = Client::query();
         
         // If user is a social worker, filter by their gender
-        if ($user->role_id == 2) { // Social Worker role is 2
+        if (!Gate::allows('isAdmin')) { // Social Worker role is 2
             $query->where('clientgender', $user->gender_id);
         }
         
@@ -149,13 +149,5 @@ class DashboardController extends Controller
         ];
     }
 
-    public function testAdmin()
-    {
-        if (Gate::allows('admin')) {
-            dd('not allowed');
-            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
-        }
-        dd('allowed');
-        return 'Admin gate is working!';
-    }
+    
 } 

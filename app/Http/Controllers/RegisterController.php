@@ -8,6 +8,7 @@ use App\Models\UserRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Providers\AuthServiceProvider;
 
 class RegisterController extends Controller
 {

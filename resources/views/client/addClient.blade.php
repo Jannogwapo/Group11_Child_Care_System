@@ -60,7 +60,7 @@
                         <div class="form-group row mb-3">
                             <label for="birthdate" class="col-md-4 col-form-label text-md-right">{{ __('Birthdate') }}</label>
                             <div class="col-md-6">
-                                <input id="birthdate" type="date" class="form-control @error('birthdate') is-invalid @enderror" name="birthdate" value="{{ old('birthdate') }}" required>
+                                <input id="birthdate" type="date" class="form-control @error('birthdate') is-invalid @enderror " name="birthdate" value="{{ old('birthdate') }}" disable>
                                 @error('birthdate')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
@@ -73,7 +73,7 @@
                         <div class="form-group row mb-3">
                             <label for="age" class="col-md-4 col-form-label text-md-right">{{ __('Age') }}</label>
                             <div class="col-md-6">
-                                <input id="age" type="number" class="form-control @error('age') is-invalid @enderror" name="age" value="{{ old('age') }}" required>
+                                <input id="age" type="number" class="form-control @error('age') is-invalid @enderror" name="age" value="{{ old('age') }}" readonly>
                                 @error('age')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
@@ -281,7 +281,7 @@
     </div>
     </div>
 
-<script>
+    <script>
 document.getElementById('birthdate').addEventListener('change', function() {
     var birthdate = new Date(this.value);
     var today = new Date();
@@ -290,7 +290,7 @@ document.getElementById('birthdate').addEventListener('change', function() {
     if (m < 0 || (m === 0 && today.getDate() < birthdate.getDate())) {
         age--;
     }
-    document.getElementById('age').value = age;
+    document.getElementById('age').value = age; // Set the calculated age
 });
 </script>
 @endsection
