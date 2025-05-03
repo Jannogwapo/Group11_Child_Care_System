@@ -17,7 +17,8 @@ class Event extends Model
         'location',
         'type',
         'status',
-        'created_by'
+        'created_by',
+        'picture'
     ];
 
     protected $casts = [
@@ -29,4 +30,4 @@ class Event extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
-} 
+}

@@ -1,80 +1,92 @@
 @extends('layout')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">Events</h1>
-        <a href="{{ route('events.create') }}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
-            Create New Event
-        </a>
-    </div>
+<link rel="stylesheet" href="{{ asset('css/event.css') }}">
+<div class="container">
+    <div class="reports-row">
+        <!-- Activity Reports Section -->
+        <div class="report-section">
+            <div class="report-header">
+                <h2>ACTIVITY REPORTS</h2>
+                <a href="{{ route('events.create') }}" class="add-btn">ADD EVENTS</a>
+            </div>
 
-    <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="text-lg font-semibold mb-2">Total Events</h3>
-            <p class="text-3xl font-bold text-blue-600">{{ $stats['total'] }}</p>
+            @forelse($events as $event)
+                <a href="{{ route('events.show', $event) }}" class="event-link">
+                    <div class="event-card">
+                        <div class="date-badge">{{ \Carbon\Carbon::parse($event->start_date)->format('M d, Y') }}</div>
+                        <div class="content">
+                            <div class="image-placeholder">
+                                @if($event->picture)
+                                    <img src="{{ asset('storage/' . $event->picture) }}" alt="Event Image">
+                                @endif
+                            </div>
+                            <div class="text-content">
+                                <h3>{{ $event->title }}</h3>
+                                <p>{{ $event->description }}</p>
+                                <div class="uploaded-by">
+                                    <small>Uploaded by: {{ $event->createdBy ? $event->createdBy->name : 'Unknown User' }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            @empty
+                <div class="event-card">
+                    <div class="date-badge">Jun 10, 2024</div>
+                    <div class="content">
+                        <div class="image-placeholder"></div>
+                        <div class="text-content">
+                            <h3>EVENT</h3>
+                            <p>Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a very very short story.</p>
+                        </div>
+                    </div>
+                </div>
+            @endforelse
         </div>
-        
-        <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="text-lg font-semibold mb-2">Upcoming Events</h3>
-            <p class="text-3xl font-bold text-green-600">{{ $stats['upcoming'] }}</p>
-        </div>
-        
-        <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="text-lg font-semibold mb-2">Completed Events</h3>
-            <p class="text-3xl font-bold text-gray-600">{{ $stats['completed'] }}</p>
-        </div>
-    </div>
 
-    <!-- Events Table -->
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @foreach($upcomingEvents as $event)
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            {{ $event->title }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            {{ ucfirst($event->type ?? 'N/A') }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            {{ $event->start_date->format('M d, Y H:i') }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            {{ $event->end_date->format('M d, Y H:i') }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            {{ $event->location ?? 'N/A' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                {{ $event->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                {{ $event->status === 'completed' ? 'bg-green-100 text-green-800' : '' }}
-                                {{ $event->status === 'cancelled' ? 'bg-red-100 text-red-800' : '' }}">
-                                {{ ucfirst($event->status) }}
-                            </span>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
+        <div class="divider"></div>
 
-    <!-- Pagination -->
-    <div class="mt-4">
-        {{ $upcomingEvents->links() }}
+        <!-- Incident Reports Section -->
+        <div class="report-section">
+            <div class="report-header">
+                <h2>INCIDENT REPORTS</h2>
+                <a href="{{ route('incidents.create') }}" class="add-btn">ADD INCIDENT</a>
+            </div>
+
+            @forelse($incidents as $incident)
+                <a href="{{ route('incidents.show', $incident) }}" class="event-link">
+                    <div class="event-card">
+                        <div class="date-badge">{{ \Carbon\Carbon::parse($incident->incident_date)->format('M d, Y') }}</div>
+                        <div class="content">
+                            <div class="image-placeholder">
+                                @if($incident->incident_image)
+                                    <img src="{{ asset('storage/' . $incident->incident_image) }}" alt="Incident Image">
+                                @endif
+                            </div>
+                            <div class="text-content">
+                                <h3>{{ $incident->incident_type }}</h3>
+                                <p>{{ $incident->incident_description }}</p>
+                                <div class="uploaded-by">
+                                    <small>Uploaded by: {{ $incident->user ? $incident->user->name : 'Unknown User' }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            @empty
+                <div class="event-card">
+                    <div class="date-badge">Jun 10, 2024</div>
+                    <div class="content">
+                        <div class="image-placeholder"></div>
+                        <div class="text-content">
+                            <h3>INCIDENT</h3>
+                            <p>Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a very very short story.</p>
+                        </div>
+                    </div>
+                </div>
+            @endforelse
+        </div>
     </div>
 </div>
-@endsection 
+@endsection

@@ -1,0 +1,118 @@
+.reports-row {
+    display: flex;
+    gap: 40px;
+}
+
+.report-section {
+    flex: 1;
+}
+
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.report-header h2 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0;
+    color: #222;
+}
+
+.add-btn {
+    background: #222;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.65rem;
+    transition: background 0.2s;
+}
+.add-btn:hover {
+    background: #444;
+}
+
+.divider {
+    width: 1px;
+    background-color: #ccc;
+}
+
+.event-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.event-link:hover .event-card {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.event-card {
+    background: #fafbfc;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.date-badge {
+    background: #e3f0ff;
+    color: #1a4fa3;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.9rem;
+    display: inline-block;
+    margin-bottom: 12px;
+}
+
+.content {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+}
+
+.image-placeholder {
+    width: 100px;
+    height: 100px;
+    background: #e0e0e0 url('data:image/svg+xml;utf8,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="%23e0e0e0"/><text x="50" y="55" font-size="12" text-anchor="middle" fill="%23999">Image</text></svg>') center/60% no-repeat;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.image-placeholder img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.text-content {
+    flex: 1;
+    position: relative;
+    padding-bottom: 24px;
+}
+
+.text-content h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.text-content p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.uploaded-by {
+    position: absolute;
+    bottom: -20px;
+    right: 0;
+    font-size: 0.8rem;
+    color: #666;
+    font-style: italic;
+}
