@@ -75,6 +75,10 @@ return new class extends Migration
                   ->references('id')
                   ->on('location')
                   ->onDelete('cascade');
+
+        
+
+
         });
     }
 

@@ -10,8 +10,25 @@
     <form action="{{ route('login.post') }}" method="POST">
         <h1>LogIn</h1>
         @csrf        
+        
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+        
         <label for="email">Email:</label>
-        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+        <input type="email" id="email" name="email" value="{{ old('email') }}" placeholder="Enter your email" required>
         <span id="emailError"></span> <br>
         
         <label for="password">Password:</label>

@@ -12,7 +12,7 @@ class IsAPwd extends Model
     protected $table = 'isAPwd';
 
     protected $fillable = [
-        'isAPwd',
+        'status',
     ];
 
     public function clients(): HasMany

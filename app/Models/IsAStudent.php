@@ -10,7 +10,7 @@ class IsAStudent extends Model
     protected $table = 'isAStudent';
 
     protected $fillable = [
-        'isAStudent',
+        'status',
     ];
 
     public function clients(): HasMany

@@ -11,14 +11,16 @@ use App\Models\IsAStudent;
 use App\Models\IsAPwd;
 use App\Models\User;
 use App\Models\Location;
+use App\Models\PhilippineProvince;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class AddClient extends Controller
 {
     public function showAddClientForm()
     {
         // Check if user is a social worker
-        if (auth()->user()->role_id != 2) {
+        if (Gate::allows('isAdmin')) {
             return redirect()->route('clients.view')->with('error', 'Unauthorized access.');
         }
 
@@ -28,13 +30,14 @@ class AddClient extends Controller
         $isAStudent = IsAStudent::all();
         $isAPwd = IsAPwd::all();
         $locations = Location::all();
-        return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations'));
+        $provinces = PhilippineProvince::all();
+        return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations', 'provinces'));
     }
 
     public function index()
     {
         // Check if user is a social worker
-        if (auth()->user()->role_id != 2) {
+        if (Gate::allows('isAdmin')) {
             return redirect()->route('clients.view')->with('error', 'Unauthorized access.');
         }
 
@@ -44,14 +47,15 @@ class AddClient extends Controller
         $isAStudent = IsAStudent::all();
         $isAPwd = IsAPwd::all();
         $locations = Location::all();
+        $provinces = PhilippineProvince::all();
         
-        return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations'));
+        return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations', 'provinces'));
     }
 
     public function create()
     {
         // Check if user is a social worker
-        if (auth()->user()->role_id != 2) {
+        if (Gate::allows('isAdmin')) {
             return redirect()->route('clients.view')->with('error', 'Unauthorized access.');
         }
 
@@ -61,14 +65,15 @@ class AddClient extends Controller
         $isAStudent = IsAStudent::all();
         $isAPwd = IsAPwd::all();
         $locations = Location::all();
+        $provinces = PhilippineProvince::all();
         
-        return view('client/addClient', compact('cases', 'genders', 'status', 'isAStudent', 'isAPwd', 'locations'));
+        return view('client/addClient', compact('cases', 'genders', 'status', 'isAStudent', 'isAPwd', 'locations', 'provinces'));
     }
 
     public function store(Request $request)
     {
         // Check if user is a social worker
-        if (auth()->user()->role_id != 2) {
+        if (Gate::allows('isAdmin')) {
             return redirect()->route('clients.view')->with('error', 'Unauthorized access.');
         }
 

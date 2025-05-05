@@ -23,7 +23,14 @@ class User extends Authenticatable
         'password',
         'gender_id',
         'role_id',
+        'access_id',
 
+    ];
+
+    protected $dates = [
+        'email_verified_at',
+        'created_at',
+        'updated_at'
     ];
 
     /**
@@ -46,6 +53,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role_id' => 'integer',
+            'gender_id' => 'integer'
         ];
     }
 

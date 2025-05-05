@@ -58,4 +58,16 @@ class IncidentController extends Controller
             return back()->with('error', 'Error deleting incident report: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Display a listing of the incidents.
+     */
+    public function index()
+    {
+        // Fetch all incidents, ordered by the incident date
+        $incidents = Incident::orderBy('incident_date', 'desc')->get();
+
+        // Return the view with the incidents data
+        return view('incidents.index', compact('incidents'));
+    }
 }

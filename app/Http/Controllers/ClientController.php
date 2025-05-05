@@ -12,6 +12,9 @@ use App\Models\IsAStudent;
 use App\Models\IsAPwd;
 use App\Models\Branch;
 use App\Models\Location;
+use Illuminate\Support\Facades\Gate;
+
+
 use Illuminate\Support\Facades\DB;
 
 class ClientController extends Controller
@@ -32,47 +35,44 @@ class ClientController extends Controller
             'location'
         ]);
 
-        // Get the current user's role and gender
-        $user = auth()->user();
-        $isAdmin = $user->role_id == 1; // Admin role is 1
-        $userGender = $user->gender_id; // Get the gender_id from user
+        // Determine if the user is an admin
+        $isAdmin = Gate::allows('isAdmin');
 
-        // If not admin, filter by user's gender
+        $user = auth()->user();
+
         if (!$isAdmin) {
-            $query->where('clientgender', $userGender);
+            $query->where('clientgender', $user->gender_id);
         }
-        
-        // Apply gender filter if specified (only for admin)
+
         if ($isAdmin && $genderFilter && $genderFilter !== 'all') {
-            $genderId = $genderFilter === 'male' ? 1 : 2; // Assuming 1 is male, 2 is female
+            $genderId = $genderFilter === 'male' ? 1 : 2;
             $query->where('clientgender', $genderId);
         }
-        
-        // Apply filters
+
         if ($currentFilter !== 'ALL') {
             switch ($currentFilter) {
                 case 'CICL':
-                    $query->whereHas('case', function($q) {
+                    $query->whereHas('case', function ($q) {
                         $q->where('case_name', 'CICL');
                     });
                     break;
                 case 'VAW C':
-                    $query->whereHas('case', function($q) {
+                    $query->whereHas('case', function ($q) {
                         $q->where('case_name', 'VAW C');
                     });
                     break;
                 case 'SA':
-                    $query->whereHas('case', function($q) {
+                    $query->whereHas('case', function ($q) {
                         $q->where('case_name', 'SA');
                     });
                     break;
                 case 'CAR':
-                    $query->whereHas('case', function($q) {
+                    $query->whereHas('case', function ($q) {
                         $q->where('case_name', 'CAR');
                     });
                     break;
                 case 'ABANDONED':
-                    $query->whereHas('case', function($q) {
+                    $query->whereHas('case', function ($q) {
                         $q->where('case_name', 'ABANDONED');
                     });
                     break;
@@ -90,14 +90,16 @@ class ClientController extends Controller
                     break;
             }
         }
-        
+
         $clients = $query->get();
-        
+        $cases = Cases::all();
+
         return view('viewClient', compact(
             'clients',
             'currentFilter',
             'genderFilter',
-            'isAdmin'
+            'isAdmin', // Ensure $isAdmin is defined
+            'cases'
         ));
     }
 
@@ -116,17 +118,16 @@ class ClientController extends Controller
         ]);
 
         // Get the current user's role and gender
-        $user = auth()->user();
-        $isAdmin = $user->role_id == 1; // Admin role is 1
+        $user = auth()->user(); 
         $userGender = $user->gender_id; // Get the gender_id from user
 
         // If not admin, filter by user's gender
-        if (!$isAdmin) {
+        if (!Gate::allows('isAdmin')) {
             $query->where('clientgender', $userGender);
         }
         
         // Apply gender filter if specified (only for admin)
-        if ($isAdmin && $genderFilter && $genderFilter !== 'all') {
+        if (Gate::allows('isAdmin') && $genderFilter && $genderFilter !== 'all') {
             $genderId = $genderFilter === 'male' ? 1 : 2; // Assuming 1 is male, 2 is female
             $query->where('clientgender', $genderId);
         }
@@ -270,7 +271,7 @@ class ClientController extends Controller
     public function edit(Client $client)
     {
         // Check if user is authorized to edit this client
-        if (auth()->user()->role_id != 2) {
+        if (Gate::allows('isAdmin')) {
             return redirect()->route('clients.view')->with('error', 'Unauthorized access.');
         }
 
@@ -293,4 +294,4 @@ class ClientController extends Controller
             'locations'
         ));
     }
-} 
+}

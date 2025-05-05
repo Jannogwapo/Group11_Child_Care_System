@@ -32,16 +32,7 @@
                     </div>
                 </a>
             @empty
-                <div class="event-card">
-                    <div class="date-badge">Jun 10, 2024</div>
-                    <div class="content">
-                        <div class="image-placeholder"></div>
-                        <div class="text-content">
-                            <h3>EVENT</h3>
-                            <p>Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a very very short story.</p>
-                        </div>
-                    </div>
-                </div>
+                No activity reports available.
             @endforelse
         </div>
 
@@ -75,16 +66,7 @@
                     </div>
                 </a>
             @empty
-                <div class="event-card">
-                    <div class="date-badge">Jun 10, 2024</div>
-                    <div class="content">
-                        <div class="image-placeholder"></div>
-                        <div class="text-content">
-                            <h3>INCIDENT</h3>
-                            <p>Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a very very short story.</p>
-                        </div>
-                    </div>
-                </div>
+                No incident reports available.
             @endforelse
         </div>
     </div>

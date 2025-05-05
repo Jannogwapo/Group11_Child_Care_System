@@ -7,13 +7,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Http\Controllers\Admin\EventController;
+use App\Providers\AuthServiceProvider;
 
 class LogInController extends Controller
 {
     /**
      * Show the login form.
      */
-    public function showLoginForm()
+    public function showLogInForm()
     {
         // If user is already logged in, redirect to dashboard
         if (Auth::check()) {
@@ -37,6 +38,14 @@ class LogInController extends Controller
             
             // Get the authenticated user
             $user = Auth::user();
+            
+            // Check if user has access
+            if ($user->access_id === 3) {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Your account has been disabled. Please contact the administrator.',
+                ])->withInput($request->only('email'));
+            }
             
             // Redirect to dashboard with success message
             return redirect()->route('dashboard')

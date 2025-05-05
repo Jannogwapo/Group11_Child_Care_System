@@ -11,24 +11,19 @@ use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
 {
+    /**
+     * Display a listing of events and incidents.
+     */
     public function index()
     {
-        // Get upcoming events
-        $upcomingEvents = Event::where('start_date', '>=', now())
-            ->orderBy('start_date', 'asc')
-            ->paginate(10);
-
-        // Get statistics
-        $stats = [
-            'total' => Event::count(),
-            'upcoming' => Event::where('start_date', '>=', now())->count(),
-            'completed' => Event::where('end_date', '<', now())->count(),
-        ];
-
+        // Fetch events
         $events = Event::orderBy('start_date', 'desc')->get();
+
+        // Fetch incidents
         $incidents = Incident::orderBy('incident_date', 'desc')->get();
 
-        return view('events.index', compact('upcomingEvents', 'stats', 'events', 'incidents'));
+        // Pass both to the view
+        return view('events.index', compact('events', 'incidents'));
     }
 
     public function create()

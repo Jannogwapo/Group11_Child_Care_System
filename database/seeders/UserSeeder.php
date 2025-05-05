@@ -13,18 +13,20 @@ class UserSeeder extends Seeder
         // Get the first gender ID
         $genderId = DB::table('gender')->first()->id;
 
-        // Create users for each role
-        $roles = DB::table('user_role')->get();
-        
-        foreach ($roles as $role) {
-            User::create([
-                'name' => ucfirst($role->role_name) . ' User',
-                'email' => strtolower(str_replace(' ', '', $role->role_name)) . '@example.com',
-                'password' => bcrypt('password'),
-                'role_id' => $role->id,
-                'gender_id' => $genderId,
-                'email_verified_at' => now(),
-            ]);
-        }
+        // Get the admin role ID
+        $adminRoleId = DB::table('user_role')->where('role_name', 'admin')->first()->id;
+
+        // Create the admin user
+        User::create([
+            'name' => 'Allyza Faith B. Rodrigo',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('12345678'), // Set password to 12345678
+            'role_id' => $adminRoleId,
+            'gender_id' => $genderId,
+            'access_id' => 2, 
+            'email_verified_at' => now(),
+        ]);
+
+       
     }
-} 
+}

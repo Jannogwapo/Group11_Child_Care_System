@@ -11,6 +11,7 @@ use App\Models\Branch;
 use App\Models\Status;
 use Carbon\Carbon;
 use App\Models\CalendarHearing;
+use App\Providers\AuthServiceProvider;
 
 class HearingController extends Controller
 {
@@ -27,7 +28,7 @@ class HearingController extends Controller
         // Get all required data from database
         $branches = Branch::orderBy('branchName')->get();
         $judges = Judge::orderBy('judgeName')->get();
-        $statuses = Status::orderBy('name')->get();
+        $statuses = Status::orderBy('status_name')->get();
 
         return view('client.addHearing', compact('clients', 'branches', 'judges', 'statuses'));
     }

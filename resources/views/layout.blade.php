@@ -220,22 +220,22 @@
             <i class="bi bi-people"></i> Clients
         </a>
         <a  href="{{ route('calendar.index') }}" class="sidebar-button {{ request()->routeIs('calendar.*') ? 'active' : '' }}">
-            <i class="bi bi-calendar-check"></i> Calendar Hearing
+            <i class="bi bi-calendar-check"></i> Hearing
         </a>
         <a href="{{ route('events.index') }}" class="sidebar-button {{ request()->routeIs('events.*') ? 'active' : '' }}">
             <i class="bi bi-calendar-event"></i> Events
         </a>
-        @if(auth()->user()->role_id == 2)
+        @can('isAdmin')
         <a href="{{ route('admin.chart') }}" class="sidebar-button {{ request()->routeIs('admin.chart') ? 'active' : '' }}">
             <i class="bi bi-bar-chart"></i> Reports
         </a>
         <a href="{{ route('admin.access') }}" class="sidebar-button {{ request()->routeIs('admin.access') ? 'active' : '' }}">
-            <i class="bi bi-shield-lock"></i> Access Control
+            <i class="bi bi-shield-lock"></i> Access
         </a>
         <a href="{{ route('admin.logs') }}" class="sidebar-button {{ request()->routeIs('admin.logs') ? 'active' : '' }}">
-            <i class="bi bi-journal-text"></i> System Logs
+            <i class="bi bi-journal-text"></i> Logs
         </a>
-        @endif
+        @endcan
     </div>
 
     <main class="main-content">

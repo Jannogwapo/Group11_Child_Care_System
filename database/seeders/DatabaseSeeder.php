@@ -24,6 +24,8 @@ class DatabaseSeeder extends Seeder
                 \Database\Seeders\UserRoleSeeder::class,
                 \Database\Seeders\UserSeeder::class,
                 LocationSeeder::class,
+                \Database\Seeders\PhilippineAddressSeeder::class,
+                \Database\Seeders\ClientSeeder::class,
             ]);
 
             // Re-enable foreign key checks

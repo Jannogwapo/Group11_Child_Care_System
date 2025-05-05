@@ -15,6 +15,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->unsignedBigInteger('role_id');
+            $table->unsignedBigInteger('access_id');
             $table->unsignedBigInteger('gender_id');
             $table->rememberToken();
             $table->timestamps();
@@ -28,6 +29,10 @@ return new class extends Migration
             $table->foreign('gender_id')
                   ->references('id')
                   ->on('gender')
+                  ->onDelete('cascade');
+            $table->foreign('access_id')
+                  ->references('id')
+                  ->on('access_logs')
                   ->onDelete('cascade');
         });
     }

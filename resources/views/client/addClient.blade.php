@@ -106,7 +106,7 @@
                         <div class="form-group row mb-3">
                             <label for="address" class="col-md-4 col-form-label text-md-right">{{ __('Address') }}</label>
                             <div class="col-md-6">
-                                <textarea id="address" class="form-control @error('address') is-invalid @enderror" name="address" required>{{ old('address') }}</textarea>
+                                <input type="text" id="address" name="address" class="form-control @error('address') is-invalid @enderror" value="{{ old('address') }}" placeholder="Enter complete address" required>
                                 @error('address')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
@@ -117,7 +117,7 @@
 
                         <!-- Guardian -->
                         <div class="form-group row mb-3">
-                            <label for="guardian" class="col-md-4 col-form-label text-md-right">{{ __('Guardian Name') }}</label>
+                            <label for="guardian" class="col-md-4 col-form-label text-md-right">{{ __('Guardian') }}</label>
                             <div class="col-md-6">
                                 <input id="guardian" type="text" class="form-control @error('guardian') is-invalid @enderror" name="guardian" value="{{ old('guardian') }}" required>
                                 @error('guardian')
@@ -143,7 +143,7 @@
 
                         <!-- Parent Contact -->
                         <div class="form-group row mb-3">
-                            <label for="parentContact" class="col-md-4 col-form-label text-md-right">{{ __('Guardian Phone Number') }}</label>
+                            <label for="parentContact" class="col-md-4 col-form-label text-md-right">{{ __('Parent Contact') }}</label>
                             <div class="col-md-6">
                                 <input id="parentContact" type="text" class="form-control @error('parentContact') is-invalid @enderror" name="parentContact" value="{{ old('parentContact') }}" required>
                                 @error('parentContact')
@@ -193,9 +193,9 @@
                             <div class="col-md-6">
                                 <select id="status_id" class="form-control @error('status_id') is-invalid @enderror" name="status_id" required>
                                     <option value="">Select Status</option>
-                                    @foreach($status as $stat)
-                                        <option value="{{ $stat->id }}" {{ old('status_id') == $stat->id ? 'selected' : '' }}>
-                                            {{ $stat->status_name }}
+                                    @foreach($status as $statusItem)
+                                        <option value="{{ $statusItem->id }}" {{ old('status_id') == $statusItem->id ? 'selected' : '' }}>
+                                            {{ $statusItem->status_name }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -209,13 +209,13 @@
 
                         <!-- Is A Student -->
                         <div class="form-group row mb-3">
-                            <label for="isAStudent" class="col-md-4 col-form-label text-md-right">{{ __('Student Status') }}</label>
+                            <label for="isAStudent" class="col-md-4 col-form-label text-md-right">{{ __('Is A Student') }}</label>
                             <div class="col-md-6">
                                 <select id="isAStudent" class="form-control @error('isAStudent') is-invalid @enderror" name="isAStudent" required>
-                                    <option value="">Select Student Status</option>
+                                    <option value="">Select Status</option>
                                     @foreach($isAStudent as $student)
                                         <option value="{{ $student->id }}" {{ old('isAStudent') == $student->id ? 'selected' : '' }}>
-                                            {{ $student->student_status }}
+                                            {{ $student->status }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -229,13 +229,13 @@
 
                         <!-- Is A PWD -->
                         <div class="form-group row mb-3">
-                            <label for="isAPwd" class="col-md-4 col-form-label text-md-right">{{ __('PWD Status') }}</label>
+                            <label for="isAPwd" class="col-md-4 col-form-label text-md-right">{{ __('Is A PWD') }}</label>
                             <div class="col-md-6">
                                 <select id="isAPwd" class="form-control @error('isAPwd') is-invalid @enderror" name="isAPwd" required>
-                                    <option value="">Select PWD Status</option>
+                                    <option value="">Select Status</option>
                                     @foreach($isAPwd as $pwd)
                                         <option value="{{ $pwd->id }}" {{ old('isAPwd') == $pwd->id ? 'selected' : '' }}>
-                                            {{ $pwd->pwd_status }}
+                                            {{ $pwd->status }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -281,7 +281,7 @@
     </div>
     </div>
 
-<script>
+    <script>
 document.getElementById('birthdate').addEventListener('change', function() {
     var birthdate = new Date(this.value);
     var today = new Date();
@@ -291,6 +291,79 @@ document.getElementById('birthdate').addEventListener('change', function() {
         age--;
     }
     document.getElementById('age').value = age;
+});
+</script>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const provinceSelect = document.getElementById('province');
+    const citySelect = document.getElementById('city');
+    const barangaySelect = document.getElementById('barangay');
+    const streetAddressInput = document.getElementById('street_address');
+    const addressInput = document.getElementById('address');
+
+    // Function to update the complete address
+    function updateCompleteAddress() {
+        const street = streetAddressInput.value;
+        const province = provinceSelect.options[provinceSelect.selectedIndex].text;
+        const city = citySelect.options[citySelect.selectedIndex].text;
+        const barangay = barangaySelect.options[barangaySelect.selectedIndex].text;
+        
+        const completeAddress = `${street}, ${barangay}, ${city}, ${province}`;
+        addressInput.value = completeAddress;
+    }
+
+    // Add event listeners for address updates
+    [provinceSelect, citySelect, barangaySelect, streetAddressInput].forEach(element => {
+        element.addEventListener('change', updateCompleteAddress);
+    });
+
+    // Load cities when province is selected
+    provinceSelect.addEventListener('change', function() {
+        const provinceId = this.value;
+        citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+        barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+
+        if (provinceId) {
+            fetch(`/api/cities/${provinceId}`)
+                .then(response => response.json())
+                .then(cities => {
+                    cities.forEach(city => {
+                        const option = new Option(city.name, city.id);
+                        citySelect.add(option);
+                    });
+                });
+        }
+        updateCompleteAddress();
+    });
+
+    // Load barangays when city is selected
+    citySelect.addEventListener('change', function() {
+        const cityId = this.value;
+        barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+
+        if (cityId) {
+            fetch(`/api/barangays/${cityId}`)
+                .then(response => response.json())
+                .then(barangays => {
+                    barangays.forEach(barangay => {
+                        const option = new Option(barangay.name, barangay.id);
+                        barangaySelect.add(option);
+                    });
+                });
+        }
+        updateCompleteAddress();
+    });
+
+    // Initialize with old values if they exist
+    if (provinceSelect.value) {
+        provinceSelect.dispatchEvent(new Event('change'));
+        if (citySelect.value) {
+            citySelect.dispatchEvent(new Event('change'));
+        }
+    }
 });
 </script>
 @endsection

@@ -21,6 +21,15 @@ return new class extends Migration
             $table->unsignedBigInteger('client_id')->nullable();
             $table->string('incident_image')->nullable();
             $table->timestamps();
+
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade');
+            $table->foreign('client_id')
+                ->references('id')
+                ->on('clients')
+                ->onDelete('cascade');
         });
     }
 
