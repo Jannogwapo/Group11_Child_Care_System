@@ -55,11 +55,14 @@ class DashboardController extends Controller
         // Get total number of users
         $totalUsers = User::count();
 
+        // Get the count of active events
+        $activeEvents = Activity::where('activity_date', '>=', now())->count();
+
         $data = [
             'myClients' => $clientCount,
             'totalClients' => $totalClients,
             'myHearings' => CalendarHearing::where('hearing_date', '>=', now())->count(),
-            'myEvents' => Activity::where('activity_date', '>=', now())->count(),
+            'activeEvents' => $activeEvents, // Pass active events count
             'role' => $role,
             'isAdmin' => Gate::allows('isAdmin'),
             'clientStats' => $clientStats,
@@ -118,10 +121,12 @@ class DashboardController extends Controller
             $date = now()->subMonths($i);
             $months->push($date->format('M'));
             
-            $count = Client::where('status_id', 2) // Assuming 2 is the status ID for discharged
-                ->whereYear('updated_at', $date->year)
-                ->whereMonth('updated_at', $date->month)
-                ->count();
+            $count = Client::whereHas('location', function($query) {
+                $query->where('location', 'DISCHARGED');
+            })
+            ->whereYear('updated_at', $date->year)
+            ->whereMonth('updated_at', $date->month)
+            ->count();
                 
             $counts->push($count);
         }
@@ -154,4 +159,4 @@ class DashboardController extends Controller
     }
 
     
-} 
+}

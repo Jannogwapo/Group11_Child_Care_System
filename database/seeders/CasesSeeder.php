@@ -17,9 +17,7 @@ class CasesSeeder extends Seeder
             ['case_name' => 'SA'],
             ['case_name' => 'CAR'],
             ['case_name' => 'ABANDONED'],
-            ['case_name' => 'ESCAPE'],
-            ['case_name' => 'DISCHARGE'],
-           ];
+        ];
 
         foreach ($cases as $case) {
             DB::table('case')->insert($case);

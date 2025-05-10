@@ -20,10 +20,15 @@ class HearingController extends Controller
         // Get the current user's gender
         $userGender = auth()->user()->gender;
 
-        // Get clients based on user's gender
+        // Get clients based on user's gender and exclude discharged clients
         $clients = Client::whereHas('gender', function($query) use ($userGender) {
             $query->where('id', $userGender);
-        })->orderBy('clientLastName')->get();
+        })
+        ->whereHas('location', function($query) {
+            $query->where('location', 'IN-HOUSE');
+        })
+        ->orderBy('clientLastName')
+        ->get();
 
         // Get all required data from database
         $branches = Branch::orderBy('branchName')->get();

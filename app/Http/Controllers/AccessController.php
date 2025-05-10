@@ -26,20 +26,20 @@ class AccessController extends Controller
         // Fetch users with access_id = 1 for the "Request" section
         $requests = User::where('access_id', 1)->get();
 
-        return view('admin.access', compact('usersByRole', 'requests'));
+        // Fetch disabled users
+        $disabledUsers = User::where('access_id', 3)->get();
+
+        return view('admin.access', compact('usersByRole', 'requests', 'disabledUsers'));
     }
 
     public function toggleUser(Request $request, User $user)
     {
         try {
-            // Check if the request is for enabling or disabling
-            if ($request->has('enable')) {
-                $user->access_id = 2; // Change access_id to 2 (Admin)
-            } elseif ($request->has('disable')) {
-                $user->access_id = 3; // Change access_id to 3 (Disabled)
+            // Update the user's access_id based on the request
+            if ($request->has('access_id')) {
+                $user->access_id = $request->access_id;
+                $user->save();
             }
-
-            $user->save();
 
             return back()->with('success', 'User access updated successfully.');
         } catch (\Exception $e) {

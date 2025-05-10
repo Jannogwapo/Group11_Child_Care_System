@@ -42,6 +42,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{client}/view', [ClientController::class, 'show'])->name('viewClient');
             Route::get('/view/all', [ClientController::class, 'showClient'])->name('viewClient');
             Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit');
+            Route::patch('/{client}', [ClientController::class, 'update'])->name('clients.update');
         });
 
         Route::prefix('hearings')->group(function () {
@@ -86,8 +87,8 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/admin/chart', [DashboardController::class, 'chart'])->name('admin.chart');
             Route::get('/admin/access', [AccessController::class, 'access'])->name('admin.access');
             Route::delete('/admin/access/{user}', [AccessController::class, 'delete'])->name('admin.access.delete');
-            Route::get('/admin/logs', [LogsController::class, 'index'])->name('admin.logs');
-            Route::post('/toggle-user/{user}', [AccessController::class, 'toggleUser'])->name('admin.toggle-user');
+            Route::get('/admin/logs', [LogsController::class, 'logs'])->name('admin.logs');
+            Route::put('/toggle-user/{user}', [AccessController::class, 'toggleUser'])->name('admin.toggle-user');
         });
     
     });

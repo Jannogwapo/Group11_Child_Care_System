@@ -42,7 +42,7 @@ class PhilippineAddressSeeder extends Seeder
         ];
 
         foreach ($cities as $cityName => $barangays) {
-            $cityCode = strtoupper(substr($cityName, 0, 3));
+            $cityCode = strtoupper(substr($cityName, 0, 2)) . str_pad($metroManila->id, 2, '0', STR_PAD_LEFT);
             $city = PhilippineCity::create([
                 'name' => $cityName,
                 'code' => $cityCode,
@@ -80,7 +80,9 @@ class PhilippineAddressSeeder extends Seeder
             ]);
 
             foreach ($cities as $cityName => $barangays) {
-                $cityCode = strtoupper(substr($cityName, 0, 3));
+                // Generate a unique city code
+                $cityCode = strtoupper(substr($cityName, 0, 2)) . str_pad($province->id, 2, '0', STR_PAD_LEFT);
+
                 $city = PhilippineCity::create([
                     'name' => $cityName,
                     'code' => $cityCode,
@@ -98,4 +100,4 @@ class PhilippineAddressSeeder extends Seeder
             }
         }
     }
-} 
+}

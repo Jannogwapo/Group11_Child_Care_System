@@ -76,12 +76,13 @@ class AddClient extends Controller
         if (Gate::allows('isAdmin')) {
             return redirect()->route('clients.view')->with('error', 'Unauthorized access.');
         }
+       
 
         // Validate the form data
         $validated = $request->validate([
             'lname' => 'required|string|max:255',
             'fname' => 'required|string|max:255',
-            'mname' => 'required|string|max:255',
+            'mname' => 'nullable|string|max:255',
             'birthdate' => 'required|date',
             'age' => 'required|integer',
             'gender' => 'required|integer|exists:gender,id',
@@ -102,7 +103,7 @@ class AddClient extends Controller
             Client::create([
                 'clientLastName' => $validated['lname'],
                 'clientFirstName' => $validated['fname'],
-                'clientMiddleName' => $validated['mname'],
+                'clientMiddleName' => $validated['mname'] ?? null,
                 'clientBirthdate' => $validated['birthdate'],
                 'clientAge' => $validated['age'],
                 'clientgender' => $validated['gender'],

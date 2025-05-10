@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('clientLastName');
             $table->string('clientFirstName');
-            $table->string('clientMiddleName');
+            $table->string('clientMiddleName')->nullable();
             $table->date('clientBirthdate');
             $table->integer('clientAge'); // Corrected
             $table->unsignedBigInteger('clientgender');

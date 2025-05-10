@@ -80,13 +80,19 @@ class ClientController extends Controller
                     $query->where('isAStudent', 1);
                     break;
                 case 'ESCAPE':
-                    $query->where('location_id', 2);
+                    $query->whereHas('location', function ($q) {
+                        $q->where('location', 'ESCAPED');
+                    });
                     break;
                 case 'IN-HOUSE':
-                    $query->where('location_id', 1);
+                    $query->whereHas('location', function ($q) {
+                        $q->where('location', 'IN-HOUSE');
+                    });
                     break;
                 case 'DISCHARGED':
-                    $query->where('location_id', 3);
+                    $query->whereHas('location', function ($q) {
+                        $q->where('location', 'DISCHARGED');
+                    });
                     break;
             }
         }
@@ -98,7 +104,7 @@ class ClientController extends Controller
             'clients',
             'currentFilter',
             'genderFilter',
-            'isAdmin', // Ensure $isAdmin is defined
+            'isAdmin',
             'cases'
         ));
     }
@@ -114,12 +120,13 @@ class ClientController extends Controller
             'case',
             'isAStudent',
             'isAPwd',
-            'branch'
+            'branch',
+            'location'
         ]);
 
         // Get the current user's role and gender
         $user = auth()->user(); 
-        $userGender = $user->gender_id; // Get the gender_id from user
+        $userGender = $user->gender_id;
 
         // If not admin, filter by user's gender
         if (!Gate::allows('isAdmin')) {
@@ -128,7 +135,7 @@ class ClientController extends Controller
         
         // Apply gender filter if specified (only for admin)
         if (Gate::allows('isAdmin') && $genderFilter && $genderFilter !== 'all') {
-            $genderId = $genderFilter === 'male' ? 1 : 2; // Assuming 1 is male, 2 is female
+            $genderId = $genderFilter === 'male' ? 1 : 2;
             $query->where('clientgender', $genderId);
         }
         
@@ -156,19 +163,27 @@ class ClientController extends Controller
                     });
                     break;
                 case 'ABANDONED':
-                    $query->where('case_name', 'ABANDONED');
+                    $query->whereHas('case', function($q) {
+                        $q->where('case_name', 'ABANDONED');
+                    });
                     break;
                 case 'DISCHARGED':
-                    $query->where('location_id', 3);
+                    $query->whereHas('location', function($q) {
+                        $q->where('location', 'DISCHARGED');
+                    });
                     break;
                 case 'STUDENTS':
                     $query->where('isAStudent', 1);
                     break;
                 case 'IN-HOUSE':
-                    $query->where('location_id', 1);
+                    $query->whereHas('location', function($q) {
+                        $q->where('location', 'IN-HOUSE');
+                    });
                     break;
                 case 'ESCAPE':
-                    $query->where('location_id', 2);
+                    $query->whereHas('location', function($q) {
+                        $q->where('location', 'ESCAPED');
+                    });
                     break;
             }
         }
@@ -200,9 +215,15 @@ class ClientController extends Controller
         $statistics = [
             'total' => $clients->count(),
             'new' => $clients->where('created_at', '>', now()->subDays(7))->count(),
-            'inHouse' => $clients->whereNull('status_id')->count(),
-            'abandoned' => $clients->where('status_id', 2)->count(),
-            'discharged' => $clients->where('status_id', 3)->count(),
+            'inHouse' => $clients->whereHas('location', function($q) {
+                $q->where('location', 'IN-HOUSE');
+            })->count(),
+            'abandoned' => $clients->whereHas('case', function($q) {
+                $q->where('case_name', 'ABANDONED');
+            })->count(),
+            'discharged' => $clients->whereHas('location', function($q) {
+                $q->where('location', 'DISCHARGED');
+            })->count(),
             'students' => $clients->where('isAStudent', 1)->count(),
         ];
         

@@ -2,112 +2,148 @@
 @section('title', 'System Logs')
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex justify-between items-center mb-8">
         <h1 class="text-2xl font-bold text-gray-800">System Logs</h1>
+
+        <!-- Filter Dropdown -->
+        <form method="GET" action="{{ route('admin.logs') }}" class="flex space-x-2">
+    <button type="submit" name="filter" value="all" class="px-4 py-2 rounded {{ $filter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
+        All
+    </button>
+    <button type="submit" name="filter" value="clients" class="px-4 py-2 rounded {{ $filter === 'clients' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
+        Clients
+    </button>
+    <button type="submit" name="filter" value="hearings" class="px-4 py-2 rounded {{ $filter === 'hearings' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
+        Hearings
+    </button>
+    <button type="submit" name="filter" value="events" class="px-4 py-2 rounded {{ $filter === 'events' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
+        Events
+    </button>
+    <button type="submit" name="filter" value="incidents" class="px-4 py-2 rounded {{ $filter === 'incidents' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
+        Incidents
+    </button>
+</form>
     </div>
 
-    @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <span class="block sm:inline">{{ session('success') }}</span>
-        </div>
-    @endif
+    <!-- Display Logs Based on Filter -->
+    @if($filter === 'all' || $filter === 'clients')
 
-    @if(session('error'))
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <span class="block sm:inline">{{ session('error') }}</span>
-        </div>
-    @endif
-
-    <!-- Recent Users -->
-    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <h2 class="text-xl font-semibold mb-4">Recent User Activities</h2>
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        @if($filter==='clients')
+        <h2 class="text-xl font-semibold mb-4">Recent Clients</h2>
+        @endif
+        @if($recentClients->isEmpty())
+            <p class="text-gray-500">No recent clients found.</p>
+        @else
         <table class="min-w-full bg-white">
-            <thead>
-                <tr>
-                    <th class="py-2 px-4 border-b">Name</th>
-                    <th class="py-2 px-4 border-b">Email</th>
-                    <th class="py-2 px-4 border-b">Created At</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($recentUsers as $user)
-                    <tr>
-                        <td class="py-2 px-4 border-b">{{ $user->name }}</td>
-                        <td class="py-2 px-4 border-b">{{ $user->email }}</td>
-                        <td class="py-2 px-4 border-b">{{ $user->created_at->format('Y-m-d H:i:s') }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
 
-    <!-- Recent Clients -->
-    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <h2 class="text-xl font-semibold mb-4">Recent Client Activities</h2>
-        <table class="min-w-full bg-white">
-            <thead>
-                <tr>
-                    <th class="py-2 px-4 border-b">Name</th>
-                    <th class="py-2 px-4 border-b">Status</th>
-                    <th class="py-2 px-4 border-b">Created At</th>
-                </tr>
-            </thead>
             <tbody>
                 @foreach($recentClients as $client)
-                    <tr>
-                        <td class="py-2 px-4 border-b">{{ $client->clientFirstName }} {{ $client->clientLastName }}</td>
-                        <td class="py-2 px-4 border-b">{{ $client->status->status_name ?? 'New' }}</td>
-                        <td class="py-2 px-4 border-b">{{ $client->created_at->format('Y-m-d H:i:s') }}</td>
-                    </tr>
+                <tr>
+                    <th>
+                        <i class="bi bi-people text-6xl text-gray-700"></i>
+                    </th>
+                    <td class="p-6">
+                        <p class="text-meduim font-semibold">{{ $client->user->name ?? 'Unknown' }}</p>
+                        <p class="">Added a new Client name {{ $client->clientFirstName ?? 'N/A' }} {{ $client->clientLastName ?? '' }}</p>
+                    </td>
+                    <td class="py-6 px-4 border-b">{{ $client->created_at->format('Y-m-d H:i:s') }}</td>
+                </tr>
                 @endforeach
             </tbody>
         </table>
+        @endif
     </div>
+          
+    
+@endif
 
-    <!-- Recent Events -->
+@if($filter === 'all' || $filter === 'hearings')
     <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <h2 class="text-xl font-semibold mb-4">Recent Events</h2>
+        @if($filter === 'hearings')
+        <h2 class="text-xl font-semibold mb-4">Recent Hearings</h2>
+        @endif
+        @if($recentHearings->isEmpty() && $filter ==='hearings')
+            <p class="text-gray-500">No recent hearings found.</p>
+        @else
         <table class="min-w-full bg-white">
-            <thead>
-                <tr>
-                    <th class="py-2 px-4 border-b">Title</th>
-                    <th class="py-2 px-4 border-b">Start Date</th>
-                    <th class="py-2 px-4 border-b">Created At</th>
-                </tr>
-            </thead>
+            <tbody>
+                @foreach($recentHearings as $hearing)
+                    <th>
+                    <i class="bi bi-calendar-check">
+                    </th>
+                    <td>
+                        <td class="py-2 px-4 border-b">{{ $hearing->hearing_date->format('Y-m-d H:i:s') }}</td>
+                        <td class="py-2 px-4 border-b">{{ $hearing->client->clientFirstName ?? 'N/A' }} {{ $hearing->client->clientLastName ?? '' }}</td>
+                        <td class="py-2 px-4 border-b">{{ $hearing->created_at->format('Y-m-d H:i:s') }}</td>
+                    </td>
+                @endforeach
+            </tbody>
+        </table>
+        @endif
+    </div>
+@endif
+
+@if($filter === 'all' || $filter === 'events')
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        @if($filter ==='events')
+        <h2 class="text-xl font-semibold mb-4">Recent Events</h2>
+        @endif
+        @if($recentEvents->isEmpty())
+            <p class="text-gray-500">No recent events found.</p>
+        @else   
+        <table class="min-w-full bg-white">
             <tbody>
                 @foreach($recentEvents as $event)
                     <tr>
-                        <td class="py-2 px-4 border-b">{{ $event->title }}</td>
-                        <td class="py-2 px-4 border-b">{{ $event->start_date->format('Y-m-d H:i:s') }}</td>
+                        <th>
+                            <i class="bi bi-calendar-event text-6xl text-gray-700"></i>
+                        </th>
+                        
+                        <td>
+                        <p>{{ $event->title }}</p>
+                        <p>{{ $event->start_date->format('Y-m-d H:i:s') }}</p>
+                        
+                        </td>
                         <td class="py-2 px-4 border-b">{{ $event->created_at->format('Y-m-d H:i:s') }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
+        @endif
     </div>
+@endif
 
-    <!-- Recent Hearings -->
-    <div class="bg-white rounded-lg shadow-lg p-6">
-        <h2 class="text-xl font-semibold mb-4">Recent Hearings</h2>
+@if($filter === 'all' || $filter === 'incidents')
+<div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+    @if($filter ==='incidents')
+    <h2 class="text-xl font-semibold mb-4">Recent Incidents</h2>
+    @endif
+    @if($recentIncidents->isEmpty())
+        <p class="text-gray-500">No recent incidents found.</p>
+    @else
         <table class="min-w-full bg-white">
-            <thead>
-                <tr>
-                    <th class="py-2 px-4 border-b">Hearing Date</th>
-                    <th class="py-2 px-4 border-b">Client</th>
-                    <th class="py-2 px-4 border-b">Created At</th>
-                </tr>
-            </thead>
             <tbody>
-                @foreach($recentHearings as $hearing)
+                @foreach($recentIncidents as $incident)
+
                     <tr>
-                        <td class="py-2 px-4 border-b">{{ $hearing->hearing_date->format('Y-m-d H:i:s') }}</td>
-                        <td class="py-2 px-4 border-b">{{ $hearing->client->clientFirstName ?? 'N/A' }} {{ $hearing->client->clientLastName ?? '' }}</td>
-                        <td class="py-2 px-4 border-b">{{ $hearing->created_at->format('Y-m-d H:i:s') }}</td>
+                        <th>
+                        <i class="bi bi-calendar-event"></i>
+                        </th>
+                        <td>
+                        <p>{{ $incident->incident_type }}</p>
+                        <p>{{ $incident->created_at->format('Y-m-d H:i:s') }}</p>
+                        
+                        </td>
+                        <td class="py-2 px-4 border-b">Client Involve: {{ $incident->client->clientFirstName ?? 'None' }} {{ $incident->client->clientLastName ?? '' }}</td>
+                        <td class="py-2 px-4 border-b">{{ $incident->created_at->format('Y-m-d H:i:s') }}</td>
                     </tr>
+                
                 @endforeach
             </tbody>
         </table>
-    </div>
+    @endif
 </div>
+@endif
+
 @endsection

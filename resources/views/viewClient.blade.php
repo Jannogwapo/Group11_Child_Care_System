@@ -9,99 +9,157 @@
 
 @section('content')
 <style>
+    .case-filter-bar {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+        margin-bottom: 32px;
+        flex-wrap: wrap;
+    }
     .case-filter-btn {
         display: inline-block;
-        margin: 0 5px 10px 0;
+        margin: 0;
         padding: 6px 18px;
         border-radius: 20px;
         border: none;
         background: #e0e7ef;
-        color: #333;
+        color: #222;
         font-weight: 600;
         cursor: pointer;
-        transition: background 0.2s;
+        transition: background 0.2s, color 0.2s;
     }
     .case-filter-btn.active, .case-filter-btn:hover {
-        background: #a7c7e7;
-        color: #222;
+        background: var(--primary-color);
+        color: var(--text-color);
     }
     .case-section {
         margin-bottom: 32px;
     }
-    .case-title {
-        font-size: 1.3rem;
-        font-weight: bold;
-        margin-bottom: 12px;
-        color: #2b3a4a;
-        letter-spacing: 1px;
+    .client-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        padding: 0 12px;
     }
     .client-card {
         background: #fff;
         border-radius: 12px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-        padding: 18px 20px;
-        margin-bottom: 16px;
+        padding: 24px;
         transition: box-shadow 0.2s;
     }
     .client-card:hover {
         box-shadow: 0 4px 16px rgba(0,0,0,0.13);
     }
     .client-name {
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         font-weight: 600;
-        margin-bottom: 4px;
+        margin-bottom: 12px;
+        color: #2d3748;
     }
     .client-info {
-        color: #555;
-        font-size: 0.97rem;
-        margin-bottom: 2px;
+        display: flex;
+        justify-content: space-between;
+        color: #4a5568;
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+        padding: 4px 0;
+        border-bottom: 1px solid #edf2f7;
     }
-    .client-actions a {
-        margin-right: 10px;
-        color: #1976d2;
+    .client-info:last-of-type {
+        border-bottom: none;
+    }
+    .client-info-label {
         font-weight: 500;
+        color: #718096;
+    }
+    .client-info-value {
+        color: #2d3748;
+    }
+    .add-client-btn {
+        background: var(--primary-color);
+        color: var(--text-color) !important;
+        border-radius: 20px;
+        padding: 7px 20px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.2s, color 0.2s;
+        margin-left: 18px;
+        display: inline-block;
+    }
+    .add-client-btn:hover {
+        background: var(--secondary-color);
+        color: var(--text-color) !important;
         text-decoration: none;
     }
+    .client-actions {
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 1px solid #edf2f7;
+        display: flex;
+        gap: 12px;
+    }
+    .client-actions a {
+        background: var(--primary-color);
+        color: var(--text-color) !important;
+        font-weight: 500;
+        text-decoration: none;
+        border-radius: 12px;
+        padding: 6px 16px;
+        transition: background 0.2s, color 0.2s;
+        flex: 1;
+        text-align: center;
+    }
     .client-actions a:hover {
-        text-decoration: underline;
+        background: var(--secondary-color);
+        color: var(--text-color) !important;
+        text-decoration: none;
     }
 </style>
 <div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Client List</h1>
-        @cannot('isAdmin')
-            <a href="{{ route('clients.create') }}" class="px-4 py-2 rounded-full bg-pink-500 text-black hover:bg-pink-600 ml-auto">
-                Add Client
-            </a>
-        @endcannot
-    </div>
-
-    <!-- Filter Buttons -->
-    <div id="case-filters" class="mb-6">
+    <div class="case-filter-bar">
         <button class="case-filter-btn active" data-case="all">ALL</button>
         @foreach($cases as $case)
             <button class="case-filter-btn" data-case="case-{{ $case->id }}">{{ strtoupper($case->case_name) }}</button>
         @endforeach
+        @cannot('isAdmin')
+            <a href="{{ route('clients.create') }}" class="add-client-btn">ADD CLIENT</a>
+        @endcannot
     </div>
 
     <!-- Grouped Client List -->
     <div id="client-list">
         @foreach($cases as $case)
             <div class="case-section" data-case-group="case-{{ $case->id }}">
-                <div class="case-title">{{ strtoupper($case->case_name) }}</div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="client-grid">
                     @php $hasClient = false; @endphp
                     @foreach($clients as $client)
                         @if($client->case && $client->case->id == $case->id)
                             @php $hasClient = true; @endphp
                             <div class="client-card">
                                 <div class="client-name">{{ $client->clientFirstName }} {{ $client->clientLastName }}</div>
-                                <div class="client-info">Gender: {{ $client->gender->gender_name ?? 'Not specified' }}</div>
-                                <div class="client-info">Address: {{ $client->clientaddress }}</div>
-                                <div class="client-info">Contact: {{ $client->guardianphonenumber }}</div>
-                                <div class="client-info">Status: {{ $client->status->status_name ?? 'New' }}</div>
-                                <div class="client-info">Admission Date: {{ $client->clientdateofadmission }}</div>
-                                <div class="client-actions mt-2">
+                                <div class="client-info">
+                                    <span class="client-info-label">Gender:</span>
+                                    <span class="client-info-value">{{ $client->gender->gender_name ?? 'Not specified' }}</span>
+                                </div>
+                                <div class="client-info">
+                                    <span class="client-info-label">Address:</span>
+                                    <span class="client-info-value">{{ $client->clientaddress }}</span>
+                                </div>
+                                <div class="client-info">
+                                    <span class="client-info-label">Contact:</span>
+                                    <span class="client-info-value">{{ $client->guardianphonenumber }}</span>
+                                </div>
+                                <div class="client-info">
+                                    <span class="client-info-label">Status:</span>
+                                    <span class="client-info-value">{{ $client->status->status_name ?? 'New' }}</span>
+                                </div>
+                                <div class="client-info">
+                                    <span class="client-info-label">Admission Date:</span>
+                                    <span class="client-info-value">{{ $client->clientdateofadmission }}</span>
+                                </div>
+                                <div class="client-actions mt-4">
                                     @cannot('isAdmin')
                                     <a href="{{ route('clients.edit', $client->id) }}">Edit</a>
                                     @endcannot
@@ -111,7 +169,7 @@
                         @endif
                     @endforeach
                     @if(!$hasClient)
-                        <div class="text-gray-400 italic col-span-full">No clients in this case.</div>
+                        <div class="text-gray-400 italic col-span-2 text-center">No clients in this case.</div>
                     @endif
                 </div>
             </div>
