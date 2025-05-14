@@ -292,13 +292,13 @@ class ClientController extends Controller
     public function edit(Client $client)
     {
         // Check if user is authorized to edit this client
-        if (Gate::allows('isAdmin')) {
+        if (!Gate::allows('isAdmin')) {
             return redirect()->route('clients.view')->with('error', 'Unauthorized access.');
         }
 
         $genders = Gender::all();
         $cases = Cases::all();
-        $statuses = Status::all();
+        $statuses = Status::all(); // Fetch statuses
         $isAStudent = IsAStudent::all();
         $isAPwd = IsAPwd::all();
         $branches = Branch::all();
@@ -308,7 +308,7 @@ class ClientController extends Controller
             'client',
             'genders',
             'cases',
-            'statuses',
+            'statuses', // Pass statuses to the view
             'isAStudent',
             'isAPwd',
             'branches',

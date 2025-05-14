@@ -9,12 +9,15 @@
     <!-- Admin Users Section -->
     <div class="bg-white rounded-lg shadow-lg p-6">
         <h2 class="font-bold text-xl mb-4 mt-8">ADMIN USERS</h2>
-        <table class="min-w-full bg-white border border-gray-200">
+        @if($usersByRole['admin']->isEmpty())
+            <p class="text-gray-500">No admin users found.</p>
+        @else
+        <table class="min-w-full bg-white">
             <thead>
                 <tr>
                     <th class="py-2 px-4 border-b text-left">Name</th>
                     <th class="py-2 px-4 border-b text-left">Status</th>
-                    <th class="py-2 px-4 border-b text-left">Action</th>
+                    
                 </tr>
             </thead>
             <tbody>
@@ -34,7 +37,7 @@
                                     @csrf
                                     @method('PUT')
                                     <input type="hidden" name="access_id" value="3"> <!-- Set access_id to 3 -->
-                                    <button type="submit" class="px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white">
+                                    <button type="submit" class="px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-black">
                                         Disable
                                     </button>
                                 </form>
@@ -44,17 +47,20 @@
                 @endforeach
             </tbody>
         </table>
+        @endif
     </div>
 
     <!-- Social Worker Users Section -->
     <div class="bg-white rounded-lg shadow-lg p-6">
         <h2 class="font-bold text-xl mb-4 mt-8">SOCIAL WORKER USERS</h2>
-        <table class="min-w-full bg-white border border-gray-200">
+        @if($usersByRole['social_worker']->isEmpty())
+            <p class="text-gray-500">No social worker users found.</p>
+        @else
+        <table class="min-w-full bg-white ">
             <thead>
                 <tr>
                     <th class="py-2 px-4 border-b text-left">Name</th>
                     <th class="py-2 px-4 border-b text-left">Status</th>
-                    <th class="py-2 px-4 border-b text-left">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -74,7 +80,7 @@
                                     @csrf
                                     @method('PUT')
                                     <input type="hidden" name="access_id" value="3"> <!-- Set access_id to 3 -->
-                                    <button type="submit" class="px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white">
+                                    <button type="submit" class="px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-black">
                                         Disable
                                     </button>
                                 </form>
@@ -84,6 +90,7 @@
                 @endforeach
             </tbody>
         </table>
+        @endif
     </div>
 
     <!-- Disabled Users Section -->
@@ -92,7 +99,7 @@
         @if($disabledUsers->isEmpty())
             <p class="text-gray-500">No disabled users found.</p>
         @else
-            <table class="min-w-full bg-white border border-gray-200">
+            <table class="min-w-full bg-white ">
                 <thead>
                     <tr>
                         <th class="py-2 px-4 border-b text-left">Name</th>
@@ -119,7 +126,7 @@
                                     @csrf
                                     @method('PUT')
                                     <input type="hidden" name="access_id" value="2"> <!-- Set access_id to 2 -->
-                                    <button type="submit" class="px-4 py-2 rounded bg-green-500 hover:bg-green-600 text-white">
+                                    <button type="submit" class="px-4 py-2 rounded bg-green-500 hover:bg-green-600 text-black">
                                         Enable
                                     </button>
                                 </form>
@@ -137,13 +144,12 @@
         @if($requests->isEmpty())
             <p class="text-gray-500">No requests found.</p>
         @else
-            <table class="min-w-full bg-white border border-gray-200">
+            <table class="min-w-full bg-white ">
                 <thead>
                     <tr>
                         <th class="py-2 px-4 border-b text-left">Name</th>
                         <th class="py-2 px-4 border-b text-left">Email</th>
                         <th class="py-2 px-4 border-b text-left">Status</th>
-                        <th class="py-2 px-4 border-b text-left">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -166,27 +172,28 @@
 
                             <!-- Action -->
                             <td class="py-2 px-4 border-b">
-                                <div class="flex space-x-2">
+                                
                                     <!-- Approve Button -->
                                     <form action="{{ route('admin.toggle-user', $user->id) }}" method="POST">
                                         @csrf
                                         @method('PUT')
                                         <input type="hidden" name="access_id" value="2"> <!-- Approve -->
-                                        <button type="submit" class="px-4 py-2 rounded bg-green-500 hover:bg-green-600 text-white">
+                                        <button type="submit" class="px-4 py-2 rounded bg-green-500 hover:bg-green-600 text-black">
                                             Approve
                                         </button>
                                     </form>
-
+                            </td>
+                            <td>
                                     <!-- Disapprove Button -->
                                     <form action="{{ route('admin.toggle-user', $user->id) }}" method="POST">
                                         @csrf
                                         @method('PUT')
                                         <input type="hidden" name="access_id" value="3"> <!-- Disapprove -->
-                                        <button type="submit" class="px-4 py-2 rounded bg-red-500 hover:bg-red-600 text-white">
+                                        <button type="submit" class="px-4 py-2 rounded bg-red-500 hover:bg-red-600 text-black">
                                             Disapprove
                                         </button>
                                     </form>
-                                </div>
+                               
                             </td>
                         </tr>
                     @endforeach
