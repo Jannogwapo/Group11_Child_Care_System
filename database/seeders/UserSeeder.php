@@ -27,6 +27,19 @@ class UserSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
+        User::create([
+            'name' => 'Janno Crisostomo',
+            'email' => 'janno@egmail.com',
+            'password' => bcrypt('12345678'), // Set password to 12345678
+            'role_id' => $adminRoleId,
+            'gender_id' => $genderId,
+            'access_id' => 2, 
+            'email_verified_at' => now(),
+        ]); 
+    
+
+        
+
        
     }
 }

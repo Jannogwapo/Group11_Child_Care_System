@@ -18,7 +18,7 @@
                         @csrf
                         @method('PATCH')
 
-                        <!-- Last Name -->
+                        <!-- Last Name --> 
                         <div class="form-group row mb-3">
                             <label for="lname" class="col-md-4 col-form-label text-md-right">{{ __('Last Name') }}</label>
                             <div class="col-md-6">
@@ -194,7 +194,7 @@
                             <div class="col-md-6">
                                 <select id="status_id" class="form-control @error('status_id') is-invalid @enderror" name="status_id" required>
                                     <option value="">Select Status</option>
-                                    @foreach($status as $statusItem)
+                                    @foreach($statuses as $statusItem) <!-- Use $statuses instead of $status -->
                                         <option value="{{ $statusItem->id }}" {{ (old('status_id', $client->status_id) == $statusItem->id) ? 'selected' : '' }}>
                                             {{ $statusItem->status_name }}
                                         </option>
@@ -221,4 +221,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection

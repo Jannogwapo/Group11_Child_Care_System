@@ -24,8 +24,9 @@ class RegisterController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'position' => 'required|integer|exists:user_role,id',
             'gender' => 'required|integer|exists:gender,id',
-            
         ]);
+        
+        
 
         try {
             // Create a new user
@@ -38,8 +39,8 @@ class RegisterController extends Controller
                 'remember_token' => Str::random(10),
                 'email_verified_at' => now(),
                 'access_id' => 1,
-            ]);
-            
+                        ]);
+                        
             return redirect('login')->with('success', 'Registration successful!');
         } catch (\Exception $e) {
             // Log the error for debugging

@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
                 \Database\Seeders\IsAStudentSeeder::class,
                 \Database\Seeders\IsAPwdSeeder::class,
                 \Database\Seeders\UserRoleSeeder::class,
+                \Database\Seeders\AccessLogSeeder::class,
                 \Database\Seeders\UserSeeder::class,
                 LocationSeeder::class,
                 \Database\Seeders\PhilippineAddressSeeder::class,
