@@ -118,62 +118,39 @@
     }
 </style>
 <div class="container mx-auto px-4 py-8">
-    <div class="case-filter-bar">
-        <button class="case-filter-btn active" data-case="all">ALL</button>
+    <div class="case-filter-bar" style="margin-bottom: 32px;">
+        <a href="{{ route('viewClient', ['filter' => 'ALL']) }}" class="case-filter-btn{{ request('filter', 'ALL') == 'ALL' ? ' active' : '' }}">ALL</a>
         @foreach($cases as $case)
-            <button class="case-filter-btn" data-case="case-{{ $case->id }}">{{ strtoupper($case->case_name) }}</button>
+            <a href="{{ route('viewClient', ['filter' => $case->case_name]) }}" class="case-filter-btn{{ request('filter') == $case->case_name ? ' active' : '' }}">
+                {{ strtoupper($case->case_name) }}
+            </a>
         @endforeach
+        <a href="{{ route('viewClient', ['filter' => 'DISCHARGED']) }}" class="case-filter-btn{{ request('filter') == 'DISCHARGED' ? ' active' : '' }}">DISCHARGED</a>
+        <a href="{{ route('viewClient', ['filter' => 'ESCAPED']) }}" class="case-filter-btn{{ request('filter') == 'ESCAPED' ? ' active' : '' }}">ESCAPED</a>
+        <a href="{{ route('viewClient', ['filter' => 'TRANSFER']) }}" class="case-filter-btn{{ request('filter') == 'TRANSFER' ? ' active' : '' }}">TRANSFER</a>
         @cannot('isAdmin')
-            <a href="{{ route('clients.create') }}" class="add-client-btn">ADD CLIENT</a>
+            <a href="{{ route('clients.create') }}" class="add-client-btn" style="margin-left: 10px;">ADD CLIENT</a>
         @endcannot
     </div>
 
     <!-- Grouped Client List -->
     <div id="client-list">
-        @foreach($cases as $case)
-            <div class="case-section" data-case-group="case-{{ $case->id }}">
-                <div class="client-grid">
-                    @php $hasClient = false; @endphp
-                    @foreach($clients as $client)
-                        @if($client->case && $client->case->id == $case->id)
-                            @php $hasClient = true; @endphp
-                            <div class="client-card">
-                                <div class="client-name">{{ $client->clientFirstName }} {{ $client->clientLastName }}</div>
-                                <div class="client-info">
-                                    <span class="client-info-label">Gender:</span>
-                                    <span class="client-info-value">{{ $client->gender->gender_name ?? 'Not specified' }}</span>
-                                </div>
-                                <div class="client-info">
-                                    <span class="client-info-label">Address:</span>
-                                    <span class="client-info-value">{{ $client->clientaddress }}</span>
-                                </div>
-                                <div class="client-info">
-                                    <span class="client-info-label">Contact:</span>
-                                    <span class="client-info-value">{{ $client->guardianphonenumber }}</span>
-                                </div>
-                                <div class="client-info">
-                                    <span class="client-info-label">Status:</span>
-                                    <span class="client-info-value">{{ $client->status->status_name ?? 'New' }}</span>
-                                </div>
-                                <div class="client-info">
-                                    <span class="client-info-label">Admission Date:</span>
-                                    <span class="client-info-value">{{ $client->clientdateofadmission }}</span>
-                                </div>
-                                <div class="client-actions mt-4">
-                                    @cannot('isAdmin')
-                                    <a href="{{ route('clients.edit', $client->id) }}">Edit</a>
-                                    @endcannot
-                                    <a href="{{ route('clients.show', $client->id) }}">View Details</a>
-                                </div>
-                            </div>
-                        @endif
-                    @endforeach
-                    @if(!$hasClient)
-                        <div class="text-gray-400 italic col-span-2 text-center">No clients in this case.</div>
-                    @endif
+        <div class="client-grid">
+            @foreach($clients as $client)
+                <div class="client-card">
+                    <div class="client-name">{{ $client->clientFirstName }} {{ $client->clientLastName }}</div>
+                    <div class="client-info"><span class="client-info-label">Gender:</span> <span class="client-info-value">{{ $client->gender->gender_name ?? 'Not specified' }}</span></div>
+                    <div class="client-info"><span class="client-info-label">Address:</span> <span class="client-info-value">{{ $client->clientaddress }}</span></div>
+                    <div class="client-info"><span class="client-info-label">Contact:</span> <span class="client-info-value">{{ $client->guardianphonenumber }}</span></div>
+                    <div class="client-info"><span class="client-info-label">Status:</span> <span class="client-info-value">{{ $client->status->status_name ?? 'New' }}</span></div>
+                    <div class="client-info"><span class="client-info-label">Admission Date:</span> <span class="client-info-value">{{ $client->clientdateofadmission }}</span></div>
+                    <div class="client-actions mt-4">
+                        <a href="{{ route('clients.edit', $client->id) }}" class="btn btn-primary">Edit</a>
+                        <a href="{{ route('clients.show', $client->id) }}" class="btn btn-secondary">View Details</a>
+                    </div>
                 </div>
-            </div>
-        @endforeach
+            @endforeach
+        </div>
     </div>
 </div>
 <script>

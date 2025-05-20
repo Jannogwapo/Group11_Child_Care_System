@@ -5,7 +5,12 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header">{{ __('Edit Client') }}</div>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>{{ __('Edit Client') }}</span>
+                    <a href="{{ route('clients.view') }}" style="background: #5fd1b3; color: #fff; font-weight: 600; border-radius: 8px; padding: 10px 24px; text-decoration: none;">
+                        Back to List
+                    </a>
+                </div>
 
                 <div class="card-body">
                     @if (session('error'))
@@ -194,13 +199,33 @@
                             <div class="col-md-6">
                                 <select id="status_id" class="form-control @error('status_id') is-invalid @enderror" name="status_id" required>
                                     <option value="">Select Status</option>
-                                    @foreach($statuses as $statusItem) <!-- Use $statuses instead of $status -->
+                                    @foreach($statuses as $statusItem)
                                         <option value="{{ $statusItem->id }}" {{ (old('status_id', $client->status_id) == $statusItem->id) ? 'selected' : '' }}>
                                             {{ $statusItem->status_name }}
                                         </option>
                                     @endforeach
                                 </select>
                                 @error('status_id')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- Location -->
+                        <div class="form-group row mb-3">
+                            <label for="location_id" class="col-md-4 col-form-label text-md-right">{{ __('Location') }}</label>
+                            <div class="col-md-6">
+                                <select id="location_id" class="form-control @error('location_id') is-invalid @enderror" name="location_id" required>
+                                    <option value="">Select Location</option>
+                                    @foreach($locations as $location)
+                                        <option value="{{ $location->id }}" {{ (old('location_id', $client->location_id) == $location->id) ? 'selected' : '' }}>
+                                            {{ $location->location }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('location_id')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
                                     </span>

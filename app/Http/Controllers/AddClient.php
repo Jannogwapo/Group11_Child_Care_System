@@ -85,7 +85,7 @@ class AddClient extends Controller
             'mname' => 'nullable|string|max:255',
             'birthdate' => 'required|date',
             'age' => 'required|integer',
-            'gender' => 'required|integer|exists:gender,id',
+            'gender' => 'required|integer|exists:genders,id',
             'address' => 'required|string|max:255',
             'guardian' => 'required|string|max:255',
             'guardianRelationship' => 'required|string|max:255',

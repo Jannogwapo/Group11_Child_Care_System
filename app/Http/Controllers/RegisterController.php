@@ -14,7 +14,7 @@ class RegisterController extends Controller
 {
     /**
      * Handle the registration form submission.
-     */
+     */ 
     public function store(Request $request)
     {
         // Validate the form data
@@ -23,7 +23,7 @@ class RegisterController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             'position' => 'required|integer|exists:user_role,id',
-            'gender' => 'required|integer|exists:gender,id',
+            'gender' => 'required|integer|exists:genders,id',
         ]);
         
         

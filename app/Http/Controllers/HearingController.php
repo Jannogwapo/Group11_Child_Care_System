@@ -17,15 +17,12 @@ class HearingController extends Controller
 {
     public function create()
     {
-        // Get the current user's gender
-        $userGender = auth()->user()->gender;
-
-        // Get clients based on user's gender and exclude discharged clients
-        $clients = Client::whereHas('gender', function($query) use ($userGender) {
-            $query->where('id', $userGender);
-        })
-        ->whereHas('location', function($query) {
+        // Get clients that are in-house and not abandoned
+        $clients = Client::whereHas('location', function($query) {
             $query->where('location', 'IN-HOUSE');
+        })
+        ->whereHas('status', function($query) {
+            $query->where('status_name', '!=', 'ABANDONED');
         })
         ->orderBy('clientLastName')
         ->get();
@@ -46,14 +43,36 @@ class HearingController extends Controller
             'branch_id' => 'required|exists:branches,id',
             'hearing_date' => 'required|date',
             'time' => 'required',
-            'status' => 'required|in:scheduled,completed,postponed,cancelled',
+            'status' => 'required|in:scheduled,completed,postponed,cancelled,rescheduled',
             'notes' => 'nullable|string'
         ]);
 
         try {
             $validated['user_id'] = auth()->id();
-            Hearing::create($validated);
-            return redirect()->route('calendar.index')->with('success', 'Hearing added successfully!');
+            $hearing = Hearing::create($validated);
+            
+            // Get client name for notification
+            $client = Client::find($validated['client_id']);
+            $clientName = $client ? $client->clientFirstName . ' ' . $client->clientLastName : 'Unknown Client';
+            
+            // Create notification message
+            $notification = auth()->user()->name . ' added a hearing for ' . $clientName . ' on ' . 
+                           Carbon::parse($validated['hearing_date'])->format('F j, Y') . ' at ' . 
+                           Carbon::parse($validated['time'])->format('g:i A');
+            
+            // Add note to client's profile
+            if ($client) {
+                $client->notes()->create([
+                    'content' => 'Hearing scheduled on ' . Carbon::parse($validated['hearing_date'])->format('F j, Y') . 
+                               ' at ' . Carbon::parse($validated['time'])->format('g:i A') . 
+                               ' - Status: ' . ucfirst($validated['status']),
+                    'user_id' => auth()->id()
+                ]);
+            }
+            
+            return redirect()->route('calendar.index')
+                           ->with('success', 'Hearing added successfully!')
+                           ->with('notification', $notification);
         } catch (\Exception $e) {
             return back()->withInput()->with('error', 'Error adding hearing: ' . $e->getMessage());
         }
@@ -146,5 +165,18 @@ class HearingController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Error deleting hearing: ' . $e->getMessage());
         }
+    }
+
+    public function getUpcomingHearings()
+    {
+        $startOfWeek = Carbon::now()->startOfWeek();
+        $endOfWeek = Carbon::now()->endOfWeek();
+        
+        return CalendarHearing::whereBetween('hearing_date', [$startOfWeek, $endOfWeek])
+                     ->where('status', 'scheduled')
+                     ->with(['client', 'judge'])
+                     ->orderBy('hearing_date')
+                     ->orderBy('time')
+                     ->get();
     }
 } 
