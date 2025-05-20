@@ -48,6 +48,10 @@ Route::middleware(['auth'])->group(function () {
         Route::prefix('hearings')->group(function () {
             Route::get('/create', [HearingController::class, 'create'])->name('hearings.create');
             Route::post('/', [HearingController::class, 'store'])->name('hearings.store');
+            Route::get('/upcoming', [HearingController::class, 'getUpcomingHearings'])->name('hearings.upcoming');
+            Route::get('/{hearing}/edit', [HearingController::class, 'edit'])->name('hearings.edit');
+            Route::put('/{hearing}', [HearingController::class, 'update'])->name('hearings.update');
+            Route::delete('/{hearing}', [HearingController::class, 'destroy'])->name('hearings.destroy');
         });
 
     // Calendar Routes

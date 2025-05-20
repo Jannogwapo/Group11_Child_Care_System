@@ -49,52 +49,38 @@ class ClientController extends Controller
             $query->where('clientgender', $genderId);
         }
 
-        if ($currentFilter !== 'ALL') {
-            switch ($currentFilter) {
-                case 'CICL':
-                    $query->whereHas('case', function ($q) {
-                        $q->where('case_name', 'CICL');
-                    });
-                    break;
-                case 'VAW C':
-                    $query->whereHas('case', function ($q) {
-                        $q->where('case_name', 'VAW C');
-                    });
-                    break;
-                case 'SA':
-                    $query->whereHas('case', function ($q) {
-                        $q->where('case_name', 'SA');
-                    });
-                    break;
-                case 'CAR':
-                    $query->whereHas('case', function ($q) {
-                        $q->where('case_name', 'CAR');
-                    });
-                    break;
-                case 'ABANDONED':
-                    $query->whereHas('case', function ($q) {
-                        $q->where('case_name', 'ABANDONED');
-                    });
-                    break;
-                case 'STUDENTS':
-                    $query->where('isAStudent', 1);
-                    break;
-                case 'ESCAPE':
-                    $query->whereHas('location', function ($q) {
-                        $q->where('location', 'ESCAPED');
-                    });
-                    break;
-                case 'IN-HOUSE':
-                    $query->whereHas('location', function ($q) {
-                        $q->where('location', 'IN-HOUSE');
-                    });
-                    break;
-                case 'DISCHARGED':
-                    $query->whereHas('location', function ($q) {
-                        $q->where('location', 'DISCHARGED');
-                    });
-                    break;
-            }
+        // Define location-based filters
+        $locationFilters = ['DISCHARGED', 'ESCAPED', 'TRANSFER'];
+
+        if ($currentFilter === 'ALL') {
+            // For ALL filter, show all clients
+            $query->whereHas('location', function($q) {
+                $q->whereIn('location', ['DISCHARGED', 'ESCAPED', 'IN-HOUSE', 'TRANSFER']);
+            });
+        }
+        // Handle location-based filters (DISCHARGED, ESCAPED, TRANSFER)
+        else if (in_array($currentFilter, $locationFilters)) {
+            $query->whereHas('location', function($q) use ($currentFilter) {
+                $q->where('location', $currentFilter);
+            });
+        }
+        // Handle case-based filters (CICL, VAWC, etc.)
+        else if ($currentFilter !== 'STUDENTS') {
+            // For case filters, only show IN-HOUSE clients
+            $query->whereHas('case', function($q) use ($currentFilter) {
+                $q->where('case_name', $currentFilter);
+            })
+            ->whereHas('location', function($q) {
+                $q->where('location', 'IN-HOUSE');
+            });
+        }
+        // Handle STUDENTS filter
+        else if ($currentFilter === 'STUDENTS') {
+            // For students, only show IN-HOUSE students
+            $query->where('isAStudent', 1)
+                  ->whereHas('location', function($q) {
+                      $q->where('location', 'IN-HOUSE');
+                  });
         }
 
         $clients = $query->get();
@@ -138,69 +124,66 @@ class ClientController extends Controller
             $genderId = $genderFilter === 'male' ? 1 : 2;
             $query->where('clientgender', $genderId);
         }
+
+        // Define location-based filters
+        $locationFilters = ['DISCHARGED', 'ESCAPED', 'TRANSFER'];
         
-        // Apply filters
-        if ($currentFilter !== 'ALL') {
-            switch ($currentFilter) {
-                case 'CICL':
-                    $query->whereHas('case', function($q) {
-                        $q->where('case_name', 'CICL');
-                    });
-                    break;
-                case 'VAW C':
-                    $query->whereHas('case', function($q) {
-                        $q->where('case_name', 'VAW C');
-                    });
-                    break;
-                case 'SA':
-                    $query->whereHas('case', function($q) {
-                        $q->where('case_name', 'SA');
-                    });
-                    break;
-                case 'CAR':
-                    $query->whereHas('case', function($q) {
-                        $q->where('case_name', 'CAR');
-                    });
-                    break;
-                case 'ABANDONED':
-                    $query->whereHas('case', function($q) {
-                        $q->where('case_name', 'ABANDONED');
-                    });
-                    break;
-                case 'DISCHARGED':
-                    $query->whereHas('location', function($q) {
-                        $q->where('location', 'DISCHARGED');
-                    });
-                    break;
-                case 'STUDENTS':
-                    $query->where('isAStudent', 1);
-                    break;
-                case 'IN-HOUSE':
-                    $query->whereHas('location', function($q) {
-                        $q->where('location', 'IN-HOUSE');
-                    });
-                    break;
-                case 'ESCAPE':
-                    $query->whereHas('location', function($q) {
-                        $q->where('location', 'ESCAPED');
-                    });
-                    break;
-            }
+        if ($currentFilter === 'ALL') {
+            // For ALL filter, show all clients
+            $query->whereHas('location', function($q) {
+                $q->whereIn('location', ['DISCHARGED', 'ESCAPED', 'IN-HOUSE', 'TRANSFER']);
+            });
+        }
+        // Handle location-based filters (DISCHARGED, ESCAPED, TRANSFER)
+        else if (in_array($currentFilter, $locationFilters)) {
+            $query->whereHas('location', function($q) use ($currentFilter) {
+                $q->where('location', $currentFilter);
+            });
+        }
+        // Handle case-based filters (CICL, VAWC, etc.)
+        else if ($currentFilter !== 'STUDENTS') {
+            // For case filters, only show IN-HOUSE clients
+            $query->whereHas('case', function($q) use ($currentFilter) {
+                $q->where('case_name', $currentFilter);
+            })
+            ->whereHas('location', function($q) {
+                $q->where('location', 'IN-HOUSE');
+            });
+        }
+        // Handle STUDENTS filter
+        else if ($currentFilter === 'STUDENTS') {
+            // For students, only show IN-HOUSE students
+            $query->where('isAStudent', 1)
+                  ->whereHas('location', function($q) {
+                      $q->where('location', 'IN-HOUSE');
+                  });
         }
         
         $clients = $query->get();
         
-        // Group clients by status and add badges
+        // Group clients by their primary category
         $groupedClients = $clients->groupBy(function($client) use ($currentFilter) {
-            if ($currentFilter === 'STUDENTS') {
+            // For ALL view, determine primary category based on location and case type
+            if ($currentFilter === 'ALL') {
+                // If client is IN-HOUSE, group by case type
+                if ($client->location->location === 'IN-HOUSE') {
+                    return $client->case->case_name . ' - IN-HOUSE';
+                }
+                // Otherwise group by location
+                return $client->location->location;
+            }
+            // For location-based filters, group by location
+            else if (in_array($currentFilter, $locationFilters)) {
+                return $client->location->location;
+            }
+            // For case-based filters, group by case type
+            else if ($currentFilter !== 'STUDENTS') {
+                return $client->case->case_name . ' - IN-HOUSE';
+            }
+            // For STUDENTS filter, group by new/old
+            else {
                 return $client->created_at->gt(now()->subDays(7)) ? 'NEW' : 'OLD';
             }
-            
-            if ($client->created_at->gt(now()->subDays(7))) {
-                return 'NEW';
-            } elseif ($client->status) {
-                return strtoupper($client->status->status_name);
-            };
         });
 
         // Get all necessary data for the view
@@ -220,11 +203,19 @@ class ClientController extends Controller
             })->count(),
             'abandoned' => $clients->whereHas('case', function($q) {
                 $q->where('case_name', 'ABANDONED');
+            })->whereHas('location', function($q) {
+                $q->where('location', 'IN-HOUSE');
             })->count(),
             'discharged' => $clients->whereHas('location', function($q) {
                 $q->where('location', 'DISCHARGED');
             })->count(),
-            'students' => $clients->where('isAStudent', 1)->count(),
+            'transferred' => $clients->whereHas('location', function($q) {
+                $q->where('location', 'TRANSFER');
+            })->count(),
+            'students' => $clients->where('isAStudent', 1)
+                                ->whereHas('location', function($q) {
+                                    $q->where('location', 'IN-HOUSE');
+                                })->count(),
         ];
         
         return view('viewClient', compact(
@@ -291,14 +282,18 @@ class ClientController extends Controller
 
     public function edit(Client $client)
     {
-        // Check if user is authorized to edit this client
+        $user = auth()->user();
+        
+        // If not admin, check if the client belongs to the user
         if (!Gate::allows('isAdmin')) {
-            return redirect()->route('clients.view')->with('error', 'Unauthorized access.');
+            if ($client->user_id !== $user->id) {
+                return redirect()->route('clients.view')->with('error', 'You can only edit your own clients.');
+            }
         }
 
         $genders = Gender::all();
         $cases = Cases::all();
-        $statuses = Status::all(); // Fetch statuses
+        $statuses = Status::all();
         $isAStudent = IsAStudent::all();
         $isAPwd = IsAPwd::all();
         $branches = Branch::all();
@@ -308,11 +303,83 @@ class ClientController extends Controller
             'client',
             'genders',
             'cases',
-            'statuses', // Pass statuses to the view
+            'statuses',
             'isAStudent',
             'isAPwd',
             'branches',
             'locations'
         ));
+    }
+
+    public function update(Request $request, Client $client)
+    {
+        $user = auth()->user();
+        
+        // If not admin, check if the client belongs to the user
+        if (!Gate::allows('isAdmin')) {
+            if ($client->user_id !== $user->id) {
+                return redirect()->route('clients.view')->with('error', 'You can only edit your own clients.');
+            }
+        }
+
+        $validated = $request->validate([
+            'lname' => 'required|string|max:255',
+            'fname' => 'required|string|max:255',
+            'mname' => 'nullable|string|max:255',
+            'birthdate' => 'required|date',
+            'age' => 'required|integer',
+            'gender' => 'required|exists:genders,id',
+            'address' => 'required|string',
+            'guardian' => 'required|string|max:255',
+            'guardianRelationship' => 'required|string|max:255',
+            'parentContact' => 'required|string|max:11',
+            'case_id' => 'required|exists:case,id',
+            'admissionDate' => 'required|date',
+            'status_id' => 'required|exists:status,id',
+            'isAStudent' => 'required|boolean',
+            'isAPwd' => 'required|boolean',
+            'location_id' => 'required|exists:location,id'
+        ]);
+
+        try {
+            $oldLocationId = $client->location_id;
+            $oldCaseId = $client->case_id;
+            
+            $client->update([
+                'clientLastName' => $validated['lname'],
+                'clientFirstName' => $validated['fname'],
+                'clientMiddleName' => $validated['mname'],
+                'clientBirthdate' => $validated['birthdate'],
+                'clientAge' => $validated['age'],
+                'clientgender' => $validated['gender'],
+                'clientaddress' => $validated['address'],
+                'clientguardian' => $validated['guardian'],
+                'clientguardianrelationship' => $validated['guardianRelationship'],
+                'guardianphonenumber' => $validated['parentContact'],
+                'case_id' => $validated['case_id'],
+                'clientdateofadmission' => $validated['admissionDate'],
+                'status_id' => $validated['status_id'],
+                'isAStudent' => $validated['isAStudent'],
+                'isAPwd' => $validated['isAPwd'],
+                'location_id' => $validated['location_id']
+            ]);
+
+            // Get the new location
+            $newLocation = Location::find($validated['location_id']);
+            
+            // Determine the appropriate filter based on the new location
+            if (in_array($newLocation->location, ['DISCHARGED', 'ESCAPED', 'TRANSFER'])) {
+                // If location is DISCHARGED, ESCAPED, or TRANSFER, use that as the filter
+                $filter = $newLocation->location;
+            } else {
+                // For IN-HOUSE clients, use case type as filter
+                $case = Cases::find($validated['case_id']);
+                $filter = strtoupper($case->case_name);
+            }
+
+            return redirect()->route('clients.view', ['filter' => $filter])->with('success', 'Client updated successfully!');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Error updating client: ' . $e->getMessage());
+        }
     }
 }

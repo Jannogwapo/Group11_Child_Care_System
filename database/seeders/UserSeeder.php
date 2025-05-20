@@ -11,7 +11,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Get the first gender ID
-        $genderId = DB::table('gender')->first()->id;
+        $genderId = DB::table('genders')->first()->id;
 
         // Get the admin role ID
         $adminRoleId = DB::table('user_role')->where('role_name', 'admin')->first()->id;

@@ -3,107 +3,119 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="bg-white rounded-lg shadow-lg p-6">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-gray-800">Client Details</h1>
-            <div class="space-x-2">
-                <a href="{{ route('clients.edit', $client->id) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Edit Client
-                </a>
-                <a href="{{ route('clients.view') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                    Back to List
-                </a>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+            <h2 style="font-size: 2rem; font-weight: bold; color: #21807a; display: flex; align-items: center; gap: 10px;">
+                <span class="material-icons" style="font-size: 2rem; vertical-align: middle;">person</span>
+                Client Details
+            </h2>
+            <div style="display: flex; gap: 12px;">
+                <a href="{{ route('clients.edit', $client->id) }}" style="background: #21807a; color: #fff; font-weight: 600; border-radius: 8px; padding: 10px 24px; text-decoration: none;">Edit Client</a>
+                <a href="{{ route('clients.view') }}" style="background: #5fd1b3; color: #fff; font-weight: 600; border-radius: 8px; padding: 10px 24px; text-decoration: none;">Back to List</a>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div style="display: flex; flex-direction: column; gap: 24px;">
             <!-- Personal Information -->
-            <div class="space-y-4">
-                <h2 class="text-xl font-semibold text-gray-700">Personal Information</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <p class="text-sm text-gray-500">Full Name</p>
-                        <p class="font-medium">{{ $client->clientFirstName }} {{ $client->clientMiddleName }} {{ $client->clientLastName }}</p>
+            <div style="background: #f8fdfa; border-radius: 12px; padding: 24px; margin-bottom: 0;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                    <span class="material-icons" style="color: #21807a;">person</span>
+                    <span style="font-size: 1.2rem; font-weight: 600; color: #21807a;">Personal Information</span>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 32px;">
+                    <div style="flex: 1; min-width: 220px;">
+                        <div style="color: #888;">Full Name</div>
+                        <div style="font-weight: 500;">{{ $client->clientFirstName }} {{ $client->clientMiddleName }} {{ $client->clientLastName }}</div>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Gender</p>
-                        <p class="font-medium">{{ $client->gender->gender_name ?? 'Not specified' }}</p>
+                    <div style="flex: 1; min-width: 120px;">
+                        <div style="color: #888;">Gender</div>
+                        <div style="font-weight: 500;">{{ $client->gender->gender_name ?? 'Not specified' }}</div>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Birthdate</p>
-                        <p class="font-medium">{{ $client->clientBirthdate }}</p>
+                    <div style="flex: 1; min-width: 120px;">
+                        <div style="color: #888;">Birthdate</div>
+                        <div style="font-weight: 500;">{{ $client->clientBirthdate }}</div>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Age</p>
-                        <p class="font-medium">{{ $client->clientAge }}</p>
+                    <div style="flex: 1; min-width: 80px;">
+                        <div style="color: #888;">Age</div>
+                        <div style="font-weight: 500;">{{ $client->clientAge }}</div>
                     </div>
                 </div>
             </div>
 
             <!-- Contact Information -->
-            <div class="space-y-4">
-                <h2 class="text-xl font-semibold text-gray-700">Contact Information</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <p class="text-sm text-gray-500">Address</p>
-                        <p class="font-medium">{{ $client->clientaddress }}</p>
+            <div style="background: #f8fdfa; border-radius: 12px; padding: 24px; margin-bottom: 0;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                    <span class="material-icons" style="color: #21807a;">home</span>
+                    <span style="font-size: 1.2rem; font-weight: 600; color: #21807a;">Contact Information</span>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 32px;">
+                    <div style="flex: 1; min-width: 220px;">
+                        <div style="color: #888;">Address</div>
+                        <div style="font-weight: 500;">{{ $client->clientaddress }}</div>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Guardian</p>
-                        <p class="font-medium">{{ $client->clientguardian }}</p>
+                    <div style="flex: 1; min-width: 120px;">
+                        <div style="color: #888;">Guardian</div>
+                        <div style="font-weight: 500;">{{ $client->clientguardian }}</div>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Guardian Relationship</p>
-                        <p class="font-medium">{{ $client->clientguardianrelationship }}</p>
+                    <div style="flex: 1; min-width: 120px;">
+                        <div style="color: #888;">Guardian Relationship</div>
+                        <div style="font-weight: 500;">{{ $client->clientguardianrelationship }}</div>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Contact Number</p>
-                        <p class="font-medium">{{ $client->guardianphonenumber }}</p>
+                    <div style="flex: 1; min-width: 120px;">
+                        <div style="color: #888;">Contact Number</div>
+                        <div style="font-weight: 500;">{{ $client->guardianphonenumber }}</div>
                     </div>
                 </div>
             </div>
 
             <!-- Case Information -->
-            <div class="space-y-4">
-                <h2 class="text-xl font-semibold text-gray-700">Case Information</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <p class="text-sm text-gray-500">Case Type</p>
-                        <p class="font-medium">{{ $client->case->case_name ?? 'Not specified' }}</p>
+            <div style="background: #f8fdfa; border-radius: 12px; padding: 24px; margin-bottom: 0;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                    <span class="material-icons" style="color: #21807a;">gavel</span>
+                    <span style="font-size: 1.2rem; font-weight: 600; color: #21807a;">Case Information</span>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 32px;">
+                    <div style="flex: 1; min-width: 120px;">
+                        <div style="color: #888;">Case Type</div>
+                        <div style="font-weight: 500;">{{ $client->case->case_name ?? 'Not specified' }}</div>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Status</p>
-                        <p class="font-medium">{{ $client->status->status_name ?? 'Not specified' }}</p>
+                    <div style="flex: 1; min-width: 120px;">
+                        <div style="color: #888;">Status</div>
+                        <div style="font-weight: 500;">{{ $client->status->status_name ?? 'Not specified' }}</div>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Admission Date</p>
-                        <p class="font-medium">{{ $client->clientdateofadmission }}</p>
+                    <div style="flex: 1; min-width: 120px;">
+                        <div style="color: #888;">Admission Date</div>
+                        <div style="font-weight: 500;">{{ $client->clientdateofadmission }}</div>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Location</p>
-                        <p class="font-medium">{{ $client->location->location ?? 'Not specified' }}</p>
+                    <div style="flex: 1; min-width: 120px;">
+                        <div style="color: #888;">Location</div>
+                        <div style="font-weight: 500;">{{ $client->location->location ?? 'Not specified' }}</div>
                     </div>
                 </div>
             </div>
 
             <!-- Additional Information -->
-            <div class="space-y-4">
-                <h2 class="text-xl font-semibold text-gray-700">Additional Information</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <p class="text-sm text-gray-500">Student</p>
-                        <p class="font-medium">{{ $client->isAStudent ? 'Yes' : 'No' }}</p>
+            <div style="background: #f8fdfa; border-radius: 12px; padding: 24px; margin-bottom: 0;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                    <span class="material-icons" style="color: #21807a;">info</span>
+                    <span style="font-size: 1.2rem; font-weight: 600; color: #21807a;">Additional Information</span>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 32px;">
+                    <div style="flex: 1; min-width: 120px;">
+                        <div style="color: #888;">Student</div>
+                        <div style="font-weight: 500;">{{ $client->isAStudent ? 'Yes' : 'No' }}</div>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500">PWD</p>
-                        <p class="font-medium">{{ $client->isAPwd ? 'Yes' : 'No' }}</p>
+                    <div style="flex: 1; min-width: 120px;">
+                        <div style="color: #888;">PWD</div>
+                        <div style="font-weight: 500;">{{ $client->isAPwd ? 'Yes' : 'No' }}</div>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Branch</p>
-                        <p class="font-medium">{{ $client->branch->branchName ?? 'Not specified' }}</p>
+                    <div style="flex: 1; min-width: 120px;">
+                        <div style="color: #888;">Branch</div>
+                        <div style="font-weight: 500;">{{ $client->branch->branchName ?? 'Not specified' }}</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 @endsection 

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('time');
             $table->foreignId('branch_id')->nullable()->references('id')->on('branch')->onDelete('cascade');
             $table->foreignId('judge_id')->nullable()->constrained()->onDelete('cascade');
-            $table->enum('status', ['scheduled', 'completed', 'postponed', 'cancelled']);
+            $table->enum('status', ['scheduled', 'completed', 'postponed', 'cancelled', 'rescheduled']);
             $table->text('notes')->nullable();
             $table->timestamps();
         });
