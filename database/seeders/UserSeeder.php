@@ -10,36 +10,32 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Get the first gender ID
-        $genderId = DB::table('genders')->first()->id;
+        $gender = DB::table('genders')->first();
+        $adminRole = DB::table('user_role')->where('role_name', 'admin')->first();
+        $socialWorkerRole = DB::table('user_role')->where('role_name', 'social worker')->first();
 
-        // Get the admin role ID
-        $adminRoleId = DB::table('user_role')->where('role_name', 'admin')->first()->id;
+        if (!$gender || !$adminRole || !$socialWorkerRole) {
+            throw new \Exception('Missing required seed data: genders or user_role table is empty.');
+        }
 
-        // Create the admin user
         User::create([
             'name' => 'Allyza Faith B. Rodrigo',
             'email' => 'admin@example.com',
-            'password' => bcrypt('12345678'), // Set password to 12345678
-            'role_id' => $adminRoleId,
-            'gender_id' => $genderId,
-            'access_id' => 2, 
+            'password' => bcrypt('12345678'),
+            'role_id' => $adminRole->id,
+            'gender_id' => $gender->id,
+            'access_id' => 2,
             'email_verified_at' => now(),
         ]);
 
         User::create([
             'name' => 'Janno Crisostomo',
             'email' => 'janno@egmail.com',
-            'password' => bcrypt('12345678'), // Set password to 12345678
-            'role_id' => $adminRoleId,
-            'gender_id' => $genderId,
-            'access_id' => 2, 
+            'password' => bcrypt('12345678'),
+            'role_id' => $socialWorkerRole->id,
+            'gender_id' => $gender->id,
+            'access_id' => 2,
             'email_verified_at' => now(),
-        ]); 
-    
-
-        
-
-       
+        ]);
     }
 }

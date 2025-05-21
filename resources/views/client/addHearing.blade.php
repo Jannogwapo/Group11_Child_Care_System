@@ -5,7 +5,7 @@
 @endsection
 @section('content')
     <div class="min-h-screen flex items-center justify-center bg-transparent">
-          <div class="w-full max-w-md bg-white rounded-lg shadow-lg p-10" style="margin: 0 auto;">
+        <div class="w-full max-w-md bg-white rounded-lg shadow-lg p-10" style="margin: 0 auto;">
             <h1 class="text-4xl font-bold mb-10 text-center">Hearing</h1>
             <form action="{{ route('hearings.store') }}" method="POST" class="space-y-6">
                 @csrf
@@ -40,7 +40,9 @@
                     <select name="branch_id" id="branch_id" required class="w-full border border-gray-300 rounded px-4 py-2">
                         <option value="">Select Branch</option>
                         @foreach($branches as $branch)
-                            <option value="{{ $branch->id }}" data-judge-id="{{ $branch->judge_id }}">{{ $branch->branchName }}</option>
+                            <option value="{{ $branch->id }}" data-judge-name="{{ $branch->judgeName }}">
+                                {{ $branch->branchName }}
+                            </option>
                         @endforeach
                     </select>
                     @error('branch_id')
@@ -48,16 +50,8 @@
                     @enderror
                 </div>
                 <div>
-                    <label for="judge_id" class="block text-base font-semibold mb-1">Judge</label>
-                    <select name="judge_id" id="judge_id" required class="w-full border border-gray-300 rounded px-4 py-2" readonly>
-                        <option value="">Select Judge</option>
-                        @foreach($judges as $judge)
-                            <option value="{{ $judge->id }}">{{ $judge->judgeName }}</option>
-                        @endforeach
-                    </select>
-                    @error('judge_id')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                    <label for="judge_name" class="block text-base font-semibold mb-1">Judge</label>
+                    <input type="text" id="judge_name" class="w-full border border-gray-300 rounded px-4 py-2 bg-gray-100" readonly>
                 </div>
                 <div>
                     <label for="status" class="block text-base font-semibold mb-1">Status</label>
@@ -83,25 +77,16 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const branchSelect = document.getElementById('branch_id');
-            const judgeSelect = document.getElementById('judge_id');
+            const judgeNameInput = document.getElementById('judge_name');
 
-            branchSelect.addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                const judgeId = selectedOption.getAttribute('data-judge-id');
-                
-                // Reset judge selection
-                judgeSelect.value = '';
-                
-                if (judgeId) {
-                    // Find and select the corresponding judge
-                    for (let option of judgeSelect.options) {
-                        if (option.value === judgeId) {
-                            option.selected = true;
-                            break;
-                        }
-                    }
-                }
-            });
+            function updateJudge() {
+                const selectedOption = branchSelect.options[branchSelect.selectedIndex];
+                const judgeName = selectedOption.getAttribute('data-judge-name') || '';
+                judgeNameInput.value = judgeName;
+            }
+
+            branchSelect.addEventListener('change', updateJudge);
+            updateJudge();
         });
     </script>
 @endsection

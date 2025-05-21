@@ -10,12 +10,11 @@ return new class extends Migration
     {
         Schema::create('calendar_hearings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('client_id')->nullable()->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('client_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->date('hearing_date');
             $table->string('time');
-            $table->foreignId('branch_id')->nullable()->references('id')->on('branch')->onDelete('cascade');
-            $table->foreignId('judge_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('branch_id')->references('id')->on('branch')->onDelete('cascade');
             $table->enum('status', ['scheduled', 'completed', 'postponed', 'cancelled', 'rescheduled']);
             $table->text('notes')->nullable();
             $table->timestamps();

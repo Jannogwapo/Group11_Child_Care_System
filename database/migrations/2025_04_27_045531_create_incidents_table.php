@@ -13,23 +13,15 @@ return new class extends Migration
     {
         Schema::create('incidents', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
+            $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');            
             $table->string('incident_type');
             $table->text('incident_description')->nullable();
             $table->string('incident_location')->nullable();
             $table->date('incident_date');
-            $table->unsignedBigInteger('client_id')->nullable();
+            $table->foreignId('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->string('incident_image')->nullable();
             $table->timestamps();
 
-            $table->foreign('user_id')
-                ->references('id')
-                ->on('users')
-                ->onDelete('cascade');
-            $table->foreign('client_id')
-                ->references('id')
-                ->on('clients')
-                ->onDelete('cascade');
         });
     }
 

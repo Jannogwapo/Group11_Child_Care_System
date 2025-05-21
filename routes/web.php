@@ -14,6 +14,9 @@ use App\Http\Controllers\AccessController;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Controllers\LogsController;
 
+Route::get('/', function () {
+    return view('welcome');
+});
 // Public Routes
 Route::middleware('guest')->group(function () {
     // Login Routes

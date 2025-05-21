@@ -11,7 +11,6 @@ use App\Models\IsAStudent;
 use App\Models\IsAPwd;
 use App\Models\User;
 use App\Models\Location;
-use App\Models\PhilippineProvince;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
@@ -30,8 +29,7 @@ class AddClient extends Controller
         $isAStudent = IsAStudent::all();
         $isAPwd = IsAPwd::all();
         $locations = Location::all();
-        $provinces = PhilippineProvince::all();
-        return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations', 'provinces'));
+        return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations'));
     }
 
     public function index()
@@ -47,9 +45,9 @@ class AddClient extends Controller
         $isAStudent = IsAStudent::all();
         $isAPwd = IsAPwd::all();
         $locations = Location::all();
-        $provinces = PhilippineProvince::all();
+  
         
-        return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations', 'provinces'));
+        return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations'));
     }
 
     public function create()
@@ -65,9 +63,9 @@ class AddClient extends Controller
         $isAStudent = IsAStudent::all();
         $isAPwd = IsAPwd::all();
         $locations = Location::all();
-        $provinces = PhilippineProvince::all();
+
         
-        return view('client/addClient', compact('cases', 'genders', 'status', 'isAStudent', 'isAPwd', 'locations', 'provinces'));
+        return view('client/addClient', compact('cases', 'genders', 'status', 'isAStudent', 'isAPwd', 'locations'));
     }
 
     public function store(Request $request)

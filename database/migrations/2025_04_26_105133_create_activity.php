@@ -13,18 +13,13 @@ return new class extends Migration
     {
         Schema::create('activity', function (Blueprint $table) {
             $table->id(); // Primary key
-            $table->unsignedBigInteger('user_id'); // Foreign key for users
+            $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('activity_type');
             $table->string('activity_description');
             $table->string('activity_location');
             $table->date('activity_date');
             $table->string('activity_image')->nullable(); // Store image path or URL
             $table->timestamps();
-
-            $table->foreign('user_id')
-                  ->references('id')
-                  ->on('users')
-                  ->onDelete('cascade');
         });
     }
 

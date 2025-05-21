@@ -10,7 +10,6 @@ use App\Models\Judge;
 use App\Models\Branch;
 use App\Models\Status;
 use Carbon\Carbon;
-use App\Models\CalendarHearing;
 use App\Providers\AuthServiceProvider;
 
 class HearingController extends Controller
@@ -29,24 +28,24 @@ class HearingController extends Controller
 
         // Get all required data from database
         $branches = Branch::orderBy('branchName')->get();
-        $judges = Judge::orderBy('judgeName')->get();
+
         $statuses = Status::orderBy('status_name')->get();
 
-        return view('client.addHearing', compact('clients', 'branches', 'judges', 'statuses'));
+        return view('client.addHearing', compact('clients', 'branches',  'statuses'));
     }
 
     public function store(Request $request)
     {
+        
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
-            'judge_id' => 'required|exists:judges,id',
-            'branch_id' => 'required|exists:branches,id',
+            'branch_id' => 'required|exists:branch,id',
             'hearing_date' => 'required|date',
             'time' => 'required',
             'status' => 'required|in:scheduled,completed,postponed,cancelled,rescheduled',
             'notes' => 'nullable|string'
         ]);
-
+        
         try {
             $validated['user_id'] = auth()->id();
             $hearing = Hearing::create($validated);
@@ -60,6 +59,8 @@ class HearingController extends Controller
                            Carbon::parse($validated['hearing_date'])->format('F j, Y') . ' at ' . 
                            Carbon::parse($validated['time'])->format('g:i A');
             
+
+            
             // Add note to client's profile
             if ($client) {
                 $client->notes()->create([
@@ -69,6 +70,7 @@ class HearingController extends Controller
                     'user_id' => auth()->id()
                 ]);
             }
+            
             
             return redirect()->route('calendar.index')
                            ->with('success', 'Hearing added successfully!')
@@ -86,16 +88,16 @@ class HearingController extends Controller
         $nextMonth = Carbon::parse($currentMonth)->addMonth()->format('Y-m');
 
         // Get all hearings for the current month
-        $hearings = CalendarHearing::whereYear('hearing_date', $currentDate->year)
+        $hearings = Hearing::with(['client', 'judge', 'branch'])
+            ->whereYear('hearing_date', $currentDate->year)
             ->whereMonth('hearing_date', $currentDate->month)
-            ->with(['client', 'judge'])
             ->get()
             ->groupBy(function($hearing) {
                 return $hearing->hearing_date->format('Y-m-d');
             });
 
         // Get all hearings for the list view
-        $allHearings = CalendarHearing::with(['client', 'judge'])
+        $allHearings = Hearing::with(['client', 'judge'])
             ->orderBy('hearing_date', 'asc')
             ->get();
 
@@ -111,7 +113,7 @@ class HearingController extends Controller
 
     public function upcoming()
     {
-        $hearings = CalendarHearing::where('hearing_date', '>=', now())
+        $hearings = Hearing::where('hearing_date', '>=', now())
             ->with(['client', 'judge'])
             ->orderBy('hearing_date', 'asc')
             ->get();
@@ -121,7 +123,7 @@ class HearingController extends Controller
 
     public function completed()
     {
-        $hearings = CalendarHearing::where('hearing_date', '<', now())
+        $hearings = Hearing::where('hearing_date', '<', now())
             ->with(['client', 'judge'])
             ->orderBy('hearing_date', 'desc')
             ->get();
@@ -129,7 +131,7 @@ class HearingController extends Controller
         return view('calendar', compact('hearings'));
     }
 
-    public function edit(CalendarHearing $hearing)
+    public function edit(Hearing $hearing)
     {
         $clients = Client::all();
         $judges = Judge::all();
@@ -137,12 +139,12 @@ class HearingController extends Controller
         return view('client.editHearing', compact('hearing', 'clients', 'judges', 'branches'));
     }
 
-    public function update(Request $request, CalendarHearing $hearing)
+    public function update(Request $request, Hearing $hearing)
     {
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'judge_id' => 'required|exists:judges,id',
-            'branch_id' => 'required|exists:branches,id',
+            'branch_id' => 'required|exists:branch,id',
             'hearing_date' => 'required|date',
             'time' => 'required',
             'status' => 'required|in:scheduled,completed,postponed,cancelled',
@@ -157,7 +159,7 @@ class HearingController extends Controller
         }
     }
 
-    public function destroy(CalendarHearing $hearing)
+    public function destroy(Hearing $hearing)
     {
         try {
             $hearing->delete();
@@ -179,4 +181,4 @@ class HearingController extends Controller
                      ->orderBy('time')
                      ->get();
     }
-} 
+}
