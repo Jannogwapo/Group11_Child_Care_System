@@ -158,5 +158,28 @@ class DashboardController extends Controller
         ];
     }
 
-    
+    public function chart()
+    {
+        if (!Gate::allows('isAdmin')) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+        }
+
+        // Get client statistics by case type
+        $clientStats = [
+            'labels' => Cases::pluck('case_name')->toArray(),
+            'data' => Cases::withCount('clients')->pluck('clients_count')->toArray()
+        ];
+
+        // Get discharge statistics for the last 5 months
+        $dischargeStats = $this->getDischargeStats();
+
+        // Get case status statistics
+        $caseStatusStats = $this->getCaseStatusStats(auth()->user());
+
+        return view('admin.chart', compact(
+            'clientStats',
+            'dischargeStats',
+            'caseStatusStats'
+        ));
+    }
 }

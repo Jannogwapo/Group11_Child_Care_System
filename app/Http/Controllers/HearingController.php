@@ -40,7 +40,7 @@ class HearingController extends Controller
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'judge_id' => 'required|exists:judges,id',
-            'branch_id' => 'required|exists:branches,id',
+            'branch_id' => 'required|exists:branch,id',
             'hearing_date' => 'required|date',
             'time' => 'required',
             'status' => 'required|in:scheduled,completed,postponed,cancelled,rescheduled',
@@ -142,7 +142,7 @@ class HearingController extends Controller
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'judge_id' => 'required|exists:judges,id',
-            'branch_id' => 'required|exists:branches,id',
+            'branch_id' => 'required|exists:branch,id',
             'hearing_date' => 'required|date',
             'time' => 'required',
             'status' => 'required|in:scheduled,completed,postponed,cancelled',
