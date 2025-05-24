@@ -31,7 +31,8 @@ class HearingController extends Controller
 
         $statuses = Status::orderBy('status_name')->get();
 
-        return view('client.addHearing', compact('clients', 'branches',  'statuses'));
+        // Use the correct view for adding a hearing
+        return view('client.addHearing', compact('clients', 'branches', 'statuses'));
     }
 
     public function store(Request $request)
@@ -40,7 +41,7 @@ class HearingController extends Controller
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'branch_id' => 'required|exists:branch,id',
-            'hearing_date' => 'required|date',
+            'hearing_date' => 'required|date|after_or_equal:today',
             'time' => 'required',
             'status' => 'required|in:scheduled,completed,postponed,cancelled,rescheduled',
             'notes' => 'nullable|string'
@@ -73,8 +74,8 @@ class HearingController extends Controller
             
             
             return redirect()->route('calendar.index')
-                           ->with('success', 'Hearing added successfully!')
-                           ->with('notification', $notification);
+                ->with('success', 'Hearing added successfully!')
+                ->with('notification', $notification);
         } catch (\Exception $e) {
             return back()->withInput()->with('error', 'Error adding hearing: ' . $e->getMessage());
         }
@@ -87,17 +88,19 @@ class HearingController extends Controller
         $previousMonth = Carbon::parse($currentMonth)->subMonth()->format('Y-m');
         $nextMonth = Carbon::parse($currentMonth)->addMonth()->format('Y-m');
 
-        // Get all hearings for the current month
+        // Only get hearings for the current month that are today or in the future
         $hearings = Hearing::with(['client', 'judge', 'branch'])
             ->whereYear('hearing_date', $currentDate->year)
             ->whereMonth('hearing_date', $currentDate->month)
+            ->where('hearing_date', '>=', Carbon::today()) // <-- Only upcoming
             ->get()
             ->groupBy(function($hearing) {
                 return $hearing->hearing_date->format('Y-m-d');
             });
 
-        // Get all hearings for the list view
+        // Get all upcoming hearings for the list view
         $allHearings = Hearing::with(['client', 'judge'])
+            ->where('hearing_date', '>=', Carbon::today()) // <-- Only upcoming
             ->orderBy('hearing_date', 'asc')
             ->get();
 
@@ -118,7 +121,18 @@ class HearingController extends Controller
             ->orderBy('hearing_date', 'asc')
             ->get();
 
-        return view('calendar', compact('hearings'));
+        $currentMonth = now()->format('Y-m');
+        $currentDate = now();
+        $previousMonth = now()->copy()->subMonth()->format('Y-m');
+        $nextMonth = now()->copy()->addMonth()->format('Y-m');
+
+        return view('calendar', compact(
+            'hearings',
+            'currentMonth',
+            'currentDate',
+            'previousMonth',
+            'nextMonth'
+        ));
     }
 
     public function completed()
@@ -128,26 +142,47 @@ class HearingController extends Controller
             ->orderBy('hearing_date', 'desc')
             ->get();
 
-        return view('calendar', compact('hearings'));
+        $currentMonth = now()->format('Y-m');
+        $currentDate = now();
+        $previousMonth = now()->copy()->subMonth()->format('Y-m');
+        $nextMonth = now()->copy()->addMonth()->format('Y-m');
+
+        return view('calendar', compact(
+            'hearings',
+            'currentMonth',
+            'currentDate',
+            'previousMonth',
+            'nextMonth'
+        ));
     }
 
     public function edit(Hearing $hearing)
     {
-        $clients = Client::all();
-        $judges = Judge::all();
-        $branches = Branch::all();
-        return view('client.editHearing', compact('hearing', 'clients', 'judges', 'branches'));
+        // Get clients that are in-house and not abandoned
+        $clients = Client::whereHas('location', function($query) {
+            $query->where('location', 'IN-HOUSE');
+        })
+        ->whereHas('status', function($query) {
+            $query->where('status_name', '!=', 'ABANDONED');
+        })
+        ->orderBy('clientLastName')
+        ->get();
+
+        // Get all required data from database
+        $branches = Branch::orderBy('branchName')->get();
+        $statuses = Status::orderBy('status_name')->get();
+
+        return view('client.editHearing', compact('hearing', 'clients', 'branches', 'statuses'));
     }
 
     public function update(Request $request, Hearing $hearing)
     {
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
-            'judge_id' => 'required|exists:judges,id',
             'branch_id' => 'required|exists:branch,id',
             'hearing_date' => 'required|date',
             'time' => 'required',
-            'status' => 'required|in:scheduled,completed,postponed,cancelled',
+            'status' => 'required|in:scheduled,completed,postponed,cancelled,rescheduled',
             'notes' => 'nullable|string',
         ]);
 
@@ -174,7 +209,7 @@ class HearingController extends Controller
         $startOfWeek = Carbon::now()->startOfWeek();
         $endOfWeek = Carbon::now()->endOfWeek();
         
-        return CalendarHearing::whereBetween('hearing_date', [$startOfWeek, $endOfWeek])
+        return Hearing::whereBetween('hearing_date', [$startOfWeek, $endOfWeek])
                      ->where('status', 'scheduled')
                      ->with(['client', 'judge'])
                      ->orderBy('hearing_date')

@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use App\Models\Client;
-use App\Models\CalendarHearing;
+use App\Models\Hearing;
 use App\Models\Activity;
 use App\Models\User;
 use App\Models\Gender;
@@ -58,10 +58,21 @@ class DashboardController extends Controller
         // Get the count of active events
         $activeEvents = Activity::where('activity_date', '>=', now())->count();
 
+        // Get weekly hearings
+        $startOfWeek = Carbon::now()->startOfWeek();
+        $endOfWeek = Carbon::now()->endOfWeek();
+
+        $weeklyHearings = Hearing::whereBetween('hearing_date', [$startOfWeek, $endOfWeek])
+            ->with('client')
+            ->orderBy('hearing_date')
+            ->get();
+
+        $upcomingHearings = Hearing::where('hearing_date', '>=', now())->count();
+
         $data = [
             'myClients' => $clientCount,
             'totalClients' => $totalClients,
-            'myHearings' => CalendarHearing::where('hearing_date', '>=', now())->count(),
+            'myHearings' => Hearing::where('hearing_date', '>=', now())->count(),
             'activeEvents' => $activeEvents, // Pass active events count
             'role' => $role,
             'isAdmin' => Gate::allows('isAdmin'),
@@ -72,7 +83,9 @@ class DashboardController extends Controller
             'previousMonth' => $calendarData['previousMonth'],
             'nextMonth' => $calendarData['nextMonth'],
             'calendarDays' => $calendarData['calendarDays'],
-            'totalUsers' => $totalUsers
+            'totalUsers' => $totalUsers,
+            'weeklyHearings' => $weeklyHearings, // Add weekly hearings to data
+            'upcomingHearings' => $upcomingHearings,
         ];
 
         return view('dashboard', $data);
@@ -142,7 +155,7 @@ class DashboardController extends Controller
         $date = request('month') ? Carbon::createFromFormat('Y-m', request('month')) : now();
         
         // Get all hearings for the month
-        $hearings = CalendarHearing::whereYear('hearing_date', $date->year)
+        $hearings = Hearing::whereYear('hearing_date', $date->year)
             ->whereMonth('hearing_date', $date->month)
             ->pluck('hearing_date')
             ->map(function($date) {
@@ -157,6 +170,4 @@ class DashboardController extends Controller
             'calendarDays' => $hearings
         ];
     }
-
-    
 }

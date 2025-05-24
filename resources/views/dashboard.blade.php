@@ -138,37 +138,19 @@
                     <h5 class="mb-0">Weekly Hearing</h5>
                 </div>
                 <div class="card-body">
-                    <div class="calendar">
-                        <div class="weekdays">
-                            <div>Sun</div>
-                            <div>Mon</div>
-                            <div>Tue</div>
-                            <div>Wed</div>
-                            <div>Thu</div>
-                            <div>Fri</div>
-                            <div>Sat</div>
-                        </div>
-                        <div class="calendar-grid">
-                            <div class="calendar-day other-month">28</div>
-                            <div class="calendar-day other-month">29</div>
-                            <div class="calendar-day other-month">30</div>
-                            <div class="calendar-day other-month">31</div>
-                            <div class="calendar-day">1</div>
-                            <div class="calendar-day">2</div>
-                            <div class="calendar-day">3</div>
-                            <div class="calendar-day">4</div>
-                            <div class="calendar-day">5</div>
-                            <div class="calendar-day active has-event">6</div>
-                            <div class="calendar-day today">7</div>
-                            <div class="calendar-day has-event">8</div>
-                            <div class="calendar-day">9</div>
-                            <div class="calendar-day">10</div>
-                        </div>
-                        
-                        <div class="days-grid" id="calendarDays">
-                            <!-- Days will be populated by JavaScript -->
-                        </div>
-                    </div>
+                    <ul class="list-group">
+                        @forelse($weeklyHearings as $hearing)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    {{ $hearing->hearing_date->format('D, M d') }}:
+                                    {{ $hearing->client->clientLastName }}, {{ $hearing->client->clientFirstName }}
+                                </span>
+                                <span class="badge bg-primary rounded-pill">{{ \Carbon\Carbon::parse($hearing->time)->format('g:i A') }}</span>
+                            </li>
+                        @empty
+                            <li class="list-group-item text-muted">No hearings scheduled this week.</li>
+                        @endforelse
+                    </ul>
                 </div>
             </div>
         </div>

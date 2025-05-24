@@ -23,7 +23,10 @@
                 </div>
                 <div>
                     <label for="hearing_date" class="block text-base font-semibold mb-1">Hearing Date</label>
-                    <input type="date" name="hearing_date" id="hearing_date" required class="w-full border border-gray-300 rounded px-4 py-2">
+                    <input type="date" name="hearing_date" id="hearing_date"
+                           class="form-control"
+                           min="{{ \Carbon\Carbon::now()->format('Y-m-d') }}"
+                           required>
                     @error('hearing_date')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror

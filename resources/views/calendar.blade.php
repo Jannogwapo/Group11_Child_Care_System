@@ -3,6 +3,12 @@
 @section('title', 'Calendar')
 
 @section('content')
+@php
+    $previousMonth = $previousMonth ?? '';
+    $nextMonth = $nextMonth ?? '';
+    $currentMonth = $currentMonth ?? \Carbon\Carbon::now()->format('Y-m');
+    $currentDate = $currentDate ?? \Carbon\Carbon::now();
+@endphp
 <div class="container mx-auto px-4 py-8">
     <!-- Notification Display -->
     @if(session('notification'))
@@ -10,47 +16,16 @@
             <p>{{ session('notification') }}</p>
         </div>
     @endif
-
+@if(auth()->user()->role_id == 2)
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Calendar Hearing</h1>
-        @if(auth()->user()->role_id == 2)
+        
             <a href="{{ route('hearings.create') }}" class="px-4 py-2 rounded-full bg-pink-500 text-black hover:bg-pink-600 ml-auto">
                 Add Hearing
             </a>
-        @endif
-    </div>
-
-    <!-- Upcoming Hearings Widget -->
-    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <h2 class="text-xl font-semibold mb-4">Upcoming Hearings This Week</h2>
-        @php
-            $upcomingHearings = app(App\Http\Controllers\HearingController::class)->getUpcomingHearings();
-        @endphp
-        
-        @if($upcomingHearings->isEmpty())
-            <p class="text-gray-500">No upcoming hearings this week.</p>
-        @else
-            <div class="space-y-4">
-                @foreach($upcomingHearings as $hearing)
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
-                            <p class="font-semibold">{{ $hearing->client->clientLastName }}, {{ $hearing->client->clientFirstName }}</p>
-                            <p class="text-sm text-gray-600">
-                                {{ $hearing->hearing_date->format('F j, Y') }} at {{ Carbon\Carbon::parse($hearing->time)->format('g:i A') }}
-                            </p>
-                            <p class="text-sm text-gray-600">Judge: {{ $hearing->judge->judgeName }}</p>
-                        </div>
-                        <div class="flex space-x-2">
-                            <a href="{{ route('hearings.edit', $hearing) }}" 
-                               class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
-                                Edit
-                            </a>
-                        </div>
-                    </div>
-                @endforeach
             </div>
         @endif
-    </div>
+
 
     <!-- Calendar Section -->
     <div class="bg-white rounded-lg shadow-lg p-6 {{ isset($allHearings) && count($allHearings) > 0 ? 'mb-8' : '' }}">
@@ -103,28 +78,10 @@
                             @if($isCurrentMonth)
                                 <div class="font-semibold mb-2">{{ $currentDay }}</div>
                                 @if(isset($hearings[$date->format('Y-m-d')]))
-                                    <div class="space-y-2">
+                                    <div class="space-y-1 mt-2">
                                         @foreach($hearings[$date->format('Y-m-d')] as $hearing)
-                                            <div class="p-2 rounded {{ $hearing->status === 'cancelled' ? 'bg-red-50' : 'bg-blue-50' }}">
-                                                <div class="text-sm font-medium {{ $hearing->status === 'cancelled' ? 'text-red-600' : 'text-blue-600' }}">
-                                                    {{ $hearing->client->clientLastName }}, {{ $hearing->client->clientFirstName }}
-                                                </div>
-                                                <div class="text-xs text-gray-500">
-                                                    {{ $hearing->time }}
-                                                </div>
-                                                <div class="text-xs text-gray-500">
-                                                    {{ $hearing->judge->name }}
-                                                </div>
-                                                <div class="text-xs mt-1">
-                                                    <span class="px-2 py-1 rounded-full text-xs {{ 
-                                                        $hearing->status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
-                                                        ($hearing->status === 'completed' ? 'bg-green-100 text-green-800' :
-                                                        ($hearing->status === 'postponed' ? 'bg-yellow-100 text-yellow-800' :
-                                                        'bg-red-100 text-red-800'))
-                                                    }}">
-                                                        {{ ucfirst($hearing->status) }}
-                                                    </span>
-                                                </div>
+                                            <div class="p-1 rounded bg-blue-50 text-xs text-gray-800">
+                                                {{ $hearing->client->clientLastName }}, {{ $hearing->client->clientFirstName }}
                                             </div>
                                         @endforeach
                                     </div>
@@ -141,36 +98,39 @@
     <!-- Hearings List Section - Only show if there are hearings -->
     @if(isset($allHearings) && count($allHearings) > 0)
         <div class="bg-white rounded-lg shadow-lg p-6">
-            <h2 class="text-xl font-semibold mb-4">All Hearings</h2>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-800">All Hearings</h2>
+                <span class="text-sm text-gray-600">{{ count($allHearings) }} Total Hearings</span>
+            </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judge</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judge</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($allHearings as $hearing)
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                                     {{ $hearing->hearing_date->format('M d, Y') }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ $hearing->time }}
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                    {{ \Carbon\Carbon::parse($hearing->time)->format('g:i A') }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                                     {{ $hearing->client->clientLastName }}, {{ $hearing->client->clientFirstName }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ $hearing->judge->name }}
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                    {{ $hearing->judge->name ?? 'N/A' }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 rounded-full text-xs {{ 
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="px-2 py-1 text-xs rounded-full {{ 
                                         $hearing->status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
                                         ($hearing->status === 'completed' ? 'bg-green-100 text-green-800' :
                                         ($hearing->status === 'postponed' ? 'bg-yellow-100 text-yellow-800' :
@@ -179,13 +139,15 @@
                                         {{ ucfirst($hearing->status) }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <a href="{{ route('hearings.edit', $hearing) }}" class="text-blue-600 hover:text-blue-900 mr-3">Edit</a>
-                                    <form action="{{ route('hearings.destroy', $hearing) }}" method="POST" class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this hearing?')">Delete</button>
-                                    </form>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm">
+                                    <div class="flex space-x-2">
+                                        <a href="{{ route('hearings.edit', $hearing) }}" class="text-blue-600 hover:text-blue-900">Edit</a>
+                                        <form action="{{ route('hearings.destroy', $hearing) }}" method="POST" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this hearing?')">Delete</button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
@@ -210,4 +172,4 @@
         text-align: center;
     }
 </style>
-@endsection 
+@endsection
