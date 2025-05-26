@@ -3,6 +3,12 @@
 @section('title', 'Calendar')
 
 @section('content')
+@php
+    $previousMonth = $previousMonth ?? '';
+    $nextMonth = $nextMonth ?? '';
+    $currentMonth = $currentMonth ?? \Carbon\Carbon::now()->format('Y-m');
+    $currentDate = $currentDate ?? \Carbon\Carbon::now();
+@endphp
 <div class="container mx-auto px-4 py-8">
     <!-- Notification Display -->
     @if(session('notification'))
@@ -10,47 +16,16 @@
             <p>{{ session('notification') }}</p>
         </div>
     @endif
-
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Calendar Hearing</h1>
-        @if(auth()->user()->role_id == 2)
+        <h1 class="text-2xl font-bold text-gray-800 text-center">Calendar Hearing</h1>
+        @cannot('isAdmin')
+
             <a href="{{ route('hearings.create') }}" class="px-4 py-2 rounded-full bg-pink-500 text-black hover:bg-pink-600 ml-auto">
                 Add Hearing
             </a>
-        @endif
-    </div>
-
-    <!-- Upcoming Hearings Widget -->
-    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <h2 class="text-xl font-semibold mb-4">Upcoming Hearings This Week</h2>
-        @php
-            $upcomingHearings = app(App\Http\Controllers\HearingController::class)->getUpcomingHearings();
-        @endphp
-        
-        @if($upcomingHearings->isEmpty())
-            <p class="text-gray-500">No upcoming hearings this week.</p>
-        @else
-            <div class="space-y-4">
-                @foreach($upcomingHearings as $hearing)
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
-                            <p class="font-semibold">{{ $hearing->client->clientLastName }}, {{ $hearing->client->clientFirstName }}</p>
-                            <p class="text-sm text-gray-600">
-                                {{ $hearing->hearing_date->format('F j, Y') }} at {{ Carbon\Carbon::parse($hearing->time)->format('g:i A') }}
-                            </p>
-                            <p class="text-sm text-gray-600">Judge: {{ $hearing->judge->judgeName }}</p>
-                        </div>
-                        <div class="flex space-x-2">
-                            <a href="{{ route('hearings.edit', $hearing) }}" 
-                               class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
-                                Edit
-                            </a>
-                        </div>
-                    </div>
-                @endforeach
             </div>
-        @endif
-    </div>
+        @endcannot
+
 
     <!-- Calendar Section -->
     <div class="bg-white rounded-lg shadow-lg p-6 {{ isset($allHearings) && count($allHearings) > 0 ? 'mb-8' : '' }}">
@@ -61,11 +36,11 @@
                 </td>
             </tr>
             <tr class="border-b">
-                <td class="py-2">
+                <td class="py-2 text-center">
                     <a href="{{ route('calendar.index', ['month' => $previousMonth]) }}" class="text-blue-500 hover:text-blue-700">&lt;&lt; Prev</a>
                 </td>
                 <th colspan="5" class="text-center text-xl font-semibold">{{ $currentDate->format('F Y') }}</th>
-                <td class="text-right">
+                <td class="text-center">
                     <a href="{{ route('calendar.index', ['month' => $nextMonth]) }}" class="text-blue-500 hover:text-blue-700">Next &gt;&gt;</a>
                 </td>
             </tr>
@@ -99,33 +74,68 @@
                             $date = $isCurrentMonth ? Carbon\Carbon::parse($currentMonth)->day($currentDay) : null;
                         @endphp
                         
-                        <td class="border p-2 min-h-[120px] {{ $isToday ? 'bg-blue-50' : '' }} {{ !$isCurrentMonth ? 'bg-gray-50' : '' }}">
+                        <td class="border p-2 min-h-[120px] {{ $isToday ? 'bg-blue-50' : '' }} {{ !$isCurrentMonth ? 'bg-gray-50' : '' }}"
+                            style="position:relative; cursor:pointer;"
                             @if($isCurrentMonth)
-                                <div class="font-semibold mb-2">{{ $currentDay }}</div>
+                                onclick="showCalendarPopup(event, '{{ $date->format('Y-m-d') }}')"
+                            @endif
+                        >
+                            @if($isCurrentMonth)
+                                <div class="font-semibold mb-2 text-center cursor-pointer" @if($isCurrentMonth) onclick="showCalendarPopup(event, '{{ $date->format('Y-m-d') }}')" @endif>
+                                    {{ $currentDay }}
+                                </div>
                                 @if(isset($hearings[$date->format('Y-m-d')]))
-                                    <div class="space-y-2">
+                                    @php
+                                        $hasUpcoming = false;
+                                        $now = \Carbon\Carbon::now();
+                                        foreach($hearings[$date->format('Y-m-d')] as $hearing) {
+                                            $datePart = $hearing['hearing_date'];
+                                            $timePart = $hearing['time'];
+                                            if (strlen($datePart) > 10) {
+                                                $hearingDateTime = \Carbon\Carbon::parse($datePart);
+                                            } else {
+                                                $hearingDateTime = \Carbon\Carbon::parse($datePart.' '.$timePart);
+                                            }
+                                            // Show the dot if the hearing is today (any time) or in the future
+                                            if ($hearingDateTime->isSameDay($now) || $hearingDateTime->greaterThan($now)) {
+                                                $hasUpcoming = true;
+                                                break;
+                                            }
+                                        }
+                                    @endphp
+                                    @if($hasUpcoming)
+                                        <span style="display:inline-block;
+                                            width:10px;
+                                            height:10px;
+                                            background:#dc3545;
+                                            border-radius:50%;
+                                            position:absolute;
+                                            top:8px;
+                                            right:8px;"></span>
+                                    @endif
+                                    <div class="space-y-1 mt-2">
                                         @foreach($hearings[$date->format('Y-m-d')] as $hearing)
-                                            <div class="p-2 rounded {{ $hearing->status === 'cancelled' ? 'bg-red-50' : 'bg-blue-50' }}">
-                                                <div class="text-sm font-medium {{ $hearing->status === 'cancelled' ? 'text-red-600' : 'text-blue-600' }}">
-                                                    {{ $hearing->client->clientLastName }}, {{ $hearing->client->clientFirstName }}
+                                            @php
+                                                $datePart = $hearing['hearing_date'];
+                                                $timePart = $hearing['time'];
+                                                if (strlen($datePart) > 10) {
+                                                    $hearingDateTime = \Carbon\Carbon::parse($datePart);
+                                                } else {
+                                                    $hearingDateTime = \Carbon\Carbon::parse($datePart.' '.$timePart);
+                                                }
+                                            @endphp
+                                            @if($hearingDateTime->greaterThanOrEqualTo(\Carbon\Carbon::now()))
+                                                <div class="p-1 rounded bg-blue-50 text-xs text-gray-800">
+                                                    <span style="display:inline-block;
+                                                        width:10px;
+                                                        height:10px;
+                                                        background:#dc3545;
+                                                        border-radius:50%;
+                                                        position:absolute;
+                                                        top:8px;
+                                                        right:8px;"></span>
                                                 </div>
-                                                <div class="text-xs text-gray-500">
-                                                    {{ $hearing->time }}
-                                                </div>
-                                                <div class="text-xs text-gray-500">
-                                                    {{ $hearing->judge->name }}
-                                                </div>
-                                                <div class="text-xs mt-1">
-                                                    <span class="px-2 py-1 rounded-full text-xs {{ 
-                                                        $hearing->status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
-                                                        ($hearing->status === 'completed' ? 'bg-green-100 text-green-800' :
-                                                        ($hearing->status === 'postponed' ? 'bg-yellow-100 text-yellow-800' :
-                                                        'bg-red-100 text-red-800'))
-                                                    }}">
-                                                        {{ ucfirst($hearing->status) }}
-                                                    </span>
-                                                </div>
-                                            </div>
+                                            @endif
                                         @endforeach
                                     </div>
                                 @endif
@@ -138,62 +148,13 @@
         </table>
     </div>
 
-    <!-- Hearings List Section - Only show if there are hearings -->
-    @if(isset($allHearings) && count($allHearings) > 0)
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <h2 class="text-xl font-semibold mb-4">All Hearings</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judge</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($allHearings as $hearing)
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ $hearing->hearing_date->format('M d, Y') }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ $hearing->time }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ $hearing->client->clientLastName }}, {{ $hearing->client->clientFirstName }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ $hearing->judge->name }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 rounded-full text-xs {{ 
-                                        $hearing->status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
-                                        ($hearing->status === 'completed' ? 'bg-green-100 text-green-800' :
-                                        ($hearing->status === 'postponed' ? 'bg-yellow-100 text-yellow-800' :
-                                        'bg-red-100 text-red-800'))
-                                    }}">
-                                        {{ ucfirst($hearing->status) }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <a href="{{ route('hearings.edit', $hearing) }}" class="text-blue-600 hover:text-blue-900 mr-3">Edit</a>
-                                    <form action="{{ route('hearings.destroy', $hearing) }}" method="POST" class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this hearing?')">Delete</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    @endif
+    <!-- Hearing Details Modal -->
+
+
+<!-- Calendar Popup -->
+<div id="calendarPopup" class="calendar-popup-modal">
+    <div id="calendarPopupContent"></div>
+</div>
 </div>
 
 <style>
@@ -209,5 +170,143 @@
         font-weight: 600;
         text-align: center;
     }
+    /* Popup container */
+.calendar-popup-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 1000;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.calendar-popup-modal > #calendarPopupContent,
+.calendar-popup-modal > .flex {
+  margin: 0 auto;
+}
+#calendarPopupContent {
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px 24px;
+  min-width: 500px;      /* Increased width */
+  max-width: 98vw;
+  min-height: 120px;
+  max-height: 60vh;
+  overflow-y: auto;
+  box-shadow: 0 2px 32px rgba(0,0,0,0.25);
+}
+.calendar-popup .popup-arrow {
+  position: absolute;
+  top: -10px;
+  left: 30px;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 10px solid #fff;
+  filter: drop-shadow(0 -2px 2px rgba(0,0,0,0.1));
+}
 </style>
-@endsection 
+
+<script>
+    const hearingsData = @json($hearings);
+
+    function showHearings(date) {
+        const modal = document.getElementById('hearingModal');
+        const modalDate = document.getElementById('modalDate');
+        const modalContent = document.getElementById('modalContent');
+        modalDate.textContent = date;
+
+        let content = '';
+        if (hearingsData[date]) {
+            hearingsData[date].forEach(hearing => {
+                content += `
+                    <table class="w-full mb-4">
+                    <tr>
+                    <th class="border p-4 bg-gray-50">
+                        <div><strong>Client:</strong> ${hearing.client.clientLastName}, ${hearing.client.clientFirstName}</div>
+                        <div><strong>Branch:</strong> ${hearing.branch ? hearing.branch.branchName : 'N/A'}</div>
+                        <div><strong>Judge:</strong> ${hearing.branch ? hearing.branch.judgeName : 'N/A'}</div>
+                        <div><strong>Time:</strong> ${hearing.time}</div>
+                        <div><strong>Status:</strong> ${hearing.status}</div>
+                        <div><strong>Notes:</strong> ${hearing.notes ?? ''}</div>
+                    </th>
+                    <th class="border p-4 bg-gray-50 text-right">
+                        <div class="flex space-x-2 mt-2">
+                            <a href="/hearings/${hearing.id}/edit" class="px-3 py-1 bg-blue-500 text-white rounded text-xs">Edit Hearing</a>
+                            <a href="/clients/${hearing.client.id}" class="px-3 py-1 bg-green-500 text-white rounded text-xs">Show Client Details</a>
+                        </div>
+                    </th>
+                    </tr>
+                    </table>
+                `;
+            });
+        } else {
+            content = '<div>No hearings for this date.</div>';
+        }
+        modalContent.innerHTML = content;
+        modal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('hearingModal').classList.add('hidden');
+    }
+
+    function showCalendarPopup(e, date) {
+    const popup = document.getElementById('calendarPopup');
+    const content = document.getElementById('calendarPopupContent');
+    let html = '';
+
+    if (hearingsData[date]) {
+        html += `<table class="w-full mb-4">
+        <tbody>`;
+        hearingsData[date].forEach(hearing => {
+            html += `
+            <tr>
+                <td class="p-4  align-top w-3/4">
+                    <div><strong>Client:</strong> ${hearing.client.clientLastName}, ${hearing.client.clientFirstName}</div>
+                    <div><strong>Branch:</strong> ${hearing.branch ? hearing.branch.branchName : 'N/A'}</div>
+                    <div><strong>Judge:</strong> ${hearing.branch ? hearing.branch.judgeName : 'N/A'}</div>
+                    <div><strong>Time:</strong> ${hearing.time}</div>
+                    <div><strong>Status:</strong> ${hearing.status}</div>
+                    <div><strong>Notes:</strong> ${hearing.notes ?? ''}</div>
+                </td>
+                <td class="p-4  w-1/4 text-right">
+                    <div class="flex flex-col space-y-2 items-end">
+                        <a href="/hearings/${hearing.id}/edit" class="px-3 py-1 bg-blue-500 text-black rounded text-xs w-32 text-center">Edit Hearing</a>
+                        <a href="/clients/${hearing.client.id}" class="px-3 py-1 bg-green-500 text-black rounded text-xs w-32 text-center">Show Client Details</a>
+                    </div>
+                </td>
+            </tr>
+        `;
+        });
+        html += `</tbody></table>`;
+    } else {
+        html = '<div>No hearings for this date.</div>';
+    }
+
+    // Add the Close button at the bottom
+    html += `
+        <div class="flex justify-end space-x-2 mt-4">
+            <button onclick="hideCalendarPopup()" class="px-4 py-2 bg-gray-400 text-white rounded">Close</button>
+        </div>
+    `;
+
+    content.innerHTML = html;
+    popup.style.display = 'flex';
+}
+
+    function hideCalendarPopup() {
+        document.getElementById('calendarPopup').style.display = 'none';
+    }
+
+    // Optional: Hide popup when clicking outside the content
+    document.addEventListener('click', function(event) {
+        const popup = document.getElementById('calendarPopup');
+        const content = document.getElementById('calendarPopupContent');
+        if (popup.style.display === 'flex' && !content.contains(event.target) && !event.target.classList.contains('font-semibold')) {
+            popup.style.display = 'none';
+        }
+    });
+</script>
+@endsection

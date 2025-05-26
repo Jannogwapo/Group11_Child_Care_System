@@ -69,14 +69,17 @@
         <table class="min-w-full bg-white">
             <tbody>
                 @foreach($recentHearings as $hearing)
+                <tr>
                     <th>
-                    <i class="bi bi-calendar-check">
+                        <i class="bi bi-calendar-check"></i>
                     </th>
-                    <td>
-                        <td class="py-2 px-4 border-b">{{ $hearing->hearing_date->format('Y-m-d H:i:s') }}</td>
-                        <td class="py-2 px-4 border-b">{{ $hearing->client->clientFirstName ?? 'N/A' }} {{ $hearing->client->clientLastName ?? '' }}</td>
-                        <td class="py-2 px-4 border-b">{{ $hearing->created_at->format('Y-m-d H:i:s') }}</td>
-                    </td>
+                    <td class="py-2 px-4 border-b">
+    {{ $hearing->hearing_date->format('Y-m-d') }}
+    {{ \Carbon\Carbon::parse($hearing->time)->format('h:i A') }}
+</td>
+                    <td class="py-2 px-4 border-b">Added a Hearing to Client {{ $hearing->client->clientFirstName}} {{ $hearing->client->clientLastName }}</td>
+                    <td class="py-2 px-4 border-b">{{ $hearing->created_at->format('Y-m-d H:i:s') }}</td>
+                </tr>
                 @endforeach
             </tbody>
         </table>
@@ -101,9 +104,8 @@
                         </th>
                         
                         <td>
-                        <p>{{ $event->title }}</p>
-                        <p>{{ $event->start_date->format('Y-m-d H:i:s') }}</p>
-                        
+                            <p>{{ $event->title }}</p>
+                            <p>{{ $event->start_date->format('Y-m-d H:i:s') }}</p>
                         </td>
                         <td class="py-2 px-4 border-b">{{ $event->created_at->format('Y-m-d H:i:s') }}</td>
                     </tr>
@@ -125,20 +127,17 @@
         <table class="min-w-full bg-white">
             <tbody>
                 @foreach($recentIncidents as $incident)
-
                     <tr>
                         <th>
                         <i class="bi bi-calendar-event"></i>
                         </th>
                         <td>
                         <p>{{ $incident->incident_type }}</p>
-                        <p>{{ $incident->created_at->format('Y-m-d H:i:s') }}</p>
-                        
+                        <p>{{ $incident->created_at->format('Y-m-d H:i:s') }}</p>                     
                         </td>
                         <td class="py-2 px-4 border-b">Client Involve: {{ $incident->client->clientFirstName ?? 'None' }} {{ $incident->client->clientLastName ?? '' }}</td>
                         <td class="py-2 px-4 border-b">{{ $incident->created_at->format('Y-m-d H:i:s') }}</td>
                     </tr>
-                
                 @endforeach
             </tbody>
         </table>

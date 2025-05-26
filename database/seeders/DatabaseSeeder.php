@@ -16,17 +16,19 @@ class DatabaseSeeder extends Seeder
 
             // Seed basic tables first
             $this->call([
-                \Database\Seeders\GenderSeeder::class,
-                \Database\Seeders\CasesSeeder::class,
-                \Database\Seeders\StatusSeeder::class,
-                \Database\Seeders\IsAStudentSeeder::class,
-                \Database\Seeders\IsAPwdSeeder::class,
-                \Database\Seeders\UserRoleSeeder::class,
-                \Database\Seeders\AccessLogSeeder::class,
-                \Database\Seeders\UserSeeder::class,
+                GenderSeeder::class,
+                CasesSeeder::class,
+                StatusSeeder::class,
+                IsAStudentSeeder::class,
+                IsAPwdSeeder::class,
+                UserRoleSeeder::class,
+                AccessLogSeeder::class,
+                UserSeeder::class,
                 LocationSeeder::class,
-                \Database\Seeders\PhilippineAddressSeeder::class,
-                \Database\Seeders\ClientSeeder::class,
+                ClientSeeder::class,
+                BranchSeeder::class,
+                
+                
             ]);
 
             // Re-enable foreign key checks

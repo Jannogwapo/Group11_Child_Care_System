@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use App\Models\Client;
-use App\Models\CalendarHearing;
+use App\Models\Hearing;
 use App\Models\Activity;
 use App\Models\User;
 use App\Models\Gender;
@@ -58,10 +58,21 @@ class DashboardController extends Controller
         // Get the count of active events
         $activeEvents = Activity::where('activity_date', '>=', now())->count();
 
+        // Get weekly hearings
+        $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY);
+        $endOfWeek = Carbon::now()->endOfWeek();
+
+        $weeklyHearings = Hearing::whereBetween('hearing_date', [$startOfWeek, $endOfWeek])
+            ->with('client')
+            ->orderBy('hearing_date')
+            ->get();
+
+        $upcomingHearings = Hearing::where('hearing_date', '>=', now())->count();
+
         $data = [
             'myClients' => $clientCount,
             'totalClients' => $totalClients,
-            'myHearings' => CalendarHearing::where('hearing_date', '>=', now())->count(),
+            'myHearings' => Hearing::where('hearing_date', '>=', now())->count(),
             'activeEvents' => $activeEvents, // Pass active events count
             'role' => $role,
             'isAdmin' => Gate::allows('isAdmin'),
@@ -72,9 +83,38 @@ class DashboardController extends Controller
             'previousMonth' => $calendarData['previousMonth'],
             'nextMonth' => $calendarData['nextMonth'],
             'calendarDays' => $calendarData['calendarDays'],
-            'totalUsers' => $totalUsers
+            'totalUsers' => $totalUsers,
+            'weeklyHearings' => $weeklyHearings, // Add weekly hearings to data
+            'upcomingHearings' => $upcomingHearings,
         ];
 
+        // Calculate start of week and days array
+        $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY);
+        $days = [];
+        for ($i = 0; $i < 7; $i++) {
+            $days[] = $startOfWeek->copy()->addDays($i);
+        }
+
+        // Get hearings for the week (adjust model/relation as needed)
+        $now = Carbon::now();
+
+        $weeklyHearings = Hearing::with('client')
+            ->whereBetween('hearing_date', [
+                $days[0]->copy()->startOfDay(),
+                $days[6]->copy()->endOfDay()
+            ])
+            ->whereIn('status', ['pending', 'scheduled'])
+            ->where(function($query) use ($now) {
+                $query->where('hearing_date', '>', $now->toDateString())
+                      ->orWhere(function($q) use ($now) {
+                          $q->where('hearing_date', $now->toDateString())
+                            ->where('time', '>=', $now->format('H:i:s'));
+                      });
+            })
+            ->get();
+
+        $data['startOfWeek'] = $startOfWeek;
+        $data['days'] = $days;
         return view('dashboard', $data);
     }
 
@@ -142,7 +182,7 @@ class DashboardController extends Controller
         $date = request('month') ? Carbon::createFromFormat('Y-m', request('month')) : now();
         
         // Get all hearings for the month
-        $hearings = CalendarHearing::whereYear('hearing_date', $date->year)
+        $hearings = Hearing::whereYear('hearing_date', $date->year)
             ->whereMonth('hearing_date', $date->month)
             ->pluck('hearing_date')
             ->map(function($date) {
@@ -158,28 +198,4 @@ class DashboardController extends Controller
         ];
     }
 
-    public function chart()
-    {
-        if (!Gate::allows('isAdmin')) {
-            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
-        }
-
-        // Get client statistics by case type
-        $clientStats = [
-            'labels' => Cases::pluck('case_name')->toArray(),
-            'data' => Cases::withCount('clients')->pluck('clients_count')->toArray()
-        ];
-
-        // Get discharge statistics for the last 5 months
-        $dischargeStats = $this->getDischargeStats();
-
-        // Get case status statistics
-        $caseStatusStats = $this->getCaseStatusStats(auth()->user());
-
-        return view('admin.chart', compact(
-            'clientStats',
-            'dischargeStats',
-            'caseStatusStats'
-        ));
-    }
 }

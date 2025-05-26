@@ -12,6 +12,7 @@ class Branch extends Model
     protected $fillable = [
         'branchName',
         
+        
     ];
 
     public function clients(): HasMany

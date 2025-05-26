@@ -13,7 +13,6 @@ class Hearing extends Model
 
     protected $fillable = [
         'client_id',
-        'judge_id',
         'branch_id',
         'user_id',
         'hearing_date',
@@ -31,10 +30,6 @@ class Hearing extends Model
         return $this->belongsTo(Client::class);
     }
 
-    public function judge(): BelongsTo
-    {
-        return $this->belongsTo(Judge::class);
-    }
 
     public function branch(): BelongsTo
     {

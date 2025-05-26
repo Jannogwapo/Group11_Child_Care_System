@@ -18,68 +18,22 @@ return new class extends Migration
             $table->string('clientMiddleName')->nullable();
             $table->date('clientBirthdate');
             $table->integer('clientAge'); // Corrected
-            $table->unsignedBigInteger('clientgender');
+            $table->foreignId('clientgender')->references('id')->on('gender')->onDelete('cascade');
             $table->string('clientaddress');
             $table->string('clientguardian');
             $table->string('clientguardianrelationship');
             $table->string('guardianphonenumber'); // Changed from integer to string
-            $table->unsignedBigInteger('case_id'); // Corrected from `int` to `integer`
+            $table->foreignId('case_id')->references('id')->on('case')->onDelete('cascade');
             $table->date('clientdateofadmission');
-            $table->unsignedBigInteger('status_id'); // Corrected from `id` to `unsignedBigInteger`// Corrected
-            $table->unsignedBigInteger('isAStudent'); // Corrected
-            $table->unsignedBigInteger('branch_id') -> nullable();
-            $table->unsignedBigInteger('isAPwd');
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('location_id');
+            $table->foreignId('status_id')->references('id')->on('status')->onDelete('cascade'); // Corrected from `id` to `unsignedBigInteger`// Corrected
+            $table->foreignId('isAStudent')->references('id')->on('isAStudent')->onDelete('cascade');
+            $table->foreignId('branch_id')->nullable()->references('id')->on('branch')->onDelete('cascade');
+            $table->foreignId('isAPwd')->references('id')->on('isAPwd')->onDelete('cascade');
+            $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('location_id')->references('id')->on('location')->onDelete('cascade');
             $table->timestamps();
         });
 
-        // Add foreign key constraints after table creation
-        Schema::table('clients', function (Blueprint $table) {
-            $table->foreign('clientgender')
-                  ->references('id')
-                  ->on('gender')
-                  ->onDelete('cascade');
-
-            $table->foreign('branch_id')
-                  ->references('id')
-                  ->on('branch')
-                  ->onDelete('cascade');
-
-            $table->foreign('user_id')
-                  ->references('id')
-                  ->on('users')
-                  ->onDelete('cascade');
-
-            $table->foreign('case_id')
-                  ->references('id')
-                  ->on('case')
-                  ->onDelete('cascade');
-
-            $table->foreign('status_id')
-                  ->references('id')
-                  ->on('status')
-                  ->onDelete('cascade');
-
-            $table->foreign('isAStudent')
-                  ->references('id')
-                  ->on('isAStudent')
-                  ->onDelete('cascade');
-                  
-            $table->foreign('isAPwd')
-                  ->references('id')
-                  ->on('isAPwd')
-                  ->onDelete('cascade');
-
-            $table->foreign('location_id')
-                  ->references('id')
-                  ->on('location')
-                  ->onDelete('cascade');
-
-        
-
-
-        });
     }
 
     /**

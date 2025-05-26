@@ -5,7 +5,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Client;
 use App\Models\Event;
-use App\Models\CalendarHearing;
+use App\Models\Hearing;
 use App\Models\Incident;
 use Illuminate\Support\Facades\Gate;
 
@@ -29,7 +29,7 @@ class LogsController extends Controller
             : collect();
 
         $recentHearings = $filter === 'all' || $filter === 'hearings'
-            ? CalendarHearing::whereMonth('created_at', $currentMonth)->latest('created_at')->get()
+            ? Hearing::whereMonth('created_at', $currentMonth)->latest('created_at')->get()
             : collect();
 
         $recentEvents = $filter === 'all' || $filter === 'events'

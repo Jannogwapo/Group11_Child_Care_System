@@ -11,17 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('incidents', function (Blueprint $table) {
+        Schema::create('hearings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');            
-            $table->string('incident_type');
-            $table->text('incident_description')->nullable();
-            $table->string('incident_location')->nullable();
-            $table->date('incident_date');
             $table->foreignId('client_id')->references('id')->on('clients')->onDelete('cascade');
-            $table->string('incident_image')->nullable();
+            $table->foreignId('branch_id')->references('id')->on('branches')->onDelete('cascade');
+            $table->date('hearing_date');
+            $table->time('time');
+            $table->string('status');
+            $table->text('notes')->nullable();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
-
         });
     }
 
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('incidents');
+        Schema::dropIfExists('hearings');
     }
 };

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('location', function (Blueprint $table) {
             $table->id();
-            $table->string('location');
+            $table->string('location')->default('IN-HOUSE'); // Location name
             $table->timestamps();
         });
     }

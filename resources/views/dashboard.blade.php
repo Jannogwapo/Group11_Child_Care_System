@@ -30,8 +30,6 @@
     </div>
 </div>
 
-<br>
-<br>
 
     <div class="row">
         <!-- Statistics Cards -->
@@ -77,9 +75,6 @@
         @endcan
     </div>
 
-<br>
-<br>
-
     <!-- Quick Actions -->
     @cannot('isAdmin')
     <div class="row mt-4">
@@ -116,64 +111,87 @@
         </div>
     </div>
     @endcannot
-<br>
-<br>
+
 
     <!-- Statistics Charts (New Section) -->
     <div class="row mt-4">
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">Overall Client</h5>
+                    @can('isAdmin')
+                        <h5 class="mb-0">Overall Client</h5>
+                    @else
+                        <h5 class="mb-0">Your Client Statistics</h5>
+                    @endcan
                 </div>
                 <div class="card-body">
                     <canvas id="overallClientChart"></canvas>
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">Weekly Hearing</h5>
+                    <h5 >Weekly Hearing</h5>
                 </div>
                 <div class="card-body">
-                    <div class="calendar">
-                        <div class="weekdays">
-                            <div>Sun</div>
-                            <div>Mon</div>
-                            <div>Tue</div>
-                            <div>Wed</div>
-                            <div>Thu</div>
-                            <div>Fri</div>
-                            <div>Sat</div>
-                        </div>
-                        <div class="calendar-grid">
-                            <div class="calendar-day other-month">28</div>
-                            <div class="calendar-day other-month">29</div>
-                            <div class="calendar-day other-month">30</div>
-                            <div class="calendar-day other-month">31</div>
-                            <div class="calendar-day">1</div>
-                            <div class="calendar-day">2</div>
-                            <div class="calendar-day">3</div>
-                            <div class="calendar-day">4</div>
-                            <div class="calendar-day">5</div>
-                            <div class="calendar-day active has-event">6</div>
-                            <div class="calendar-day today">7</div>
-                            <div class="calendar-day has-event">8</div>
-                            <div class="calendar-day">9</div>
-                            <div class="calendar-day">10</div>
-                        </div>
-                        
-                        <div class="days-grid" id="calendarDays">
-                            <!-- Days will be populated by JavaScript -->
-                        </div>
+                    <div align="center" class="mb-2">
+                        <strong>
+                            {{ $startOfWeek->format('F') }}{{ $startOfWeek->month != $days[6]->month ? ' – ' . $days[6]->format('F') : '' }}
+                            {{ $startOfWeek->format('Y') }}
+                        </strong>
                     </div>
+                    <table class="table table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th>Mon</th>
+                                <th>Tue</th>
+                                <th>Wed</th>
+                                <th>Thu</th>
+                                <th>Fri</th>
+                                <th>Sat</th>
+                                <th>Sun</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                @foreach($days as $day)
+    <td style="position:relative; cursor:pointer;" onclick="showWeeklyHearingClients('{{ $day->toDateString() }}')">
+        {{ $day->format('j') }}
+        @php
+    $hasHearing = false;
+    $now = \Carbon\Carbon::now();
+    foreach($weeklyHearings as $hearing) {
+        $hearingDateTime = \Carbon\Carbon::parse($hearing->hearing_date->toDateString() . ' ' . $hearing->time);
+        if(
+            $hearing->hearing_date->isSameDay($day) &&
+            in_array($hearing->status, ['pending', 'scheduled']) &&
+            $hearingDateTime->greaterThanOrEqualTo($now)
+        ) {
+            $hasHearing = true;
+            break;
+        }
+    }
+@endphp
+        @if($hasHearing)
+            <span style="display:inline-block;
+                         width:10px;
+                         height:10px;
+                         background:#dc3545;
+                         border-radius:50%;
+                         position:absolute;
+                         top:8px;
+                         right:8px;"></span>
+        @endif
+    </td>
+@endforeach
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        </div>
-
-        <div class="col-md-4">
+            <div class="row mt-4">
+        <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">Discharge Client</h5>
@@ -184,6 +202,25 @@
             </div>
         </div>
     </div>
+        </div>
+        
+    </div>
+ 
+    <div class="modal fade" id="weeklyHearingModal" tabindex="-1" aria-labelledby="weeklyHearingModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="weeklyHearingModalLabel">Hearings for <span id="modalDate"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modalClients">
+        <!-- Client links will be injected here -->
+      </div>
+    </div>
+  </div>
+</div>
+@endcan
+    
 </div>
 @endsection
 
@@ -231,7 +268,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 10px rgba(0, 119, 204, 0.3);
+    box-shadow: 0 4px 10px rgba(0,119,204,0.3);
 }
 
 .greeting-icon i {
@@ -356,11 +393,46 @@
             color: #ccc;
             background-color: #f9f9f9;
         }
+
+    .table thead th {
+        font-size: 15px !important;
+    }
+    
 </style>
 @endsection
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Prepare the data for quick lookup
+    const weeklyHearingsData = @json($weeklyHearings->groupBy(function($h) { return $h->hearing_date->toDateString(); }));
+
+    function showWeeklyHearingClients(date) {
+        const now = new Date();
+        const clients = (weeklyHearingsData[date] || []).filter(h => {
+            if (!['pending', 'scheduled'].includes(h.status)) return false;
+            const hearingDate = new Date(h.hearing_date + 'T' + h.time);
+            return hearingDate >= now;
+        });
+        let html = '';
+        if (clients.length > 0) {
+            clients.forEach(hearing => {
+                html += `<div>
+                    <a href="/clients/${hearing.client.id}" target="_blank">
+                        ${hearing.client.clientLastName}, ${hearing.client.clientFirstName}
+                    </a>
+                </div>`;
+            });
+        } else {
+            html = '<div>No hearings for this date.</div>';
+        }
+        document.getElementById('modalDate').innerText = date;
+        document.getElementById('modalClients').innerHTML = html;
+        // Show the modal (Bootstrap 5)
+        var myModal = new bootstrap.Modal(document.getElementById('weeklyHearingModal'));
+        myModal.show();
+    }
+</script>
 <script>
     const clientStats = @json($clientStats ?? ['labels' => [], 'data' => []]);
     const dischargeStats = @json($dischargeStats ?? ['labels' => [], 'data' => []]);
@@ -414,4 +486,5 @@
     });
 </script>
 @endpush
-@endcan
+
+<!-- Modal for showing clients on a specific date -->
