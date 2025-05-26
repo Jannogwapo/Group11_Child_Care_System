@@ -9,7 +9,7 @@ class Gender extends Model
 {
     use HasFactory;
 
-    protected $table = 'genders'; // Updated to match the migration
+    protected $table = 'gender'; // Updated to match the migration
     protected $fillable = ['gender_name']; // Use the correct column name
 
     /**
