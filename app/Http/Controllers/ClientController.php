@@ -282,13 +282,16 @@ class ClientController extends Controller
 
     public function edit(Client $client)
     {
+        // Prevent admin users from accessing edit functionality
+        if (Gate::allows('isAdmin')) {
+            return redirect()->route('clients.view')->with('error', 'Admin users cannot edit clients.');
+        }
+
         $user = auth()->user();
         
-        // If not admin, check if the client belongs to the user
-        if (!Gate::allows('isAdmin')) {
+        // Check if the client belongs to the user
             if ($client->user_id !== $user->id) {
                 return redirect()->route('clients.view')->with('error', 'You can only edit your own clients.');
-            }
         }
 
         $genders = Gender::all();
@@ -313,13 +316,16 @@ class ClientController extends Controller
 
     public function update(Request $request, Client $client)
     {
+        // Prevent admin users from accessing update functionality
+        if (Gate::allows('isAdmin')) {
+            return redirect()->route('clients.view')->with('error', 'Admin users cannot edit clients.');
+        }
+
         $user = auth()->user();
         
-        // If not admin, check if the client belongs to the user
-        if (!Gate::allows('isAdmin')) {
+        // Check if the client belongs to the user
             if ($client->user_id !== $user->id) {
                 return redirect()->route('clients.view')->with('error', 'You can only edit your own clients.');
-            }
         }
 
         $validated = $request->validate([

@@ -87,7 +87,7 @@ class AddClient extends Controller
             'address' => 'required|string|max:255',
             'guardian' => 'required|string|max:255',
             'guardianRelationship' => 'required|string|max:255',
-            'parentContact' => 'required|string|max:11',
+            'parentContact' => 'nullable|string|max:11',
             'case_id' => 'required|integer|exists:case,id',
             'admissionDate' => 'required|date',
             'status_id' => 'required|integer|exists:status,id',
@@ -98,7 +98,7 @@ class AddClient extends Controller
 
         try {
             // Create a new client
-            Client::create([
+            $client = Client::create([
                 'clientLastName' => $validated['lname'],
                 'clientFirstName' => $validated['fname'],
                 'clientMiddleName' => $validated['mname'] ?? null,
@@ -119,7 +119,19 @@ class AddClient extends Controller
                 'location_id' => $validated['location_id'],
             ]);
 
-            return redirect()->route('clients.view')->with('success', 'Client added successfully!');
+            // Get the location name
+            $location = Location::find($client->location_id);
+            $specialLocations = ['DISCHARGED', 'ESCAPED', 'TRANSFER'];
+            if (in_array(strtoupper($location->location), $specialLocations)) {
+                // Redirect to the location filter
+                $filter = strtoupper($location->location);
+            } else {
+                // Redirect to the case filter (IN-HOUSE logic)
+                $case = Cases::find($client->case_id);
+                $filter = strtoupper($case->case_name);
+            }
+            return redirect()->route('viewClient', ['filter' => $filter])
+                ->with('success', 'Client added successfully!');
         } catch (\Exception $e) {
             return redirect()->route('clients.view')->with('error', 'Error adding client: ' . $e->getMessage());
         }

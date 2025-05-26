@@ -9,7 +9,9 @@
                 Client Details
             </h2>
             <div style="display: flex; gap: 12px;">
+                @cannot('isAdmin')
                 <a href="{{ route('clients.edit', $client->id) }}" style="background: #21807a; color: #fff; font-weight: 600; border-radius: 8px; padding: 10px 24px; text-decoration: none;">Edit Client</a>
+                @endcannot
                 <a href="{{ route('clients.view') }}" style="background: #5fd1b3; color: #fff; font-weight: 600; border-radius: 8px; padding: 10px 24px; text-decoration: none;">Back to List</a>
             </div>
         </div>

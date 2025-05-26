@@ -288,7 +288,7 @@
     // Add the Close button at the bottom
     html += `
         <div class="flex justify-end space-x-2 mt-4">
-            <button onclick="hideCalendarPopup()" class="px-4 py-2 bg-gray-400 text-white rounded">Close</button>
+            <button onclick="hideCalendarPopup()" class="px-4 py-2 bg-sky-400 text-white rounded hover:bg-sky-500">Close</button>
         </div>
     `;
 

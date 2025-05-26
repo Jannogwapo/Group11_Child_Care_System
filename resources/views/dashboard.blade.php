@@ -48,7 +48,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Upcoming Hearings</h5>
                     <h2 class="card-text">{{ $upcomingHearings ?? 0 }}</h2>
-                    <a href="" class="btn btn-sm btn-primary">View Calendar</a>
+                    <a href="{{ route('calendar.index') }}" class="btn btn-sm btn-primary">View Calendar</a>
                 </div>
             </div>
         </div>

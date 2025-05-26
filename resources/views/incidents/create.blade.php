@@ -40,7 +40,7 @@
             </label>
             <div class="event-details">
                 <input type="text" name="incident_type" class="input-text" placeholder="INCIDENT NAME" required>
-                <textarea name="incident_description" class="input-textarea" rows="4" placeholder="DESCRIPTION OF THE INCIDENT" required></textarea>
+                <textarea name="incident_description" class="input-textarea" rows="4" placeholder="DESCRIPTION OF THE INCIDENT (Include client's name in the description)" required></textarea>
             </div>
         </div>
         <div class="form-actions">

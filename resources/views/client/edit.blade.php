@@ -79,7 +79,7 @@
                         <div class="form-group row mb-3">
                             <label for="age" class="col-md-4 col-form-label text-md-right">{{ __('Age') }}</label>
                             <div class="col-md-6">
-                                <input id="age" type="number" class="form-control @error('age') is-invalid @enderror" name="age" value="{{ old('age', $client->clientAge) }}" required>
+                                <input id="age" type="text" class="form-control @error('age') is-invalid @enderror" name="age" value="{{ old('age', $client->clientAge) }}" readonly>
                                 @error('age')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
@@ -246,4 +246,38 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to calculate age
+    function calculateAge(birthdate) {
+        var today = new Date();
+        var birthDate = new Date(birthdate);
+        var age = today.getFullYear() - birthDate.getFullYear();
+        var m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    }
+
+    // Get the birthdate input
+    var birthdateInput = document.getElementById('birthdate');
+    var ageInput = document.getElementById('age');
+
+    // Calculate initial age
+    if (birthdateInput.value) {
+        ageInput.value = calculateAge(birthdateInput.value);
+    }
+
+    // Update age when birthdate changes
+    birthdateInput.addEventListener('change', function() {
+        if (this.value) {
+            ageInput.value = calculateAge(this.value);
+        }
+    });
+});
+</script>
 @endsection
