@@ -197,4 +197,5 @@ class DashboardController extends Controller
             'calendarDays' => $hearings
         ];
     }
+
 }
