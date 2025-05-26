@@ -119,7 +119,6 @@ class HearingController extends Controller
     {
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
-
             'branch_id' => 'required|exists:branch,id',
             'hearing_date' => 'required|date',
             'time' => 'required',
