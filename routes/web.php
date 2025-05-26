@@ -1,5 +1,6 @@
 <?php
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LogInController;
 use App\Http\Controllers\AddClient;
@@ -91,11 +92,12 @@ Route::middleware(['auth'])->group(function () {
         });
 
         Route::middleware(['can:isAdmin'])->group(function () {
-            Route::get('/admin/chart', [DashboardController::class, 'chart'])->name('admin.chart');
+            Route::get('/admin/chart', [ReportController::class, 'report'])->name('admin.report');
             Route::get('/admin/access', [AccessController::class, 'access'])->name('admin.access');
             Route::delete('/admin/access/{user}', [AccessController::class, 'delete'])->name('admin.access.delete');
             Route::get('/admin/logs', [LogsController::class, 'logs'])->name('admin.logs');
             Route::put('/toggle-user/{user}', [AccessController::class, 'toggleUser'])->name('admin.toggle-user');
+            Route::get('/admin/report/download', [ReportController::class, 'downloadInHouse'])->name('admin.report.download');
         });
     
     });

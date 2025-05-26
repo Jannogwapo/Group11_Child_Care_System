@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('hearings', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('client_id');
-            $table->unsignedBigInteger('branch_id');
+            $table->foreignId('client_id')->references('id')->on('clients')->onDelete('cascade');
+            $table->foreignId('branch_id')->references('id')->on('branches')->onDelete('cascade');
             $table->date('hearing_date');
             $table->time('time');
             $table->string('status');
             $table->text('notes')->nullable();
-            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

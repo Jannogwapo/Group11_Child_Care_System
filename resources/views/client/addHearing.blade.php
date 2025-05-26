@@ -57,21 +57,17 @@
                     <input type="text" id="judge_name" class="w-full border border-gray-300 rounded px-4 py-2 bg-gray-100" readonly>
                 </div>
                 <div>
-                    <label for="status" class="block text-base font-semibold mb-1">Status</label>
-                    <select name="status" id="status" required class="w-full border border-gray-300 rounded px-4 py-2">
-                        <option value="">Select Status</option>
-                        <option value="scheduled">Scheduled</option>
-                        <option value="completed">Completed</option>
-                        <option value="postponed">Postponed</option>
-                        <option value="cancelled">Cancelled</option>
-                        <option value="rescheduled">Rescheduled</option>
-                    </select>
-                    @error('status')
+                    <label for="notes" class="block text-base font-semibold mb-1">Notes</label>
+                    <textarea name="notes" id="notes" rows="3"
+                        class="w-full border border-gray-300 rounded px-4 py-2"
+                        placeholder="Enter any notes (optional)">{{ old('notes') }}</textarea>
+                    @error('notes')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
+                
                 <div class="flex justify-end mt-8">
-                    <button type="submit" class="px-6 py-2 bg-primary text-white rounded hover:bg-primary-dark">Save</button>
+                    <button type="submit" class="px-6 py-2 bg-primary text-white rounded hover:bg-primary-dark">Add Hearing</button>
                 </div>
             </form>
         </div>

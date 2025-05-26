@@ -59,7 +59,7 @@ class DashboardController extends Controller
         $activeEvents = Activity::where('activity_date', '>=', now())->count();
 
         // Get weekly hearings
-        $startOfWeek = Carbon::now()->startOfWeek();
+        $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY);
         $endOfWeek = Carbon::now()->endOfWeek();
 
         $weeklyHearings = Hearing::whereBetween('hearing_date', [$startOfWeek, $endOfWeek])
@@ -88,6 +88,33 @@ class DashboardController extends Controller
             'upcomingHearings' => $upcomingHearings,
         ];
 
+        // Calculate start of week and days array
+        $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY);
+        $days = [];
+        for ($i = 0; $i < 7; $i++) {
+            $days[] = $startOfWeek->copy()->addDays($i);
+        }
+
+        // Get hearings for the week (adjust model/relation as needed)
+        $now = Carbon::now();
+
+        $weeklyHearings = Hearing::with('client')
+            ->whereBetween('hearing_date', [
+                $days[0]->copy()->startOfDay(),
+                $days[6]->copy()->endOfDay()
+            ])
+            ->whereIn('status', ['pending', 'scheduled'])
+            ->where(function($query) use ($now) {
+                $query->where('hearing_date', '>', $now->toDateString())
+                      ->orWhere(function($q) use ($now) {
+                          $q->where('hearing_date', $now->toDateString())
+                            ->where('time', '>=', $now->format('H:i:s'));
+                      });
+            })
+            ->get();
+
+        $data['startOfWeek'] = $startOfWeek;
+        $data['days'] = $days;
         return view('dashboard', $data);
     }
 
