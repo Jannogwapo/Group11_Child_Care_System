@@ -19,6 +19,12 @@
                         </div>
                     @endif
 
+                    @if (session('success'))
+                        <div class="alert alert-success">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('clients.update', $client->id) }}">
                         @csrf
                         @method('PATCH')

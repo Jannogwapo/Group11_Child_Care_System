@@ -68,7 +68,7 @@
                     </div>
                     <div style="display: flex; align-items: center; gap: 18px;">
                         <label for="parentContact" style="width: 160px; font-weight: 500;">Parent Contact</label>
-                        <input id="parentContact" type="text" class="form-control @error('parentContact') is-invalid @enderror" name="parentContact" value="{{ old('parentContact') }}" required pattern="[0-9]{11}" maxlength="11" style="flex: 1;">
+                        <input id="parentContact" type="text" class="form-control @error('parentContact') is-invalid @enderror" name="parentContact" value="{{ old('parentContact') }}" pattern="[0-9]{11}" maxlength="11" style="flex: 1;">
                     </div>
                     <div style="display: flex; align-items: center; gap: 18px;">
                         <label for="case_id" style="width: 160px; font-weight: 500;">Case</label>

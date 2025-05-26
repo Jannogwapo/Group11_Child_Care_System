@@ -10,11 +10,13 @@
             </a>
             <div class="header-actions">
                 <h1>{{ $incident->incident_type }}</h1>
-                <form action="{{ route('incidents.destroy', $incident) }}" method="POST" class="delete-form" onsubmit="return confirm('Are you sure you want to delete this incident report?');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="delete-btn">Delete Incident</button>
-                </form>
+                @cannot('isAdmin')
+                    <form action="{{ route('incidents.destroy', $incident) }}" method="POST" class="delete-form" onsubmit="return confirm('Are you sure you want to delete this incident report?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="delete-btn">Delete Incident</button>
+                    </form>
+                @endcannot
             </div>
             <div class="date-badge">{{ \Carbon\Carbon::parse($incident->incident_date)->format('M d, Y') }}</div>
         </div>

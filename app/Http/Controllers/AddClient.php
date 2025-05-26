@@ -87,7 +87,7 @@ class AddClient extends Controller
             'address' => 'required|string|max:255',
             'guardian' => 'required|string|max:255',
             'guardianRelationship' => 'required|string|max:255',
-            'parentContact' => 'required|string|max:11',
+            'parentContact' => 'nullable|string|max:11',
             'case_id' => 'required|integer|exists:case,id',
             'admissionDate' => 'required|date',
             'status_id' => 'required|integer|exists:status,id',

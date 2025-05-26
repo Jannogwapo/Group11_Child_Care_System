@@ -364,20 +364,7 @@ class ClientController extends Controller
                 'location_id' => $validated['location_id']
             ]);
 
-            // Get the new location
-            $newLocation = Location::find($validated['location_id']);
-            
-            // Determine the appropriate filter based on the new location
-            if (in_array($newLocation->location, ['DISCHARGED', 'ESCAPED', 'TRANSFER'])) {
-                // If location is DISCHARGED, ESCAPED, or TRANSFER, use that as the filter
-                $filter = $newLocation->location;
-            } else {
-                // For IN-HOUSE clients, use case type as filter
-                $case = Cases::find($validated['case_id']);
-                $filter = strtoupper($case->case_name);
-            }
-
-            return redirect()->route('clients.view', ['filter' => $filter])->with('success', 'Client updated successfully!');
+            return redirect()->route('clients.edit', $client->id)->with('success', 'Client updated successfully!');
         } catch (\Exception $e) {
             return back()->withInput()->with('error', 'Error updating client: ' . $e->getMessage());
         }
