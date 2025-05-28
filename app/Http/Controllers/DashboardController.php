@@ -60,6 +60,7 @@ class DashboardController extends Controller
         // Get the count of active events (combined activities and incidents)
         $activeEvents = Activity::count() + Incident::count();
 
+
         // Get weekly hearings
         $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY);
         $endOfWeek = Carbon::now()->endOfWeek();
@@ -69,13 +70,13 @@ class DashboardController extends Controller
             ->orderBy('hearing_date')
             ->get();
 
-        $upcomingHearings = Hearing::where('hearing_date', '>=', now())->count();
+        $upcomingHearings = Hearing::where('hearing_date', '>', now())->count();
 
         $data = [
             'myClients' => $clientCount,
             'totalClients' => $totalClients,
             'myHearings' => Hearing::where('hearing_date', '>=', now())->count(),
-            'activeEvents' => $activeEvents, // Pass active events count
+            'activeEvents' => $activeEvents, 
             'role' => $role,
             'isAdmin' => Gate::allows('isAdmin'),
             'clientStats' => $clientStats,

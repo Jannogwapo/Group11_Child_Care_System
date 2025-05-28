@@ -213,6 +213,7 @@
     </header>
 
     <div class="sidebar">
+        @cannot('It')
         <a href="{{ route('dashboard') }}" class="sidebar-button {{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <i class="bi bi-house-door"></i> Dashboard
         </a>
@@ -225,13 +226,15 @@
         <a href="{{ route('events.index') }}" class="sidebar-button {{ request()->routeIs('events.*') ? 'active' : '' }}">
             <i class="bi bi-calendar-event"></i> Events
         </a>
-        @can('isAdmin')
-        <a href="{{ route('admin.report') }}" class="sidebar-button {{ request()->routeIs('admin.chart') ? 'active' : '' }}">
+            @else 
+                   <a href="{{ route('admin.report') }}" class="sidebar-button {{ request()->routeIs('admin.report') ? 'active' : '' }}">
             <i class="bi bi-bar-chart"></i> Reports
         </a>
         <a href="{{ route('admin.access') }}" class="sidebar-button {{ request()->routeIs('admin.access') ? 'active' : '' }}">
             <i class="bi bi-shield-lock"></i> Access
         </a>
+        @endcannot
+        @can('isAdmin')
         <a href="{{ route('admin.logs') }}" class="sidebar-button {{ request()->routeIs('admin.logs') ? 'active' : '' }}">
             <i class="bi bi-journal-text"></i> Logs
         </a>

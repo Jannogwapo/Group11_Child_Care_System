@@ -10,7 +10,7 @@ class AccessController extends Controller
 {
     public function access()
     {
-        if (!Gate::allows('isAdmin')) {
+        if (!Gate::allows('It')) {
             abort(403);
         }
 

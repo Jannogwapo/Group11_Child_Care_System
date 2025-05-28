@@ -18,7 +18,11 @@
             </div>
             <div class="greeting-text">
                 <h2>Welcome, {{ auth()->user()->name }}!</h2>
-                <p class="text-muted">{{ auth()->user()->role_id }}</p>
+                @can('isAdmin')
+                <p class="text-muted">Admin</p>
+                @else
+                <p class="text-muted">Social Worker</p>
+                @endcan
                 @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show">
                         {{ session('success') }}
