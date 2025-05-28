@@ -28,6 +28,8 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
     Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
 });
+Route::get('/admin/report', [\App\Http\Controllers\ReportController::class, 'report'])->name('admin.report.index');
+Route::get('/admin/report/download', [\App\Http\Controllers\ReportController::class, 'downloadInHouse'])->name('admin.report.download');
 
 // Authenticated Routes
 Route::middleware(['auth'])->group(function () {
