@@ -13,7 +13,8 @@
         <!-- Download and Filter: top right -->
         <div class="d-flex align-items-end gap-3 mt-3 mt-md-0">
             <!-- Download Dropdown: right, before filter -->
-            <form method="GET" action="{{ route('admin.report.index') }}" class="d-flex align-items-end gap-2">
+            <!-- FIXED: changed admin.report.index to admin.report -->
+            <form method="GET" action="{{ route('admin.report') }}" class="d-flex align-items-end gap-2">
                 <div>
                     <label for="as_of" class="form-label mb-0">As of Month:</label>
                     <input type="month" name="as_of" id="as_of" class="form-control" value="{{ request('as_of', now()->format('Y-m')) }}">
@@ -56,7 +57,7 @@
         $sortedClients = $inHouseClients->sortBy([
             ['clientLastName', 'asc'],
             ['clientFirstName', 'asc'],
-        ]);
+        ])->values(); // reset keys for correct foreach iteration
     @endphp
     <table class="table table-bordered">
         <thead>

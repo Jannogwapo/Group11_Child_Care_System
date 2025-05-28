@@ -15,6 +15,11 @@ use App\Http\Controllers\AccessController;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Controllers\LogsController;
 
+// IT user only
+Route::middleware(['auth', 'can:It'])->group(function () {
+    Route::get('/admin/report', [ReportController::class, 'report'])->name('admin.report');
+});
+
 Route::get('/', function () {
     
 });
@@ -30,6 +35,7 @@ Route::middleware('guest')->group(function () {
 });
 Route::get('/report', [\App\Http\Controllers\ReportController::class, 'report'])->name('admin.report.index');
 Route::get('/report/download', [\App\Http\Controllers\ReportController::class, 'downloadInHouse'])->name('admin.report.download');
+
 
 // Authenticated Routes
 Route::middleware(['auth'])->group(function () {
