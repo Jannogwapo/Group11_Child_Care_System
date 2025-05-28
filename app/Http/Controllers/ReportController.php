@@ -10,16 +10,41 @@ use PhpOffice\PhpWord\IOFactory;
 
 class ReportController extends Controller
 {
-    public function report()
+    /**
+     * Show the filtered report page for the selected month.
+     * Only clients who were admitted on or before the selected month are included.
+     */
+    public function report(Request $request)
     {
-        $inHouseClients = Client::where('location_id', 1)->get();
-        return view('admin.report', compact('inHouseClients'));
+        // Get the "as of" filter from the request, default to current month
+        $asOf = $request->input('as_of', now()->format('Y-m'));
+        [$year, $month] = explode('-', $asOf);
+
+        // Get the end date of the selected month
+        $endOfMonth = \Carbon\Carbon::createFromDate($year, $month, 1)->endOfMonth()->format('Y-m-d');
+
+        // Clients admitted on or before the end of the selected month
+        $inHouseClients = Client::where('location_id', 1)
+            ->whereDate('clientdateofadmission', '<=', $endOfMonth)
+            ->get();
+
+        return view('admin.report', compact('inHouseClients', 'asOf'));
     }
 
+    /**
+     * Download the in-house clients report for the selected month, with proper filtering and format.
+     */
     public function downloadInHouse(Request $request)
     {
         $format = $request->input('format', 'csv');
-        $inHouseClients = Client::where('location_id', 1)->get();
+        $asOf = $request->input('as_of', now()->format('Y-m'));
+        [$year, $month] = explode('-', $asOf);
+
+        $endOfMonth = \Carbon\Carbon::createFromDate($year, $month, 1)->endOfMonth()->format('Y-m-d');
+
+        $inHouseClients = Client::where('location_id', 1)
+            ->whereDate('clientdateofadmission', '<=', $endOfMonth)
+            ->get();
 
         // CSV Export
         if ($format === 'csv') {
@@ -90,7 +115,7 @@ class ReportController extends Controller
             }
             $html .= '</tbody></table>';
 
-            // Set the correct headers for Excel to open the HTML as a spreadsheet
+            // Set headers for Excel to open the HTML as a spreadsheet
             return response($html, 200)
                 ->header('Content-Type', 'application/vnd.ms-excel')
                 ->header('Content-Disposition', 'attachment; filename="In House Clients.xls"');
