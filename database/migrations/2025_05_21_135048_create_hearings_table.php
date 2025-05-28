@@ -19,6 +19,7 @@ return new class extends Migration
             $table->date('hearing_date');
             $table->time('time');
             $table->string('status');
+            $table->integer('edit_count');
             $table->text('notes')->nullable();
             
             $table->timestamps();

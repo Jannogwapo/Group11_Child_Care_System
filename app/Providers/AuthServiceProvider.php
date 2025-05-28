@@ -13,26 +13,19 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        // Map your models to their policies here
-        // Example: User::class => UserPolicy::class,
+
     ];
 
-    /**
-     * Register services.
-     */
+  
     public function register(): void
     {
-        //
+        
     }
 
-    /**
-     * Bootstrap any authentication / authorization services.
-     */
+
     public function boot(): void
     {
         $this->registerPolicies();
-
-        // Define Gates here
         Gate::define('isAdmin', function ($user) {
             return $user->role_id === 1;
         });

@@ -6,26 +6,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-use App\Http\Controllers\Admin\EventController;
 use App\Providers\AuthServiceProvider;
 
 class LogInController extends Controller
 {
-    /**
-     * Show the login form.
-     */
+    
     public function showLogInForm()
     {
-        // If user is already logged in, redirect to dashboard
         if (Auth::check()) {
             return redirect()->route('dashboard');
         }
         return view('login');
     }
-
-    /**
-     * Handle the login request.
-     */
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -35,31 +27,20 @@ class LogInController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            
-            // Get the authenticated user
             $user = Auth::user();
-            
-            // Check if user has access
             if ($user->access_id === 3) {
                 Auth::logout();
                 return back()->withErrors([
                     'email' => 'Your account has been disabled. Please contact the administrator.',
                 ])->withInput($request->only('email'));
             }
-            
-            // Redirect to dashboard with success message
             return redirect()->route('dashboard')
                 ->with('success', 'Welcome back, ' . $user->name . '!');
         }
-
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ])->withInput($request->only('email'));
     }
-
-    /**
-     * Handle the logout request.
-     */
     public function logout(Request $request)
     {
         Auth::logout();
