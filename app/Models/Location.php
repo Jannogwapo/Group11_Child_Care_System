@@ -15,7 +15,7 @@ class Location extends Model
 
     public function clients(): HasMany
     {
-        return $this->hasMany(Client::class, 'location');
+        return $this->hasMany(Client::class, 'location_id');
     }
     
     

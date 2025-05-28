@@ -29,7 +29,8 @@ class AddClient extends Controller
         $isAStudent = IsAStudent::all();
         $isAPwd = IsAPwd::all();
         $locations = Location::all();
-        return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations'));
+        $userGender = auth()->user()->gender_id;
+        return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations', 'userGender'));
     }
 
     public function index()
@@ -45,9 +46,9 @@ class AddClient extends Controller
         $isAStudent = IsAStudent::all();
         $isAPwd = IsAPwd::all();
         $locations = Location::all();
+        $userGender = auth()->user()->gender_id;
   
-        
-        return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations'));
+        return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations', 'userGender'));
     }
 
     public function create()
@@ -63,9 +64,9 @@ class AddClient extends Controller
         $isAStudent = IsAStudent::all();
         $isAPwd = IsAPwd::all();
         $locations = Location::all();
+        $userGender = auth()->user()->gender_id;
 
-        
-        return view('client/addClient', compact('cases', 'genders', 'status', 'isAStudent', 'isAPwd', 'locations'));
+        return view('client/addClient', compact('cases', 'genders', 'status', 'isAStudent', 'isAPwd', 'locations', 'userGender'));
     }
 
     public function store(Request $request)
@@ -75,6 +76,8 @@ class AddClient extends Controller
             return redirect()->route('clients.view')->with('error', 'Unauthorized access.');
         }
        
+        // Get the user's gender
+        $userGender = auth()->user()->gender_id;
 
         // Validate the form data
         $validated = $request->validate([
@@ -83,11 +86,10 @@ class AddClient extends Controller
             'mname' => 'nullable|string|max:255',
             'birthdate' => 'required|date',
             'age' => 'required|integer',
-            'gender' => 'required|integer|exists:genders,id',
             'address' => 'required|string|max:255',
             'guardian' => 'required|string|max:255',
             'guardianRelationship' => 'required|string|max:255',
-            'parentContact' => 'required|string|max:11',
+            'parentContact' => 'nullable|string|max:11',
             'case_id' => 'required|integer|exists:case,id',
             'admissionDate' => 'required|date',
             'status_id' => 'required|integer|exists:status,id',
@@ -97,18 +99,18 @@ class AddClient extends Controller
         ]);
 
         try {
-            // Create a new client
+            // Create a new client with the user's gender
             Client::create([
                 'clientLastName' => $validated['lname'],
                 'clientFirstName' => $validated['fname'],
                 'clientMiddleName' => $validated['mname'] ?? null,
                 'clientBirthdate' => $validated['birthdate'],
                 'clientAge' => $validated['age'],
-                'clientgender' => $validated['gender'],
+                'clientgender' => $userGender, // Use the user's gender
                 'clientaddress' => $validated['address'],
                 'clientguardian' => $validated['guardian'],
                 'clientguardianrelationship' => $validated['guardianRelationship'],
-                'guardianphonenumber' => $validated['parentContact'],
+                'guardianphonenumber' => $validated['parentContact'] ?? 'N/A', // Set default value if null
                 'case_id' => $validated['case_id'],
                 'clientdateofadmission' => $validated['admissionDate'],
                 'status_id' => $validated['status_id'],
@@ -121,7 +123,7 @@ class AddClient extends Controller
 
             return redirect()->route('clients.view')->with('success', 'Client added successfully!');
         } catch (\Exception $e) {
-            return redirect()->route('clients.view')->with('error', 'Error adding client: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Error adding client: ' . $e->getMessage());
         }
     }
 }

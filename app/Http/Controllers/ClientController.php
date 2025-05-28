@@ -287,7 +287,7 @@ class ClientController extends Controller
         // If not admin, check if the client belongs to the user
         if (!Gate::allows('isAdmin')) {
             if ($client->user_id !== $user->id) {
-                return redirect()->route('clients.view')->with('error', 'You can only edit your own clients.');
+                return redirect()->route('viewClient')->with('error', 'You can only edit your own clients.');
             }
         }
 
@@ -318,7 +318,7 @@ class ClientController extends Controller
         // If not admin, check if the client belongs to the user
         if (!Gate::allows('isAdmin')) {
             if ($client->user_id !== $user->id) {
-                return redirect()->route('clients.view')->with('error', 'You can only edit your own clients.');
+                return redirect()->route('viewClient')->with('error', 'You can only edit your own clients.');
             }
         }
 
@@ -328,56 +328,60 @@ class ClientController extends Controller
             'mname' => 'nullable|string|max:255',
             'birthdate' => 'required|date',
             'age' => 'required|integer',
-            'gender' => 'required|exists:genders,id',
-            'address' => 'required|string',
+            'address' => 'required|string|max:255',
             'guardian' => 'required|string|max:255',
             'guardianRelationship' => 'required|string|max:255',
-            'parentContact' => 'required|string|max:11',
-            'case_id' => 'required|exists:case,id',
+            'parentContact' => 'nullable|string|max:11',
+            'case_id' => 'required|integer|exists:case,id',
             'admissionDate' => 'required|date',
-            'status_id' => 'required|exists:status,id',
-            'isAStudent' => 'required|boolean',
-            'isAPwd' => 'required|boolean',
-            'location_id' => 'required|exists:location,id'
+            'status_id' => 'required|integer|exists:status,id',
+            'isAStudent' => 'required|integer|exists:isAStudent,id',
+            'isAPwd' => 'required|integer|exists:isAPwd,id',
+            'location_id' => 'required|integer|exists:location,id',
         ]);
 
         try {
-            $oldLocationId = $client->location_id;
-            $oldCaseId = $client->case_id;
+            // Get the new location before updating
+            $newLocation = Location::findOrFail($validated['location_id']);
             
+            // Update the client
             $client->update([
                 'clientLastName' => $validated['lname'],
                 'clientFirstName' => $validated['fname'],
-                'clientMiddleName' => $validated['mname'],
+                'clientMiddleName' => $validated['mname'] ?? null,
                 'clientBirthdate' => $validated['birthdate'],
                 'clientAge' => $validated['age'],
-                'clientgender' => $validated['gender'],
                 'clientaddress' => $validated['address'],
                 'clientguardian' => $validated['guardian'],
                 'clientguardianrelationship' => $validated['guardianRelationship'],
-                'guardianphonenumber' => $validated['parentContact'],
+                'guardianphonenumber' => $validated['parentContact'] ?? 'N/A',
                 'case_id' => $validated['case_id'],
                 'clientdateofadmission' => $validated['admissionDate'],
                 'status_id' => $validated['status_id'],
                 'isAStudent' => $validated['isAStudent'],
                 'isAPwd' => $validated['isAPwd'],
-                'location_id' => $validated['location_id']
+                'location_id' => $validated['location_id'],
             ]);
 
-            // Get the new location
-            $newLocation = Location::find($validated['location_id']);
-            
-            // Determine the appropriate filter based on the new location
-            if (in_array($newLocation->location, ['DISCHARGED', 'ESCAPED', 'TRANSFER'])) {
-                // If location is DISCHARGED, ESCAPED, or TRANSFER, use that as the filter
-                $filter = $newLocation->location;
-            } else {
-                // For IN-HOUSE clients, use case type as filter
-                $case = Cases::find($validated['case_id']);
-                $filter = strtoupper($case->case_name);
+            // Refresh the client model to get the updated relationships
+            $client->refresh();
+
+            // Determine where to redirect based on the new location
+            if (in_array($newLocation->location, ['DISCHARGED', 'ESCAPED'])) {
+                return redirect()->route('viewClient', ['filter' => $newLocation->location])
+                    ->with('success', 'Client updated successfully!');
             }
 
-            return redirect()->route('clients.view', ['filter' => $filter])->with('success', 'Client updated successfully!');
+            if ($newLocation->location === 'IN-HOUSE') {
+                $case = Cases::findOrFail($validated['case_id']);
+                return redirect()->route('viewClient', ['filter' => $case->case_name])
+                    ->with('success', 'Client updated successfully!');
+            }
+
+            // For any other location (like TRANSFER)
+            return redirect()->route('viewClient', ['filter' => $newLocation->location])
+                ->with('success', 'Client updated successfully!');
+
         } catch (\Exception $e) {
             return back()->withInput()->with('error', 'Error updating client: ' . $e->getMessage());
         }

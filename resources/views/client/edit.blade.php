@@ -19,6 +19,12 @@
                         </div>
                     @endif
 
+                    @if (session('success'))
+                        <div class="alert alert-success">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('clients.update', $client->id) }}">
                         @csrf
                         @method('PATCH')
@@ -53,7 +59,7 @@
                         <div class="form-group row mb-3">
                             <label for="mname" class="col-md-4 col-form-label text-md-right">{{ __('Middle Name') }}</label>
                             <div class="col-md-6">
-                                <input id="mname" type="text" class="form-control @error('mname') is-invalid @enderror" name="mname" value="{{ old('mname', $client->clientMiddleName) }}" required>
+                                <input id="mname" type="text" class="form-control @error('mname') is-invalid @enderror" name="mname" value="{{ old('mname', $client->clientMiddleName) }}">
                                 @error('mname')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
@@ -79,7 +85,7 @@
                         <div class="form-group row mb-3">
                             <label for="age" class="col-md-4 col-form-label text-md-right">{{ __('Age') }}</label>
                             <div class="col-md-6">
-                                <input id="age" type="number" class="form-control @error('age') is-invalid @enderror" name="age" value="{{ old('age', $client->clientAge) }}" required>
+                                <input id="age" type="text" class="form-control @error('age') is-invalid @enderror" name="age" value="{{ old('age', $client->clientAge) }}" readonly>
                                 @error('age')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
@@ -92,19 +98,11 @@
                         <div class="form-group row mb-3">
                             <label for="gender" class="col-md-4 col-form-label text-md-right">{{ __('Gender') }}</label>
                             <div class="col-md-6">
-                                <select id="gender" class="form-control @error('gender') is-invalid @enderror" name="gender" required>
-                                    <option value="">Select Gender</option>
-                                    @foreach($genders as $gender)
-                                        <option value="{{ $gender->id }}" {{ (old('gender', $client->gender_id) == $gender->id) ? 'selected' : '' }}>
-                                            {{ $gender->gender_name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('gender')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+                                @php
+                                    $clientGender = \App\Models\Gender::find($client->clientgender);
+                                @endphp
+                                <input type="text" class="form-control" value="{{ $clientGender ? $clientGender->gender_name : '' }}" readonly>
+                                <input type="hidden" name="gender" value="{{ $clientGender ? $clientGender->id : '' }}">
                             </div>
                         </div>
 
@@ -151,7 +149,7 @@
                         <div class="form-group row mb-3">
                             <label for="parentContact" class="col-md-4 col-form-label text-md-right">{{ __('Parent Contact') }}</label>
                             <div class="col-md-6">
-                                <input id="parentContact" type="text" class="form-control @error('parentContact') is-invalid @enderror" name="parentContact" value="{{ old('parentContact', $client->guardianphonenumber) }}" required>
+                                <input id="parentContact" type="text" class="form-control @error('parentContact') is-invalid @enderror" name="parentContact" value="{{ old('parentContact', $client->guardianphonenumber) }}" pattern="[0-9]{11}" maxlength="11" placeholder="Enter 11-digit number or leave blank">
                                 @error('parentContact')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>

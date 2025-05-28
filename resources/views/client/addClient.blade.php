@@ -47,12 +47,13 @@
                     </div>
                     <div style="display: flex; align-items: center; gap: 18px;">
                         <label for="gender" style="width: 160px; font-weight: 500;">Gender</label>
-                        <select id="gender" class="form-control @error('gender') is-invalid @enderror" name="gender" required style="flex: 1;">
-                            <option value="">Select Gender</option>
-                            @foreach($genders as $gender)
-                                <option value="{{ $gender->id }}" {{ old('gender') == $gender->id ? 'selected' : '' }}>{{ $gender->gender_name }}</option>
-                            @endforeach
-                        </select>
+                        <div style="flex: 1;">
+                            @php
+                                $userGender = \App\Models\Gender::find($userGender);
+                            @endphp
+                            <input type="text" class="form-control" value="{{ $userGender->gender_name }}" readonly>
+                            <input type="hidden" name="gender" value="{{ $userGender->id }}">
+                        </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 18px;">
                         <label for="address" style="width: 160px; font-weight: 500;">Address</label>
@@ -67,8 +68,8 @@
                         <input id="guardianRelationship" type="text" class="form-control @error('guardianRelationship') is-invalid @enderror" name="guardianRelationship" value="{{ old('guardianRelationship') }}" required style="flex: 1;">
                     </div>
                     <div style="display: flex; align-items: center; gap: 18px;">
-                        <label for="parentContact" style="width: 160px; font-weight: 500;">Parent Contact</label>
-                        <input id="parentContact" type="text" class="form-control @error('parentContact') is-invalid @enderror" name="parentContact" value="{{ old('parentContact') }}" required pattern="[0-9]{11}" maxlength="11" style="flex: 1;">
+                        <label for="parentContact" style="width: 160px; font-weight: 500;">Phone Number</label>
+                        <input id="parentContact" type="text" class="form-control @error('parentContact') is-invalid @enderror" name="parentContact" value="{{ old('parentContact') }}" pattern="[0-9]{11}" maxlength="11" style="flex: 1;">
                     </div>
                     <div style="display: flex; align-items: center; gap: 18px;">
                         <label for="case_id" style="width: 160px; font-weight: 500;">Case</label>

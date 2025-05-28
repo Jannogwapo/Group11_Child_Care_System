@@ -8,7 +8,9 @@
         <div class="report-section">
             <div class="report-header">
                 <h2>ACTIVITY REPORTS</h2>
-                <a href="{{ route('events.create') }}" class="add-btn">ADD EVENTS</a>
+                @cannot('isAdmin')
+                    <a href="{{ route('events.create') }}" class="add-btn">ADD EVENTS</a>
+                @endcannot
             </div>
 
             @forelse($events as $event)
@@ -42,7 +44,9 @@
         <div class="report-section">
             <div class="report-header">
                 <h2>INCIDENT REPORTS</h2>
-                <a href="{{ route('incidents.create') }}" class="add-btn">ADD INCIDENT</a>
+                @cannot('isAdmin')
+                    <a href="{{ route('incidents.create') }}" class="add-btn">ADD INCIDENT</a>
+                @endcannot
             </div>
 
             @forelse($incidents as $incident)

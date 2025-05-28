@@ -10,11 +10,13 @@
             </a>
             <div class="header-actions">
                 <h1>{{ $event->title }}</h1>
-                <form action="{{ route('events.destroy', $event) }}" method="POST" class="delete-form" onsubmit="return confirm('Are you sure you want to delete this event?');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="delete-btn">Delete Event</button>
-                </form>
+                @cannot('isAdmin')
+                    <form action="{{ route('events.destroy', $event) }}" method="POST" class="delete-form" onsubmit="return confirm('Are you sure you want to delete this event?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="delete-btn">Delete Event</button>
+                    </form>
+                @endcannot
             </div>
             <div class="date-badge">{{ \Carbon\Carbon::parse($event->start_date)->format('M d, Y') }}</div>
         </div>

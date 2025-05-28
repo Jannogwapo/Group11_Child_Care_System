@@ -1,8 +1,9 @@
-    <?php
+<?php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,11 +12,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('isAStudent', function (Blueprint $table) {
+        Schema::create('gender', function (Blueprint $table) {
             $table->id();
-            $table->string('status')->unique();
+            $table->string('gender_name');
             $table->timestamps();
         });
+
+        // Insert default gender options
+        DB::table('gender')->insert([
+            ['gender_name' => 'Male'],
+            ['gender_name' => 'Female']
+        ]);
     }
 
     /**
@@ -23,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('isAStudent');
+        Schema::dropIfExists('gender');
     }
-};
+}; 

@@ -14,6 +14,8 @@ use App\Models\Cases;
 use App\Models\Status;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Models\Event;
+use App\Models\Incident;
 
 class DashboardController extends Controller
 {
@@ -55,8 +57,9 @@ class DashboardController extends Controller
         // Get total number of users
         $totalUsers = User::count();
 
-        // Get the count of active events
-        $activeEvents = Activity::count();
+        // Get the count of active events (combined activities and incidents)
+        $activeEvents = Activity::count() + Incident::count();
+
 
         // Get weekly hearings
         $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY);
