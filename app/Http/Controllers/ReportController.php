@@ -9,18 +9,15 @@ use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use Illuminate\Support\Facades\Gate;
 
-
-
 class ReportController extends Controller
 {
-    
-
     public function report(Request $request)
     {
-      
       if (!Gate::allows('It')) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+
         // Get the "as of" filter from the request, default to current month
+
         $asOf = $request->input('as_of', now()->format('Y-m'));
         [$year, $month] = explode('-', $asOf);
 
@@ -34,6 +31,7 @@ class ReportController extends Controller
 
         return view('admin.report', compact('inHouseClients', 'asOf'));
     }
+}
 
     /**
      * Download the in-house clients report for the selected month, with proper filtering and format.

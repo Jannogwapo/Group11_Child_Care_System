@@ -10,7 +10,8 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $gender = DB::table('gender')->first();
+        $gender = DB::table('gender')->where('gender_name', 'male')->first();
+        $genders = DB::table('gender')->where('gender_name', 'female')->first();
         $adminRole = DB::table('user_role')->where('role_name', 'admin')->first();
         $socialWorkerRole = DB::table('user_role')->where('role_name', 'social worker')->first();
         $it = DB::table('user_role')->where('role_name', 'it tech')->first();
@@ -25,6 +26,16 @@ class UserSeeder extends Seeder
             'password' => bcrypt('12345678'),
             'role_id' => $adminRole->id,
             'gender_id' => $gender->id,
+            'access_id' => 2,
+            'email_verified_at' => now(),
+        ]);
+
+        User::create([
+            'name' => 'wends',
+            'email' => 'wends@example.com',
+            'password' => bcrypt('12345678'),
+            'role_id' => $socialWorkerRole->id,
+            'gender_id' => $genders->id,
             'access_id' => 2,
             'email_verified_at' => now(),
         ]);

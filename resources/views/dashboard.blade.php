@@ -35,49 +35,38 @@
 </div>
 
 
-    <div class="row">
-        <!-- Statistics Cards -->
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Total Clients</h5>
-                    <h2 class="card-text">{{ $totalClients ?? 0 }}</h2>
-                    <a href="{{ route('clients.view') }}" class="btn btn-sm btn-primary">View Clients</a>
-                </div>
+<div class="row">
+    <!-- Statistics Cards -->
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Total Clients</h5>
+                <h2 class="card-text">{{ $totalClients ?? 0 }}</h2>
+                <a href="{{ route('clients.view') }}" class="btn btn-sm btn-primary">View Clients</a>
             </div>
         </div>
-
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Upcoming Hearings</h5>
-                    <h2 class="card-text">{{ $upcomingHearings ?? 0 }}</h2>
-                    <a href="{{ route('calendar.index') }}" class="btn btn-sm btn-primary">View Calendar</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Events</h5>
-                    <h2 class="card-text">{{ $activeEvents ?? 0 }}</h2>
-                    <a href="{{ route('events.index') }}" class="btn btn-sm btn-primary">View Events</a>
-                </div>
-            </div>
-        </div>
-        @can('isAdmin')
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">System Users</h5>
-                    <h2 class="card-text">{{ $totalUsers ?? 0 }}</h2>
-                    <a href="{{ route('admin.access') }}" class="btn btn-sm btn-primary">Manage Users</a>
-                </div>
-            </div>
-        </div>
-        @endcan
     </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Upcoming Hearings</h5>
+                <h2 class="card-text">{{ $upcomingHearings ?? 0 }}</h2>
+                <a href="{{ route('calendar.index') }}" class="btn btn-sm btn-primary">View Calendar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Events</h5>
+                <h2 class="card-text">{{ $activeEvents ?? 0 }}</h2>
+                <a href="{{ route('events.index') }}" class="btn btn-sm btn-primary">View Events</a>
+            </div>
+        </div>
+    </div>
+</div>
 
     <!-- Quick Actions -->
     @cannot('isAdmin')
@@ -423,30 +412,39 @@
     const weeklyHearingsData = @json($weeklyHearings->groupBy(function($h) { return $h->hearing_date->toDateString(); }));
 
     function showWeeklyHearingClients(date) {
-        const now = new Date();
-        const clients = (weeklyHearingsData[date] || []).filter(h => {
-            if (!['pending', 'scheduled'].includes(h.status)) return false;
-            const hearingDate = new Date(h.hearing_date + 'T' + h.time);
-            return hearingDate >= now;
-        });
-        let html = '';
-        if (clients.length > 0) {
-            clients.forEach(hearing => {
-                html += `<div>
-                    <a href="/clients/${hearing.client.id}" target="_blank">
-                        ${hearing.client.clientLastName}, ${hearing.client.clientFirstName}
-                    </a>
-                </div>`;
-            });
-        } else {
-            html = '<div>No hearings for this date.</div>';
+    const now = new Date();
+    const hearings = weeklyHearingsData[date] || [];
+    let clients = [];
+
+    hearings.forEach(h => {
+        // Eloquent may serialize dates as objects, so parse accordingly
+        let hearingTime = h.time ? h.time : "00:00:00";
+        let hearingDateStr = typeof h.hearing_date === 'string' ? h.hearing_date : h.hearing_date.date.substr(0, 10);
+        const hearingDateTime = new Date(`${hearingDateStr}T${hearingTime}`);
+
+        if (['pending', 'scheduled'].includes(h.status) && hearingDateTime >= now) {
+            clients.push(h.client);
         }
-        document.getElementById('modalDate').innerText = date;
-        document.getElementById('modalClients').innerHTML = html;
-        // Show the modal (Bootstrap 5)
-        var myModal = new bootstrap.Modal(document.getElementById('weeklyHearingModal'));
-        myModal.show();
+    });
+
+    let html = '';
+    if (clients.length > 0) {
+        clients.forEach(client => {
+            html += `<div>
+                <a href="/clients/${client.id}" target="_blank">
+                    ${client.clientLastName}, ${client.clientFirstName}
+                </a>
+            </div>`;
+        });
+    } else {
+        html = '<div>No hearings for this date.</div>';
     }
+    document.getElementById('modalDate').innerText = date;
+    document.getElementById('modalClients').innerHTML = html;
+    // Show the modal (Bootstrap 5)
+    var myModal = new bootstrap.Modal(document.getElementById('weeklyHearingModal'));
+    myModal.show();
+}
 </script>
 <script>
     const clientStats = @json($clientStats ?? ['labels' => [], 'data' => []]);

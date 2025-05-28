@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Gate;
 use App\Http\Controllers\LogsController;
 
 Route::get('/', function () {
-    return view('welcome');
+    
 });
 // Public Routes
 Route::middleware('guest')->group(function () {
@@ -28,8 +28,8 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
     Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
 });
-Route::get('/admin/report', [\App\Http\Controllers\ReportController::class, 'report'])->name('admin.report.index');
-Route::get('/admin/report/download', [\App\Http\Controllers\ReportController::class, 'downloadInHouse'])->name('admin.report.download');
+Route::get('/report', [\App\Http\Controllers\ReportController::class, 'report'])->name('admin.report.index');
+Route::get('/report/download', [\App\Http\Controllers\ReportController::class, 'downloadInHouse'])->name('admin.report.download');
 
 // Authenticated Routes
 Route::middleware(['auth'])->group(function () {
@@ -94,16 +94,16 @@ Route::middleware(['auth'])->group(function () {
         });
 
         Route::middleware(['can:It'])->group(function () {
-            Route::get('/admin/report', [ReportController::class, 'report'])->name('admin.report');
-            Route::get('/admin/access', [AccessController::class, 'access'])->name('admin.access');
-            Route::delete('/admin/access/{user}', [AccessController::class, 'delete'])->name('admin.access.delete');
+            Route::get('/report', [ReportController::class, 'report'])->name('admin.report');
+            Route::get('/access', [AccessController::class, 'access'])->name('admin.access');
+            Route::delete('/access/{user}', [AccessController::class, 'delete'])->name('admin.access.delete');
             
             Route::put('/toggle-user/{user}', [AccessController::class, 'toggleUser'])->name('admin.toggle-user');
-            Route::get('/admin/report/download', [ReportController::class, 'downloadInHouse'])->name('admin.report.download');
+            Route::get('/report/download', [ReportController::class, 'downloadInHouse'])->name('admin.report.download');
         });
 
         Route::middleware(['can:isAdmin'])->group(function () {
-            Route::get('/admin/logs', [LogsController::class, 'logs'])->name('admin.logs');
+            Route::get('/logs', [LogsController::class, 'logs'])->name('admin.logs');
         });
     
     });

@@ -23,17 +23,14 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
         $role = DB::table('user_role')->where('id', $user->role_id)->value('role_name');
-        
-        // Get client statistics by case type
-        $clientStats = [
-            'labels' => Cases::pluck('case_name')->toArray(),
-            'data' => Cases::withCount('clients')->pluck('clients_count')->toArray()
-        ];
 
-        // Get discharge statistics for the last 5 months
-        $dischargeStats = $this->getDischargeStats();
+        // Get client statistics by case type (filtered for social worker)
+        $clientStats = $this->getClientStats($user);
 
-        // Get case status statistics
+        // Get discharge statistics for the last 5 months (per gender for social worker, overall for admin)
+        $dischargeStats = $this->getDischargeStats($user);
+
+        // Get case status statistics (filtered by gender for social worker)
         $caseStatusStats = $this->getCaseStatusStats($user);
 
         // Get calendar data
@@ -41,17 +38,17 @@ class DashboardController extends Controller
 
         // Initialize client count
         $clientCount = 0;
-        $totalClients = 0; // Initialize total clients as 0
+        $totalClients = 0;
 
         // If user is admin, show total count of all clients
-        if (Gate::allows('isAdmin')) { // Admin role is 1
+        if (Gate::allows('isAdmin')) {
             $clientCount = Client::count();
-            $totalClients = $clientCount; // Only admin gets to see total count
+            $totalClients = $clientCount;
         } 
         // If user is social worker, show only clients with same gender
-        else if (!Gate::allows('isAdmin')) { // Social Worker role is 2
+        else {
             $clientCount = Client::where('clientgender', $user->gender_id)->count();
-            $totalClients = $clientCount; // Social workers only see their gender-matched clients
+            $totalClients = $clientCount;
         }
 
         // Get total number of users
@@ -59,7 +56,6 @@ class DashboardController extends Controller
 
         // Get the count of active events (combined activities and incidents)
         $activeEvents = Activity::count() + Incident::count();
-
 
         // Get weekly hearings
         $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY);
@@ -72,27 +68,7 @@ class DashboardController extends Controller
 
         $upcomingHearings = Hearing::where('hearing_date', '>', now())->count();
 
-        $data = [
-            'myClients' => $clientCount,
-            'totalClients' => $totalClients,
-            'myHearings' => Hearing::where('hearing_date', '>=', now())->count(),
-            'activeEvents' => $activeEvents, 
-            'role' => $role,
-            'isAdmin' => Gate::allows('isAdmin'),
-            'clientStats' => $clientStats,
-            'dischargeStats' => $dischargeStats,
-            'caseStatusStats' => $caseStatusStats,
-            'currentMonth' => $calendarData['currentMonth'],
-            'previousMonth' => $calendarData['previousMonth'],
-            'nextMonth' => $calendarData['nextMonth'],
-            'calendarDays' => $calendarData['calendarDays'],
-            'totalUsers' => $totalUsers,
-            'weeklyHearings' => $weeklyHearings, // Add weekly hearings to data
-            'upcomingHearings' => $upcomingHearings,
-        ];
-
         // Calculate start of week and days array
-        $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY);
         $days = [];
         for ($i = 0; $i < 7; $i++) {
             $days[] = $startOfWeek->copy()->addDays($i);
@@ -116,20 +92,70 @@ class DashboardController extends Controller
             })
             ->get();
 
-        $data['startOfWeek'] = $startOfWeek;
-        $data['days'] = $days;
+        $data = [
+            'myClients' => $clientCount,
+            'totalClients' => $totalClients,
+            'myHearings' => Hearing::where('hearing_date', '>=', now())->count(),
+            'activeEvents' => $activeEvents,
+            'role' => $role,
+            'isAdmin' => Gate::allows('isAdmin'),
+            'clientStats' => $clientStats,
+            'dischargeStats' => $dischargeStats,
+            'caseStatusStats' => $caseStatusStats,
+            'currentMonth' => $calendarData['currentMonth'],
+            'previousMonth' => $calendarData['previousMonth'],
+            'nextMonth' => $calendarData['nextMonth'],
+            'calendarDays' => $calendarData['calendarDays'],
+            'totalUsers' => $totalUsers,
+            'weeklyHearings' => $weeklyHearings,
+            'upcomingHearings' => $upcomingHearings,
+            'startOfWeek' => $startOfWeek,
+            'days' => $days,
+        ];
+
         return view('dashboard', $data);
     }
 
+    /**
+     * Get client statistics by case type.
+     * Admin: all clients by case type.
+     * Social worker: only clients of the same gender by case type.
+     */
+    private function getClientStats($user)
+    {
+        $isAdmin = Gate::allows('isAdmin');
+        $labels = Cases::pluck('case_name')->toArray();
+        $data = [];
+
+        foreach (Cases::all() as $case) {
+            $clientsQuery = $case->clients();
+            if (!$isAdmin) {
+                $clientsQuery->where('clientgender', $user->gender_id);
+            }
+            $data[] = $clientsQuery->count();
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data
+        ];
+    }
+
+    /**
+     * Get case status statistics.
+     * Admin: sees all clients.
+     * Social worker: sees only clients with same gender.
+     */
     private function getCaseStatusStats($user)
     {
+        $isAdmin = Gate::allows('isAdmin');
         $query = Client::query();
-        
-        // If user is a social worker, filter by their gender
-        if (!Gate::allows('isAdmin')) { // Social Worker role is 2
+
+        // If user is not admin (i.e., social worker), filter by their gender
+        if (!$isAdmin) {
             $query->where('clientgender', $user->gender_id);
         }
-        
+
         // Get status counts
         $statusCounts = $query->with('status')
             ->get()
@@ -139,10 +165,10 @@ class DashboardController extends Controller
 
         // Get all possible statuses
         $allStatuses = Status::pluck('status_name')->toArray();
-        
+
         // Initialize data array with all statuses
         $data = array_fill_keys($allStatuses, 0);
-        
+
         // Update with actual counts
         foreach ($statusCounts as $status => $count) {
             $data[$status] = $count;
@@ -154,23 +180,33 @@ class DashboardController extends Controller
         ];
     }
 
-    private function getDischargeStats()
+    /**
+     * Get discharge stats for the last 5 months.
+     * Admin: returns overall discharge count per month.
+     * Social worker: returns discharge count per month, filtered by user's gender.
+     */
+    private function getDischargeStats($user)
     {
+        $isAdmin = Gate::allows('isAdmin');
         $months = collect([]);
         $counts = collect([]);
 
-        // Get last 5 months of discharge data
         for ($i = 4; $i >= 0; $i--) {
             $date = now()->subMonths($i);
             $months->push($date->format('M'));
-            
-            $count = Client::whereHas('location', function($query) {
+
+            $query = Client::whereHas('location', function($query) {
                 $query->where('location', 'DISCHARGED');
             })
             ->whereYear('updated_at', $date->year)
-            ->whereMonth('updated_at', $date->month)
-            ->count();
-                
+            ->whereMonth('updated_at', $date->month);
+
+            // If social worker, filter by gender
+            if (!$isAdmin) {
+                $query->where('clientgender', $user->gender_id);
+            }
+
+            $count = $query->count();
             $counts->push($count);
         }
 
@@ -181,24 +217,35 @@ class DashboardController extends Controller
     }
 
     private function getCalendarData()
-    {
-        $date = request('month') ? Carbon::createFromFormat('Y-m', request('month')) : now();
-        
-        // Get all hearings for the month
-        $hearings = Hearing::whereYear('hearing_date', $date->year)
-            ->whereMonth('hearing_date', $date->month)
-            ->pluck('hearing_date')
-            ->map(function($date) {
-                return Carbon::parse($date)->format('Y-m-d');
-            })
-            ->toArray();
+{
+    $date = request('month') ? Carbon::createFromFormat('Y-m', request('month')) : now();
 
-        return [
-            'currentMonth' => $date->format('F Y'),
-            'previousMonth' => $date->copy()->subMonth()->format('Y-m'),
-            'nextMonth' => $date->copy()->addMonth()->format('Y-m'),
-            'calendarDays' => $hearings
+    // Start and end of the month
+    $startOfMonth = $date->copy()->startOfMonth();
+    $endOfMonth = $date->copy()->endOfMonth();
+
+    // Get all hearings for the month
+    $hearings = Hearing::whereBetween('hearing_date', [$startOfMonth, $endOfMonth])
+        ->get()
+        ->groupBy(function($hearing) {
+            return Carbon::parse($hearing->hearing_date)->format('Y-m-d');
+        });
+
+    // Prepare an array of all days in the month with hearings (if any)
+    $calendarDays = [];
+    for ($day = $startOfMonth->copy(); $day->lte($endOfMonth); $day->addDay()) {
+        $dateStr = $day->format('Y-m-d');
+        $calendarDays[] = [
+            'date' => $dateStr,
+            'hearings' => $hearings->has($dateStr) ? $hearings[$dateStr] : collect()
         ];
     }
 
+    return [
+        'currentMonth' => $date->format('F Y'),
+        'previousMonth' => $date->copy()->subMonth()->format('Y-m'),
+        'nextMonth' => $date->copy()->addMonth()->format('Y-m'),
+        'calendarDays' => $calendarDays
+    ];
+}
 }
