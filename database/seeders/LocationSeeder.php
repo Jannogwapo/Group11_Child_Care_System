@@ -18,6 +18,7 @@ class LocationSeeder extends Seeder
             'IN-HOUSE',
             'ESCAPED',
             'DISCHARGED',
+            'TRANSFER',
         ];
 
         foreach ($locations as $location) {
