@@ -83,26 +83,24 @@
                 <div class="card-header">
                     <h5 class="mb-0">Quick Actions</h5>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ route('clients.create') }}" class="btn btn-primary w-100">
-                                <i class="bi bi-person-plus"></i> Add New Client
+                <div class="card-body py-2">
+                    <div class="row justify-content-between">
+                        <div class="col-md-4 mb-2">
+                            <a href="{{ route('clients.create') }}" class="btn btn-primary w-100 py-1">
+                                <i class="bi bi-person-plus fs-5"></i>
+                                <div class="mt-1 small">Add New Client</div>
                             </a>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ route('hearings.create') }}" class="btn btn-primary w-100">
-                                <i class="bi bi-calendar-plus"></i> Schedule Hearing
+                        <div class="col-md-4 mb-2">
+                            <a href="{{ route('hearings.create') }}" class="btn btn-primary w-100 py-1">
+                                <i class="bi bi-calendar-plus fs-5"></i>
+                                <div class="mt-1 small">Schedule Hearing</div>
                             </a>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ route('events.create') }}" class="btn btn-primary w-100">
-                                <i class="bi bi-calendar-event"></i> Create Event
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ route('admin.logs') }}" class="btn btn-primary w-100">
-                                <i class="bi bi-journal-text"></i> View System Logs
+                        <div class="col-md-4 mb-2">
+                            <a href="{{ route('events.create') }}" class="btn btn-primary w-100 py-1">
+                                <i class="bi bi-calendar-event fs-5"></i>
+                                <div class="mt-1 small">Create Event</div>
                             </a>
                         </div>
                     </div>
@@ -398,6 +396,19 @@
         font-size: 15px !important;
     }
     
+    .btn-skyblue {
+        background: linear-gradient(135deg, #0077CC 0%, #00a8ff 100%);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .btn-skyblue:hover {
+        background: linear-gradient(135deg, #0066b3 0%, #0099e6 100%);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 119, 204, 0.2);
+    }
 </style>
 @endsection
 

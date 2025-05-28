@@ -10,7 +10,7 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $gender = DB::table('genders')->first();
+        $gender = DB::table('gender')->first();
         $adminRole = DB::table('user_role')->where('role_name', 'admin')->first();
         $socialWorkerRole = DB::table('user_role')->where('role_name', 'social worker')->first();
 
