@@ -10,7 +10,13 @@ use App\Providers\AuthServiceProvider;
 
 class LogInController extends Controller
 {
-    
+    protected function redirectTo()
+{
+    if (auth()->user()->can('It')) {
+        return route('admin.report');
+    }
+    return '/'; // Or wherever you want non-IT users to go
+}
     public function showLogInForm()
     {
         if (Auth::check()) {
