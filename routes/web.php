@@ -93,13 +93,17 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/incidents/girl', [EventController::class, 'incidentsGirl'])->name('reports.incidents.girl');
         });
 
-        Route::middleware(['can:isAdmin'])->group(function () {
-            Route::get('/admin/chart', [ReportController::class, 'report'])->name('admin.report');
+        Route::middleware(['can:It'])->group(function () {
+            Route::get('/admin/report', [ReportController::class, 'report'])->name('admin.report');
             Route::get('/admin/access', [AccessController::class, 'access'])->name('admin.access');
             Route::delete('/admin/access/{user}', [AccessController::class, 'delete'])->name('admin.access.delete');
-            Route::get('/admin/logs', [LogsController::class, 'logs'])->name('admin.logs');
+            
             Route::put('/toggle-user/{user}', [AccessController::class, 'toggleUser'])->name('admin.toggle-user');
             Route::get('/admin/report/download', [ReportController::class, 'downloadInHouse'])->name('admin.report.download');
+        });
+
+        Route::middleware(['can:isAdmin'])->group(function () {
+            Route::get('/admin/logs', [LogsController::class, 'logs'])->name('admin.logs');
         });
     
     });

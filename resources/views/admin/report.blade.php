@@ -2,6 +2,7 @@
 @section('title', 'Client Report')
 @section('content')
 
+
 <div class="mb-4">
     <div class="d-flex justify-content-between align-items-end flex-wrap">
         <!-- Header and description: top left -->
@@ -43,6 +44,7 @@
             </div>
             <!-- Filter Form: rightmost -->
         </div>
+
     </div>
 </div>
 

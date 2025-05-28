@@ -7,15 +7,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
+use Illuminate\Support\Facades\Gate;
+
+
 
 class ReportController extends Controller
 {
-    /**
-     * Show the filtered report page for the selected month.
-     * Only clients who were admitted on or before the selected month are included.
-     */
+    
+
     public function report(Request $request)
     {
+      
+      if (!Gate::allows('It')) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         // Get the "as of" filter from the request, default to current month
         $asOf = $request->input('as_of', now()->format('Y-m'));
         [$year, $month] = explode('-', $asOf);
@@ -45,6 +49,7 @@ class ReportController extends Controller
         $inHouseClients = Client::where('location_id', 1)
             ->whereDate('clientdateofadmission', '<=', $endOfMonth)
             ->get();
+
 
         // CSV Export
         if ($format === 'csv') {
@@ -76,6 +81,7 @@ class ReportController extends Controller
                 fclose($handle);
             };
             return Response::stream($callback, 200, $headers);
+
         }
 
         // Excel Export (HTML table, will open in Excel)
@@ -157,6 +163,51 @@ class ReportController extends Controller
                 </tr>';
             }
             $html .= '</tbody></table>';
+
+
+            // Set the correct headers for Excel to open the HTML as a spreadsheet
+            return response($html, 200)
+                ->header('Content-Type', 'application/vnd.ms-excel')
+                ->header('Content-Disposition', 'attachment; filename="In House Clients.xls"');
+        }
+
+        // PDF Export
+        if ($format === 'pdf') {
+            $html = '<h2>In House Clients Report</h2>
+            <table border="1" cellpadding="5" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>Client Name</th>
+                        <th>Gender</th>
+                        <th>Age</th>
+                        <th>Case</th>
+                        <th>Student</th>
+                        <th>Pwd</th>
+                        <th>Admission Date</th>
+                    </tr>
+                </thead>
+                <tbody>';
+            foreach ($inHouseClients as $client) {
+                $age = $client->clientBirthdate ? \Carbon\Carbon::parse($client->clientBirthdate)->age : 'Unknown';
+                $gender = isset($client->gender) && isset($client->gender->gender_name)
+                    ? $client->gender->gender_name
+                    : (($client->clientgender == 1 || strtolower($client->clientgender) == 'male') ? 'Male'
+                    : (($client->clientgender == 2 || strtolower($client->clientgender) == 'female') ? 'Female' : 'Not specified'));
+                $student = ($client->isAStudent == 1 || $client->isAStudent === true || $client->isAStudent === '1') ? 'Yes' : 'No';
+                $pwd = ($client->isAPwd == 1 || $client->isAPwd === true || $client->isAPwd === '1') ? 'Yes' : 'No';
+
+                $html .= '<tr>
+                    <td>' . $client->clientLastName . ', ' . $client->clientFirstName . '</td>
+                    <td>' . $gender . '</td>
+                    <td>' . $age . '</td>
+                    <td>' . ($client->case->case_name ?? 'No Case') . '</td>
+                    <td>' . $student . '</td>
+                    <td>' . $pwd . '</td>
+                    <td>' . $client->clientdateofadmission . '</td>
+                </tr>';
+            }
+            $html .= '</tbody></table>';
+
 
             $mpdf = new \Mpdf\Mpdf();
             $mpdf->WriteHTML($html);
