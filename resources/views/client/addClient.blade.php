@@ -46,7 +46,7 @@
                         <input id="age" type="text" class="form-control @error('age') is-invalid @enderror" name="age" value="{{ old('age') }}" readonly style="flex: 1;">
                     </div>
                     <div style="display: flex; align-items: center; gap: 18px;">
-                        <label for="gender" style="width: 160px; font-weight: 500;">Gender</label>
+                        <label for="gender" style="width: 160px; font-weight: 500;">Sex</label>
                         <div style="flex: 1;">
                             @php
                                 $userGender = \App\Models\Gender::find($userGender);
@@ -94,7 +94,7 @@
                         </select>
                     </div>
                     <div style="display: flex; align-items: center; gap: 18px;">
-                        <label for="isAStudent" style="width: 160px; font-weight: 500;">Is a Student</label>
+                        <label for="isAStudent" style="width: 160px; font-weight: 500;">Student</label>
                         <select id="isAStudent" class="form-control @error('isAStudent') is-invalid @enderror" name="isAStudent" required style="flex: 1;">
                             <option value="">Select Status</option>
                             @foreach($isAStudent as $student)
@@ -105,7 +105,7 @@
                         </select>
                     </div>
                     <div style="display: flex; align-items: center; gap: 18px;">
-                        <label for="isAPwd" style="width: 160px; font-weight: 500;">Is a PWD</label>
+                        <label for="isAPwd" style="width: 160px; font-weight: 500;">PWD</label>
                         <select id="isAPwd" class="form-control @error('isAPwd') is-invalid @enderror" name="isAPwd" required style="flex: 1;">
                             <option value="">Select Status</option>
                             @foreach($isAPwd as $pwd)
@@ -116,7 +116,7 @@
                         </select>
                     </div>
                     <div style="display: flex; align-items: center; gap: 18px;">
-                        <label for="location_id" style="width: 160px; font-weight: 500;">Location</label>
+                        <label for="location_id" style="width: 160px; font-weight: 500;">Remarks</label>
                         <select id="location_id" class="form-control @error('location_id') is-invalid @enderror" name="location_id" required style="flex: 1;">
                             <option value="">Select Location</option>
                             @foreach($locations as $location)

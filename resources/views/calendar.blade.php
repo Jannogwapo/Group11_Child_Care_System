@@ -34,7 +34,7 @@
             Upcoming
         </button>
         <button type="submit" name="filter" value="finished" class="px-4 py-2 rounded {{ request('filter') == 'finished' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800' }}">
-            Finished
+            Completed
         </button>
         <button type="submit" name="filter" value="postponed" class="px-4 py-2 rounded {{ request('filter') == 'postponed' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800' }}">
             Posponed
