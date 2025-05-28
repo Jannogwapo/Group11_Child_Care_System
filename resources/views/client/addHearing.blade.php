@@ -33,7 +33,8 @@
                 </div>
                 <div>
                     <label for="time" class="block text-base font-semibold mb-1">Time</label>
-                    <input type="time" name="time" id="time" required class="w-full border border-gray-300 rounded px-4 py-2">
+                    <input type="time" name="time" id="time" required class="w-full border border-gray-300 rounded px-4 py-2"
+                    min="{{ \Carbon\Carbon::now()->format('H--m-s') }}">
                     @error('time')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror

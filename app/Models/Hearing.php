@@ -18,7 +18,8 @@ class Hearing extends Model
         'hearing_date',
         'time',
         'status',
-        'notes'
+        'notes',
+        'edit_count'
     ];
 
     protected $casts = [

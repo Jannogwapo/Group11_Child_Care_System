@@ -5,7 +5,6 @@
     <div class="flex justify-between items-center mb-8">
         <h1 class="text-2xl font-bold text-gray-800">System Logs</h1>
 
-        <!-- Filter Dropdown -->
         <form method="GET" action="{{ route('admin.logs') }}" class="flex space-x-2">
     <button type="submit" name="filter" value="all" class="px-4 py-2 rounded {{ $filter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
         All
@@ -25,7 +24,6 @@
 </form>
     </div>
 
-    <!-- Display Logs Based on Filter -->
     @if($filter === 'all' || $filter === 'clients')
 
         <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
