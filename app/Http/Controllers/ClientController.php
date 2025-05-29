@@ -284,10 +284,10 @@ class ClientController extends Controller
     {
         $user = auth()->user();
         
-        // If not admin, check if the client belongs to the user
+        // If not admin, allow editing only if the client matches the user's gender
         if (!Gate::allows('isAdmin')) {
-            if ($client->user_id !== $user->id) {
-                return redirect()->route('viewClient')->with('error', 'You can only edit your own clients.');
+            if ($client->clientgender !== $user->gender_id) {
+                return redirect()->route('viewClient')->with('error', 'You can only edit clients of your gender.');
             }
         }
 
@@ -313,77 +313,55 @@ class ClientController extends Controller
 
     public function update(Request $request, Client $client)
     {
-        $user = auth()->user();
-        
-        // If not admin, check if the client belongs to the user
-        if (!Gate::allows('isAdmin')) {
-            if ($client->user_id !== $user->id) {
-                return redirect()->route('viewClient')->with('error', 'You can only edit your own clients.');
-            }
-        }
-
-        $validated = $request->validate([
-            'lname' => 'required|string|max:255',
-            'fname' => 'required|string|max:255',
-            'mname' => 'nullable|string|max:255',
-            'birthdate' => 'required|date',
-            'age' => 'required|integer',
-            'address' => 'required|string|max:255',
-            'guardian' => 'required|string|max:255',
-            'guardianRelationship' => 'required|string|max:255',
-            'parentContact' => 'nullable|string|max:11',
-            'case_id' => 'required|integer|exists:case,id',
-            'admissionDate' => 'required|date',
-            'status_id' => 'required|integer|exists:status,id',
-            'isAStudent' => 'required|integer|exists:isAStudent,id',
-            'isAPwd' => 'required|integer|exists:isAPwd,id',
-            'location_id' => 'required|integer|exists:location,id',
-        ]);
+        // Immediate debugging
+        \Log::info('Update method called for client ID: ' . $client->id);
+        \Log::info('Request data:', $request->all());
 
         try {
-            // Get the new location before updating
-            $newLocation = Location::findOrFail($validated['location_id']);
-            
-            // Update the client
-            $client->update([
-                'clientLastName' => $validated['lname'],
-                'clientFirstName' => $validated['fname'],
-                'clientMiddleName' => $validated['mname'] ?? null,
-                'clientBirthdate' => $validated['birthdate'],
-                'clientAge' => $validated['age'],
-                'clientaddress' => $validated['address'],
-                'clientguardian' => $validated['guardian'],
-                'clientguardianrelationship' => $validated['guardianRelationship'],
-                'guardianphonenumber' => $validated['parentContact'] ?? 'N/A',
-                'case_id' => $validated['case_id'],
-                'clientdateofadmission' => $validated['admissionDate'],
-                'status_id' => $validated['status_id'],
-                'isAStudent' => $validated['isAStudent'],
-                'isAPwd' => $validated['isAPwd'],
-                'location_id' => $validated['location_id'],
-            ]);
+            // Direct update without validation first to test
+            $updateData = [
+                'clientLastName' => $request->input('lname'),
+                'clientFirstName' => $request->input('fname'),
+                'clientMiddleName' => $request->input('mname', ''),
+                'clientBirthdate' => $request->input('birthdate'),
+                'clientAge' => $request->input('age'),
+                'clientaddress' => $request->input('address'),
+                'clientguardian' => $request->input('guardian'),
+                'clientguardianrelationship' => $request->input('guardianRelationship'),
+                'guardianphonenumber' => $request->filled('parentContact') ? $request->input('parentContact') : '',
+                'case_id' => $request->input('case_id'),
+                'clientdateofadmission' => $request->input('admissionDate'),
+                'status_id' => $request->input('status_id'),
+                'location_id' => $request->input('location_id'),
+            ];
 
-            // Refresh the client model to get the updated relationships
-            $client->refresh();
+            \Log::info('Attempting to update with data:', $updateData);
 
-            // Determine where to redirect based on the new location
-            if (in_array($newLocation->location, ['DISCHARGED', 'ESCAPED'])) {
-                return redirect()->route('viewClient', ['filter' => $newLocation->location])
+            // Force update using DB facade
+            $updated = DB::table('clients')
+                ->where('id', $client->id)
+                ->update($updateData);
+
+            \Log::info('Update result:', ['success' => $updated]);
+
+            if ($updated) {
+                return redirect()->route('clients.view')
                     ->with('success', 'Client updated successfully!');
+            } else {
+                return back()
+                    ->withInput()
+                    ->with('error', 'No changes were made to the client record.');
             }
-
-            if ($newLocation->location === 'IN-HOUSE') {
-                $case = Cases::findOrFail($validated['case_id']);
-                return redirect()->route('viewClient', ['filter' => $case->case_name])
-                    ->with('success', 'Client updated successfully!');
-            }
-
-            // For any other location (like TRANSFER)
-            return redirect()->route('viewClient', ['filter' => $newLocation->location])
-                ->with('success', 'Client updated successfully!');
 
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Error updating client: ' . $e->getMessage());
+            \Log::error('Update failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()
+                ->withInput()
+                ->with('error', 'Error updating client: ' . $e->getMessage());
         }
     }
 }

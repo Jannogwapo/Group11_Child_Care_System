@@ -16,15 +16,27 @@
                         @method('DELETE')
                         <button type="submit" class="delete-btn">Delete Incident</button>
                     </form>
+                    <a href="{{ route('incidents.edit', $incident) }}" class="edit-btn">Edit Incident</a>
                 @endcannot
             </div>
             <div class="date-badge">{{ \Carbon\Carbon::parse($incident->incident_date)->format('M d, Y') }}</div>
         </div>
 
         <div class="event-content">
+            @if($incident->images && $incident->images->count())
+                <div class="event-image">
+                    @foreach($incident->images as $img)
+                        <a href="{{ asset('storage/' . $img->image_path) }}" target="_blank">
+                            <img src="{{ asset('storage/' . $img->image_path) }}" alt="Incident Image" style="max-width: 200px; margin: 5px;">
+                        </a>
+                    @endforeach
+                </div>
+            @endif
             @if($incident->incident_image)
                 <div class="event-image">
-                    <img src="{{ asset('storage/' . $incident->incident_image) }}" alt="Incident Image">
+                    <a href="{{ asset('storage/' . $incident->incident_image) }}" target="_blank">
+                        <img src="{{ asset('storage/' . $incident->incident_image) }}" alt="Incident Image">
+                    </a>
                 </div>
             @endif
 
@@ -53,12 +65,6 @@
                             <span class="label">Severity:</span>
                             <span class="value status-badge {{ strtolower($incident->severity_level) }}">{{ $incident->severity_level }}</span>
                         </div>
-                        @if($incident->client)
-                            <div class="info-item">
-                                <span class="label">Client:</span>
-                                <span class="value">{{ $incident->client->first_name }} {{ $incident->client->last_name }}</span>
-                            </div>
-                        @endif
                     </div>
                 </div>
 
@@ -252,6 +258,22 @@
 
 .delete-btn:hover {
     background: #c82333;
+}
+
+.edit-btn {
+    background: #21807a;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+    margin-left: 8px;
+}
+
+.edit-btn:hover {
+    background: #1a6b66;
 }
 </style>
 @endsection
