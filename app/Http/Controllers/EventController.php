@@ -38,7 +38,7 @@ class EventController extends Controller
                 'event_name' => 'required|string|max:255',
                 'description' => 'required|string',
                 'event_date' => 'required|date',
-                'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'pictures.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
             // Create the event
@@ -50,7 +50,7 @@ class EventController extends Controller
             $event->created_by = auth()->id();
             $event->status = 'pending';
 
-            // Handle file upload if present
+            // Keep old single-image logic for backward compatibility
             if ($request->hasFile('picture')) {
                 try {
                     $path = $request->file('picture')->store('images', 'public');
@@ -61,6 +61,14 @@ class EventController extends Controller
             }
 
             $event->save();
+
+            // Handle multiple image uploads
+            if ($request->hasFile('pictures')) {
+                foreach ($request->file('pictures') as $file) {
+                    $path = $file->store('images', 'public');
+                    $event->images()->create(['image_path' => $path]);
+                }
+            }
 
             return redirect()->route('events.index')
                 ->with('success', 'Event created successfully.');
@@ -89,5 +97,34 @@ class EventController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Error deleting event: ' . $e->getMessage());
         }
+    }
+
+    public function edit(Event $event)
+    {
+        return view('events.edit', compact('event'));
+    }
+
+    public function update(Request $request, Event $event)
+    {
+        $validated = $request->validate([
+            'event_title' => 'required|string|max:255',
+            'event_description' => 'required|string',
+            'event_date' => 'required|date',
+            'event_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        // Update the event
+        $event->update($validated);
+
+        // Handle multiple image uploads
+        if ($request->hasFile('event_images')) {
+            foreach ($request->file('event_images') as $file) {
+                $path = $file->store('events', 'public');
+                $event->images()->create(['image_path' => $path]);
+            }
+        }
+
+        return redirect()->route('events.show', $event)
+            ->with('success', 'Event report updated successfully!');
     }
 }

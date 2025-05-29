@@ -25,7 +25,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('clients.update', $client->id) }}">
+                    <form method="POST" action="{{ route('clients.update', $client->id) }}" id="editClientForm">
                         @csrf
                         @method('PATCH')
 
@@ -233,7 +233,7 @@
 
                         <div class="form-group row mb-0">
                             <div class="col-md-6 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
+                                <button type="submit" class="btn btn-primary" onclick="return confirm('Are you sure you want to update this client?');">
                                     {{ __('Update Client') }}
                                 </button>
                             </div>
@@ -244,4 +244,15 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.getElementById('editClientForm').addEventListener('submit', function(e) {
+    console.log('Form submitted');
+    console.log('Client ID:', '{{ $client->id }}');
+    console.log('Form data:', new FormData(this));
+});
+</script>
+@endpush
+
 @endsection

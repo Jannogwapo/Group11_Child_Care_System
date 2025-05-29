@@ -20,10 +20,10 @@ class IncidentController extends Controller
             'incident_type' => 'required|string|max:255',
             'incident_description' => 'required|string',
             'incident_date' => 'required|date',
-            'incident_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'incident_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Handle file upload if present
+        // Handle file upload if present (old single-image logic)
         if ($request->hasFile('incident_image')) {
             $path = $request->file('incident_image')->store('incidents', 'public');
             $validated['incident_image'] = $path;
@@ -32,7 +32,15 @@ class IncidentController extends Controller
         // Add user_id to the validated data
         $validated['user_id'] = auth()->id();
 
-        Incident::create($validated);
+        $incident = Incident::create($validated);
+
+        // Handle multiple image uploads
+        if ($request->hasFile('incident_images')) {
+            foreach ($request->file('incident_images') as $file) {
+                $path = $file->store('incidents', 'public');
+                $incident->images()->create(['image_path' => $path]);
+            }
+        }
 
         return redirect()->route('events.index')->with('success', 'Incident reported successfully!');
     }
@@ -69,5 +77,34 @@ class IncidentController extends Controller
 
         // Return the view with the incidents data
         return view('incidents.index', compact('incidents'));
+    }
+
+    public function edit(Incident $incident)
+    {
+        return view('incidents.edit', compact('incident'));
+    }
+
+    public function update(Request $request, Incident $incident)
+    {
+        $validated = $request->validate([
+            'incident_type' => 'required|string|max:255',
+            'incident_description' => 'required|string',
+            'incident_date' => 'required|date',
+            'incident_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        // Update the incident
+        $incident->update($validated);
+
+        // Handle multiple image uploads
+        if ($request->hasFile('incident_images')) {
+            foreach ($request->file('incident_images') as $file) {
+                $path = $file->store('incidents', 'public');
+                $incident->images()->create(['image_path' => $path]);
+            }
+        }
+
+        return redirect()->route('incidents.show', $incident)
+            ->with('success', 'Incident report updated successfully!');
     }
 }

@@ -18,10 +18,10 @@ return new class extends Migration
             $table->text('incident_description')->nullable();
             $table->string('incident_location')->nullable();
             $table->date('incident_date');
-            $table->foreignId('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->string('incident_image')->nullable();
             $table->timestamps();
 
+            // NOTE: If the incidents table already exists, create a new migration to drop the client_id column.
         });
     }
 

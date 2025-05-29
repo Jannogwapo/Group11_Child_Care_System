@@ -133,7 +133,7 @@
                         <p>{{ $incident->incident_type }}</p>
                         <p>{{ $incident->created_at->format('Y-m-d H:i:s') }}</p>                     
                         </td>
-                        <td class="py-2 px-4 border-b">Client Involve: {{ $incident->client->clientFirstName ?? 'None' }} {{ $incident->client->clientLastName ?? '' }}</td>
+                        <td class="py-2 px-4 border-b">Client Involve: None</td>
                         <td class="py-2 px-4 border-b">{{ $incident->created_at->format('Y-m-d H:i:s') }}</td>
                     </tr>
                 @endforeach

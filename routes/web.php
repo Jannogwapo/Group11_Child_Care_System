@@ -14,6 +14,7 @@ use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\AccessController;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Controllers\LogsController;
+use App\Http\Controllers\ActivityController;
 
 // IT user only
 Route::middleware(['auth', 'can:It'])->group(function () {
@@ -79,15 +80,19 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/create', [EventController::class, 'create'])->name('events.create');
             Route::post('/', [EventController::class, 'store'])->name('events.store');
             Route::get('/{event}', [EventController::class, 'show'])->name('events.show');
+            Route::get('/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
+            Route::patch('/{event}', [EventController::class, 'update'])->name('events.update');
             Route::delete('/{event}', [EventController::class, 'destroy'])->name('events.destroy');
         });
 
-    //Indident
+    //Incident
         Route::prefix('incidents')->group(function () {
-            Route::get('/', [EventController::class, 'index'])->name('incidents.index');
+            Route::get('/', [IncidentController::class, 'index'])->name('incidents.index');
             Route::get('/create', [IncidentController::class, 'create'])->name('incidents.create');
             Route::post('/', [IncidentController::class, 'store'])->name('incidents.store');
             Route::get('/{incident}', [IncidentController::class, 'show'])->name('incidents.show');
+            Route::get('/{incident}/edit', [IncidentController::class, 'edit'])->name('incidents.edit');
+            Route::patch('/{incident}', [IncidentController::class, 'update'])->name('incidents.update');
             Route::delete('/{incident}', [IncidentController::class, 'destroy'])->name('incidents.destroy');
         });
 
@@ -119,6 +124,33 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Define middleware for admin routes
+
+// Incident Routes
+Route::get('/incidents', [IncidentController::class, 'index'])->name('incidents.index');
+Route::get('/incidents/create', [IncidentController::class, 'create'])->name('incidents.create');
+Route::post('/incidents', [IncidentController::class, 'store'])->name('incidents.store');
+Route::get('/incidents/{incident}', [IncidentController::class, 'show'])->name('incidents.show');
+Route::get('/incidents/{incident}/edit', [IncidentController::class, 'edit'])->name('incidents.edit');
+Route::patch('/incidents/{incident}', [IncidentController::class, 'update'])->name('incidents.update');
+Route::delete('/incidents/{incident}', [IncidentController::class, 'destroy'])->name('incidents.destroy');
+
+// Event Routes
+Route::get('/events', [EventController::class, 'index'])->name('events.index');
+Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
+Route::post('/events', [EventController::class, 'store'])->name('events.store');
+Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
+Route::patch('/events/{event}', [EventController::class, 'update'])->name('events.update');
+Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
+
+// Activity Routes
+Route::get('/activities', [ActivityController::class, 'index'])->name('activities.index');
+Route::get('/activities/create', [ActivityController::class, 'create'])->name('activities.create');
+Route::post('/activities', [ActivityController::class, 'store'])->name('activities.store');
+Route::get('/activities/{activity}', [ActivityController::class, 'show'])->name('activities.show');
+Route::get('/activities/{activity}/edit', [ActivityController::class, 'edit'])->name('activities.edit');
+Route::patch('/activities/{activity}', [ActivityController::class, 'update'])->name('activities.update');
+Route::delete('/activities/{activity}', [ActivityController::class, 'destroy'])->name('activities.destroy');
 
 
 

@@ -19,7 +19,9 @@
                         <div class="date-badge">{{ \Carbon\Carbon::parse($event->start_date)->format('M d, Y') }}</div>
                         <div class="content">
                             <div class="image-placeholder">
-                                @if($event->picture)
+                                @if($event->images && $event->images->count())
+                                    <img src="{{ asset('storage/' . $event->images->first()->image_path) }}" alt="Event Image">
+                                @elseif($event->picture)
                                     <img src="{{ asset('storage/' . $event->picture) }}" alt="Event Image">
                                 @endif
                             </div>
@@ -55,7 +57,9 @@
                         <div class="date-badge">{{ \Carbon\Carbon::parse($incident->incident_date)->format('M d, Y') }}</div>
                         <div class="content">
                             <div class="image-placeholder">
-                                @if($incident->incident_image)
+                                @if($incident->images && $incident->images->count())
+                                    <img src="{{ asset('storage/' . $incident->images->first()->image_path) }}" alt="Incident Image">
+                                @elseif($incident->incident_image)
                                     <img src="{{ asset('storage/' . $incident->incident_image) }}" alt="Incident Image">
                                 @endif
                             </div>

@@ -217,13 +217,13 @@
         <a href="{{ route('dashboard') }}" class="sidebar-button {{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <i class="bi bi-house-door"></i> Dashboard
         </a>
-        <a href="{{ route('clients.view') }}" class="sidebar-button {{ request()->routeIs('clients.*') ? 'active' : '' }}">
+        <a href="{{ route('clients.view') }}" class="sidebar-button {{ request()->is('clients*') ? 'active' : '' }}">
             <i class="bi bi-people"></i> Clients
         </a>
-        <a  href="{{ route('calendar.index') }}" class="sidebar-button {{ request()->routeIs('calendar.*') ? 'active' : '' }}">
+        <a href="{{ route('calendar.index') }}" class="sidebar-button {{ (request()->is('calendar*') || request()->is('hearings*')) ? 'active' : '' }}">
             <i class="bi bi-calendar-check"></i> Hearing
         </a>
-        <a href="{{ route('events.index') }}" class="sidebar-button {{ request()->routeIs('events.*') ? 'active' : '' }}">
+        <a href="{{ route('events.index') }}" class="sidebar-button {{ (request()->routeIs('events.*') || request()->routeIs('incidents.*')) ? 'active' : '' }}">
             <i class="bi bi-calendar-event"></i> Events
         </a>
             @else 

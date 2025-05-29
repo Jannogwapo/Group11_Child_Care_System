@@ -11,20 +11,32 @@
             <div class="header-actions">
                 <h1>{{ $event->title }}</h1>
                 @cannot('isAdmin')
-                    <form action="{{ route('events.destroy', $event) }}" method="POST" class="delete-form" onsubmit="return confirm('Are you sure you want to delete this event?');">
+                    <form action="{{ route('events.destroy', $event) }}" method="POST" class="delete-form" onsubmit="return confirm('Are you sure you want to delete this event report?');">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="delete-btn">Delete Event</button>
                     </form>
+                    <a href="{{ route('events.edit', $event) }}" class="edit-btn">Edit Event</a>
                 @endcannot
             </div>
             <div class="date-badge">{{ \Carbon\Carbon::parse($event->start_date)->format('M d, Y') }}</div>
         </div>
 
         <div class="event-content">
+            @if($event->images && $event->images->count())
+                <div class="event-image">
+                    @foreach($event->images as $img)
+                        <a href="{{ asset('storage/' . $img->image_path) }}" target="_blank">
+                            <img src="{{ asset('storage/' . $img->image_path) }}" alt="Event Image" style="max-width: 200px; margin: 5px;">
+                        </a>
+                    @endforeach
+                </div>
+            @endif
             @if($event->picture)
                 <div class="event-image">
-                    <img src="{{ asset('storage/' . $event->picture) }}" alt="Event Image">
+                    <a href="{{ asset('storage/' . $event->picture) }}" target="_blank">
+                        <img src="{{ asset('storage/' . $event->picture) }}" alt="Event Image">
+                    </a>
                 </div>
             @endif
 
@@ -190,6 +202,22 @@
 
 .delete-btn:hover {
     background: #c82333;
+}
+
+.edit-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+    margin-left: 8px;
+}
+
+.edit-btn:hover {
+    background: #0056b3;
 }
 </style>
 @endsection
