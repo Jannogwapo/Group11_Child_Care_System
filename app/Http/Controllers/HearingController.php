@@ -1,6 +1,5 @@
 <?php
 namespace App\Http\Controllers;
-
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -58,18 +57,20 @@ class HearingController extends Controller
     $baseQuery = Hearing::whereYear('hearing_date', $currentDate->year)
         ->whereMonth('hearing_date', $currentDate->month)
         ->with(['client', 'branch']);
+
     if (!Gate::allows('isAdmin')) {
         $baseQuery->whereHas('client', function ($query) use ($user) {
             $query->where('clientgender', $user->gender_id);
         });
     }
+
     $now = Carbon::now();
     if ($filter === 'upcoming') {
         $baseQuery->where('status', 'scheduled')
             ->where(function($query) use ($now) {
                 $query->where('hearing_date', '>', $now->toDateString())
                       ->orWhere(function($q) use ($now) {
-                          $q->where('hearing_date', $now->toDateString())
+                          $q->where('hearing_date','>=', $now->toDateString())
                             ->where('time', '>', $now->format('H:i:s'));
                       });
             });
@@ -77,10 +78,10 @@ class HearingController extends Controller
     } elseif ($filter === 'editable') {
         $baseQuery->where('status', 'scheduled')
             ->where(function($query) use ($now) {
-                $query->where('hearing_date', '<', $now->toDateString())
+                $query->where('hearing_date', '<=', $now->toDateString())  
                       ->orWhere(function($q) use ($now) {
-                          $q->where('hearing_date', $now->toDateString())
-                            ->where('time', '<=', $now->format('H:i:s'));
+                          $q->where('hearing_date', $now->toDateString()) 
+                            ->where('time', '<=', $now->format('H:i:s')); 
                       });
             });
     
@@ -94,9 +95,12 @@ class HearingController extends Controller
         // No additional where clause (show all hearings)
     }
     
-    $hearings = $baseQuery->get()->groupBy(function($hearing) {
-        return $hearing->hearing_date->format('Y-m-d');
-    });
+    $hearings = $baseQuery->orderBy('hearing_date', 'desc')
+                         ->orderBy('time', 'desc')
+                         ->get()
+                         ->groupBy(function($hearing) {
+                             return $hearing->hearing_date->format('Y-m-d');
+                         });
 
     $allHearings = $hearings->flatten();
     return view('calendar', compact(
@@ -109,29 +113,47 @@ class HearingController extends Controller
     ));
 }
 
-    public function edit(Hearing $hearing) :View{
+    public function edit(Request $request, Hearing $hearing) :View {
         $client = Client::find($hearing->client_id);
         $branch = Branch::find($hearing->branch_id);
+        
+        // Handle initial status choice for first edit
+        if ($hearing->edit_count === 1 && $request->has('initial_status')) {
+            $hearing->status = 'postponed'; // Default to postponed for the form
+        }
+        
         return view('client.editHearing', compact('hearing', 'client', 'branch'));
     }
 
     public function update(Request $request, Hearing $hearing): RedirectResponse
     {
-        $validated = $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'branch_id' => 'required|exists:branch,id',
-            'hearing_date' => 'required|date',
-            'time' => 'required',
-            'status' => 'required|in:completed,postponed',
-            'notes' => 'nullable|string',
-            
-        ]);
-        $hearing->edit_count = $hearing->edit_count + 1;
         try {
-            $hearing->update($validated);
+            // Basic validation
+            $request->validate([
+                'client_id' => 'required',
+                'branch_id' => 'required',
+                'hearing_date' => 'required',
+                'time' => 'required',
+                'status' => 'required|in:completed,postponed'
+            ]);
+
+            // Update basic fields
+            $hearing->client_id = $request->client_id;
+            $hearing->branch_id = $request->branch_id;
+            $hearing->hearing_date = $request->hearing_date;
+            $hearing->time = $request->time;
+            $hearing->status = $request->status;
+            $hearing->edit_count += 1;
+
+            // Clear any next hearing fields if they exist
+            $hearing->next_hearing_date = null;
+            $hearing->next_hearing_time = null;
+
+            $hearing->save();
             return redirect()->route('calendar.index')->with('success', 'Hearing updated successfully!');
+            
         } catch (\Exception $e) {
-            return back()->with('error', 'Error updating hearing: ' . $e->getMessage())->withInput();
+            return back()->with('error', 'Could not update hearing. Please try again.')->withInput();
         }
     }
 
@@ -142,5 +164,11 @@ class HearingController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Error deleting hearing: ' . $e->getMessage());
         }
+    }
+
+    public function show(Hearing $hearing): View
+    {
+        $hearing->load(['client', 'branch']); // Eager load relationships
+        return view('client.viewHearing', compact('hearing'));
     }
 }

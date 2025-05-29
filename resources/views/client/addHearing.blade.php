@@ -141,83 +141,114 @@
 </style>
 @endsection
 @section('content')
-    <div class="centered-container">
-        <div class="hearing-card">
-            <h1 class="hearing-title">Hearing</h1>
+<div style="display: flex; justify-content: center; align-items: flex-start; min-height: 80vh; background: #f3fcfa;">
+    <div style="width: 600px; background: #fff; border-radius: 16px; box-shadow: 0 2px 16px rgba(0,0,0,0.07); overflow: hidden; margin-top: 40px;">
+        <div style="background: #5fd1b3; color: #fff; font-size: 1.3rem; font-weight: 600; padding: 18px 32px; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+            Add New Hearing
+        </div>
+        <div style="padding: 32px;">
+            @if (count($errors) > 0)
+                <div class="alert alert-danger" style="margin-bottom: 18px;">
+                    <ul style="margin-bottom: 0;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="alert alert-danger">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <form action="{{ route('hearings.store') }}" method="POST" autocomplete="off">
                 @csrf
-                <div class="form-group">
-                    <label for="client_id">Client Name</label>
-                    <select name="client_id" id="client_id" required>
-                        <option value="">Select Client</option>
-                        @foreach($clients as $client)
-                            <option value="{{ $client->id }}">{{ $client->clientLastName }}, {{ $client->clientFirstName }}</option>
-                        @endforeach
-                    </select>
-                    @error('client_id')
-                        <p class="error-message">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div class="form-group">
-                    <label for="hearing_date">Hearing Date</label>
-                    <input type="date" name="hearing_date" id="hearing_date"
-                           min="{{ \Carbon\Carbon::now()->format('Y-m-d') }}"
-                           required>
-                    @error('hearing_date')
-                        <p class="error-message">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div class="form-group">
-                    <label for="time">Time</label>
-                    <input type="time" name="time" id="time" required
-                    min="{{ \Carbon\Carbon::now()->format('H--m-s') }}">
-                    @error('time')
-                        <p class="error-message">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div class="form-group">
-                    <label for="branch_id">Branch</label>
-                    <select name="branch_id" id="branch_id" required>
-                        <option value="">Select Branch</option>
-                        @foreach($branches as $branch)
-                            <option value="{{ $branch->id }}" data-judge-name="{{ $branch->judgeName }}">
-                                {{ $branch->branchName }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('branch_id')
-                        <p class="error-message">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div class="form-group">
-                    <label for="judge_name">Judge</label>
-                    <input type="text" id="judge_name" placeholder="Auto-filled by Branch" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="notes">Notes</label>
-                    <textarea name="notes" id="notes" rows="3"
-                        placeholder="Enter any notes (optional)">{{ old('notes') }}</textarea>
-                    @error('notes')
-                        <p class="error-message">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="submit-btn">Add Hearing</button>
+                <div style="display: flex; flex-direction: column; gap: 18px;">
+                    <div style="display: flex; align-items: center; gap: 18px;">
+                        <label for="client_id" style="width: 160px; font-weight: 500;">Client Name</label>
+                        <select name="client_id" id="client_id" class="form-control @error('client_id') is-invalid @enderror" required style="flex: 1;">
+                            <option value="">Select Client</option>
+                            @foreach($clients as $client)
+                                <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>
+                                    {{ $client->clientLastName }}, {{ $client->clientFirstName }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 18px;">
+                        <label for="hearing_date" style="width: 160px; font-weight: 500;">Hearing Date</label>
+                        <input type="date" name="hearing_date" id="hearing_date" 
+                               class="form-control @error('hearing_date') is-invalid @enderror"
+                               min="{{ \Carbon\Carbon::now()->format('Y-m-d') }}"
+                               value="{{ old('hearing_date') }}"
+                               required style="flex: 1;">
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 18px;">
+                        <label for="time" style="width: 160px; font-weight: 500;">Time</label>
+                        <input type="time" name="time" id="time" 
+                               class="form-control @error('time') is-invalid @enderror"
+                               value="{{ old('time') }}"
+                               required style="flex: 1;">
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 18px;">
+                        <label for="branch_id" style="width: 160px; font-weight: 500;">Branch</label>
+                        <select name="branch_id" id="branch_id" class="form-control @error('branch_id') is-invalid @enderror" required style="flex: 1;">
+                            <option value="">Select Branch</option>
+                            @foreach($branches as $branch)
+                                <option value="{{ $branch->id }}" 
+                                        data-judge-name="{{ $branch->judgeName }}"
+                                        {{ old('branch_id') == $branch->id ? 'selected' : '' }}>
+                                    {{ $branch->branchName }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 18px;">
+                        <label for="judge_name" style="width: 160px; font-weight: 500;">Judge</label>
+                        <input type="text" id="judge_name" 
+                               class="form-control"
+                               placeholder="Auto-filled by Branch" 
+                               readonly style="flex: 1; background: #f8f9fa;">
+                    </div>
+
+                    <div style="display: flex; align-items: start; gap: 18px;">
+                        <label for="notes" style="width: 160px; font-weight: 500; padding-top: 8px;">Notes</label>
+                        <textarea name="notes" id="notes" 
+                                  class="form-control @error('notes') is-invalid @enderror"
+                                  style="flex: 1; min-height: 100px; resize: vertical;"
+                                  placeholder="Enter any notes (optional)">{{ old('notes') }}</textarea>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; margin-top: 24px;">
+                        <button type="submit" class="btn btn-primary" 
+                                style="background: #21807a; color: #fff; font-weight: 600; border-radius: 8px; padding: 10px 32px;">
+                            Add Hearing
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const branchSelect = document.getElementById('branch_id');
-            const judgeNameInput = document.getElementById('judge_name');
-            function updateJudge() {
-                const selectedOption = branchSelect.options[branchSelect.selectedIndex];
-                const judgeName = selectedOption.getAttribute('data-judge-name') || '';
-                judgeNameInput.value = judgeName;
-            }
-            branchSelect.addEventListener('change', updateJudge);
-            updateJudge();
-        });
-    </script>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const branchSelect = document.getElementById('branch_id');
+        const judgeNameInput = document.getElementById('judge_name');
+        
+        function updateJudge() {
+            const selectedOption = branchSelect.options[branchSelect.selectedIndex];
+            const judgeName = selectedOption.getAttribute('data-judge-name') || '';
+            judgeNameInput.value = judgeName;
+        }
+        
+        branchSelect.addEventListener('change', updateJudge);
+        updateJudge();
+    });
+</script>
 @endsection
