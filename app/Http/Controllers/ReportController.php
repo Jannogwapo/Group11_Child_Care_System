@@ -34,7 +34,7 @@ class ReportController extends Controller
 
         return view('admin.report', compact('inHouseClients', 'asOf'));
     }
-}
+
 
     /**
      * Download the in-house clients report for the selected month, with proper filtering and format.

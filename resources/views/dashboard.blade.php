@@ -1,4 +1,7 @@
-@can('Access')
+@php
+    use Carbon\Carbon;
+@endphp
+
 @extends('layout')
 
 @section('title')
@@ -34,7 +37,6 @@
     </div>
 </div>
 
-
 <div class="row">
     <!-- Statistics Cards -->
     <div class="col-md-4 mb-3">
@@ -46,7 +48,6 @@
             </div>
         </div>
     </div>
-
     <div class="col-md-4 mb-3">
         <div class="card">
             <div class="card-body">
@@ -56,148 +57,146 @@
             </div>
         </div>
     </div>
-
     <div class="col-md-4 mb-3">
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Events</h5>
-                <h2 class="card-text">{{ $activeEvents ?? 0 }}</h2>
+                <h2 class="card-text">{{ $activeEvents }}</h2>
+               
                 <a href="{{ route('events.index') }}" class="btn btn-sm btn-primary">View Events</a>
             </div>
         </div>
     </div>
 </div>
 
-    <!-- Quick Actions -->
-    @cannot('isAdmin')
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Quick Actions</h5>
-                </div>
-                <div class="card-body py-2">
-                    <div class="row justify-content-between">
-                        <div class="col-md-4 mb-2">
-                            <a href="{{ route('clients.create') }}" class="btn btn-primary w-100 py-1">
-                                <i class="bi bi-person-plus fs-5"></i>
-                                <div class="mt-1 small">Add New Client</div>
-                            </a>
-                        </div>
-                        <div class="col-md-4 mb-2">
-                            <a href="{{ route('hearings.create') }}" class="btn btn-primary w-100 py-1">
-                                <i class="bi bi-calendar-plus fs-5"></i>
-                                <div class="mt-1 small">Schedule Hearing</div>
-                            </a>
-                        </div>
-                        <div class="col-md-4 mb-2">
-                            <a href="{{ route('events.create') }}" class="btn btn-primary w-100 py-1">
-                                <i class="bi bi-calendar-event fs-5"></i>
-                                <div class="mt-1 small">Create Event</div>
-                            </a>
-                        </div>
+<!-- Quick Actions -->
+@cannot('isAdmin')
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body py-2">
+                <div class="row justify-content-between">
+                    <div class="col-md-4 mb-2">
+                        <a href="{{ route('clients.create') }}" class="btn btn-primary w-100 py-1">
+                            <i class="bi bi-person-plus fs-5"></i>
+                            <div class="mt-1 small">Add New Client</div>
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <a href="{{ route('hearings.create') }}" class="btn btn-primary w-100 py-1">
+                            <i class="bi bi-calendar-plus fs-5"></i>
+                            <div class="mt-1 small">Schedule Hearing</div>
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <a href="{{ route('events.create') }}" class="btn btn-primary w-100 py-1">
+                            <i class="bi bi-calendar-event fs-5"></i>
+                            <div class="mt-1 small">Create Event</div>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    @endcannot
+</div>
+@endcannot
 
-
-    <!-- Statistics Charts (New Section) -->
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    @can('isAdmin')
-                        <h5 class="mb-0">Overall Client</h5>
-                    @else
-                        <h5 class="mb-0">Your Client Statistics</h5>
-                    @endcan
-                </div>
-                <div class="card-body">
-                    <canvas id="overallClientChart"></canvas>
-                </div>
+<!-- Statistics Charts -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                @can('isAdmin')
+                    <h5 class="mb-0">Overall Clients by Gender</h5>
+                @else
+                    <h5 class="mb-0">Your Client Statistics</h5>
+                @endcan
+            </div>
+            <div class="card-body">
+                <canvas id="overallClientChart"></canvas>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 >Weekly Hearing</h5>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 >Weekly Hearing</h5>
+            </div>
+            <div class="card-body">
+                <div align="center" class="mb-2">
+                    <strong>
+                        {{ $startOfWeek->format('F') }}{{ $startOfWeek->month != $days[6]->month ? ' – ' . $days[6]->format('F') : '' }}
+                        {{ $startOfWeek->format('Y') }}
+                    </strong>
                 </div>
-                <div class="card-body">
-                    <div align="center" class="mb-2">
-                        <strong>
-                            {{ $startOfWeek->format('F') }}{{ $startOfWeek->month != $days[6]->month ? ' – ' . $days[6]->format('F') : '' }}
-                            {{ $startOfWeek->format('Y') }}
-                        </strong>
-                    </div>
-                    <table class="table table-bordered text-center">
-                        <thead>
-                            <tr>
-                                <th>Mon</th>
-                                <th>Tue</th>
-                                <th>Wed</th>
-                                <th>Thu</th>
-                                <th>Fri</th>
-                                <th>Sat</th>
-                                <th>Sun</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                @foreach($days as $day)
-    <td style="position:relative; cursor:pointer;" onclick="showWeeklyHearingClients('{{ $day->toDateString() }}')">
-        {{ $day->format('j') }}
-        @php
-    $hasHearing = false;
-    $now = \Carbon\Carbon::now();
-    foreach($weeklyHearings as $hearing) {
-        $hearingDateTime = \Carbon\Carbon::parse($hearing->hearing_date->toDateString() . ' ' . $hearing->time);
-        if(
-            $hearing->hearing_date->isSameDay($day) &&
-            in_array($hearing->status, ['pending', 'scheduled']) &&
-            $hearingDateTime->greaterThanOrEqualTo($now)
-        ) {
-            $hasHearing = true;
-            break;
+                <table class="table table-bordered text-center">
+                    <thead>
+                        <tr>
+                            <th>Mon</th>
+                            <th>Tue</th>
+                            <th>Wed</th>
+                            <th>Thu</th>
+                            <th>Fri</th>
+                            <th>Sat</th>
+                            <th>Sun</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            @foreach($days as $day)
+<td style="position:relative; cursor:pointer;" onclick="showWeeklyHearingClients('{{ $day->toDateString() }}')">
+    {{ $day->format('j') }}
+    @php
+        $hasHearing = false;
+        $now = \Carbon\Carbon::now();
+        foreach($weeklyHearings as $hearing) {
+            if($hearing->hearing_date->format('Y-m-d') === $day->format('Y-m-d')) {
+                if($day->format('Y-m-d') > $now->format('Y-m-d') || 
+                   ($day->format('Y-m-d') === $now->format('Y-m-d') && 
+                    Carbon::parse($hearing->time)->format('H:i:s') > $now->format('H:i:s'))) {
+                    $hasHearing = true;
+                    break;
+                }
+            }
         }
-    }
-@endphp
-        @if($hasHearing)
-            <span style="display:inline-block;
-                         width:10px;
-                         height:10px;
-                         background:#dc3545;
-                         border-radius:50%;
-                         position:absolute;
-                         top:8px;
-                         right:8px;"></span>
-        @endif
-    </td>
+    @endphp
+    @if($hasHearing)
+        <span style="display:inline-block;
+                     width:10px;
+                     height:10px;
+                     background:#dc3545;
+                     border-radius:50%;
+                     position:absolute;
+                     top:8px;
+                     right:8px;"></span>
+    @endif
+</td>
 @endforeach
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <div class="row mt-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Discharge Client</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="dischargeClientChart"></canvas>
-                </div>
+        </div>
+        <div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Discharge Client</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="dischargeClientChart"></canvas>
             </div>
         </div>
     </div>
-        </div>
-        
+</div>
     </div>
- 
-    <div class="modal fade" id="weeklyHearingModal" tabindex="-1" aria-labelledby="weeklyHearingModalLabel" aria-hidden="true">
+    
+</div>
+
+<div class="modal fade" id="weeklyHearingModal" tabindex="-1" aria-labelledby="weeklyHearingModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -210,14 +209,12 @@
     </div>
   </div>
 </div>
-@endcan
     
 </div>
 @endsection
 
 @section('styles')
 <style>
-
     .greeting-section {
     margin-bottom: 2rem;
 }
@@ -409,69 +406,123 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // Prepare the data for quick lookup
-    const weeklyHearingsData = @json($weeklyHearings->groupBy(function($h) { return $h->hearing_date->toDateString(); }));
+    const weeklyHearingsData = {!! json_encode($weeklyHearings->groupBy('hearing_date_formatted')) !!};
+    const currentDateTime = new Date();
+    
+    console.log('Weekly Hearings Data:', weeklyHearingsData); // Debug log
 
     function showWeeklyHearingClients(date) {
-    const now = new Date();
-    const hearings = weeklyHearingsData[date] || [];
-    let clients = [];
+        console.log('Showing hearings for date:', date); // Debug log
+        console.log('Available hearings:', weeklyHearingsData[date]); // Debug log
+        
+        const hearings = weeklyHearingsData[date] || [];
+        let html = '';
+        
+        if (hearings.length > 0) {
+            // Filter hearings to only show upcoming ones
+            const upcomingHearings = hearings.filter(hearing => {
+                const hearingDateTime = new Date(hearing.hearing_date_formatted + 'T' + hearing.time_formatted);
+                return hearingDateTime > currentDateTime;
+            });
 
-    hearings.forEach(h => {
-        // Eloquent may serialize dates as objects, so parse accordingly
-        let hearingTime = h.time ? h.time : "00:00:00";
-        let hearingDateStr = typeof h.hearing_date === 'string' ? h.hearing_date : h.hearing_date.date.substr(0, 10);
-        const hearingDateTime = new Date(`${hearingDateStr}T${hearingTime}`);
-
-        if (['pending', 'scheduled'].includes(h.status) && hearingDateTime >= now) {
-            clients.push(h.client);
+            if (upcomingHearings.length > 0) {
+                upcomingHearings
+                    .sort((a, b) => a.time_formatted.localeCompare(b.time_formatted))
+                    .forEach(hearing => {
+                        const client = hearing.client;
+                        if (!client) {
+                            console.log('Warning: Null client found for hearing:', hearing); // Debug log
+                            return;
+                        }
+                        
+                        const genderClass = client.clientgender === 1 ? 'text-primary' : 'text-danger';
+                        const genderIcon = client.clientgender === 1 ? '👦' : '👧';
+                        const formattedTime = new Date('1970-01-01T' + hearing.time_formatted).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        
+                        html += `<div class="mb-3 p-2 border-bottom">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="/clients/${client.id}" target="_blank" class="${isAdmin ? genderClass : ''}">
+                                    ${isAdmin ? genderIcon : ''} ${client.clientLastName}, ${client.clientFirstName}
+                                </a>
+                                ${isAdmin ? `<span class="ms-2 badge ${client.clientgender === 1 ? 'bg-primary' : 'bg-danger'}">${client.gender?.gender_name || (client.clientgender === 1 ? 'Male' : 'Female')}</span>` : ''}
+                            </div>
+                            <div class="small text-muted mt-1">
+                                Time: ${formattedTime}
+                            </div>
+                        </div>`;
+                    });
+            } else {
+                html = '<div>No upcoming hearings for this date.</div>';
+            }
+        } else {
+            html = '<div>No hearings for this date.</div>';
         }
-    });
-
-    let html = '';
-    if (clients.length > 0) {
-        clients.forEach(client => {
-            html += `<div>
-                <a href="/clients/${client.id}" target="_blank">
-                    ${client.clientLastName}, ${client.clientFirstName}
-                </a>
-            </div>`;
+        
+        document.getElementById('modalDate').innerText = new Date(date).toLocaleDateString('en-US', { 
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         });
-    } else {
-        html = '<div>No hearings for this date.</div>';
+        document.getElementById('modalClients').innerHTML = html;
+        var myModal = new bootstrap.Modal(document.getElementById('weeklyHearingModal'));
+        myModal.show();
     }
-    document.getElementById('modalDate').innerText = date;
-    document.getElementById('modalClients').innerHTML = html;
-    // Show the modal (Bootstrap 5)
-    var myModal = new bootstrap.Modal(document.getElementById('weeklyHearingModal'));
-    myModal.show();
-}
 </script>
 <script>
-    const clientStats = @json($clientStats ?? ['labels' => [], 'data' => []]);
-    const dischargeStats = @json($dischargeStats ?? ['labels' => [], 'data' => []]);
+    const clientStats = {!! json_encode($clientStats ?? ['labels' => [], 'boys' => [], 'girls' => []]) !!};
+    const dischargeStats = {!! json_encode($dischargeStats ?? ['labels' => [], 'boys' => [], 'girls' => []]) !!};
+    const isAdmin = {!! json_encode(Gate::allows('isAdmin')) !!};
+    const userGenderId = {!! json_encode(auth()->user()->gender_id) !!};
 
-    // Overall Client Donut Chart
-    const donutChart = new Chart(document.getElementById('overallClientChart'), {
-        type: 'doughnut',
+    // Grouped Bar Chart for Boys and Girls per Case Type
+    const overallClientBarChart = new Chart(document.getElementById('overallClientChart'), {
+        type: 'bar',
         data: {
             labels: clientStats.labels,
-            datasets: [{
-                data: clientStats.data,
-                backgroundColor: [
-                    '#FFB6C1',
-                    '#FFE4B5',
-                    '#98FB98',
-                    '#DDA0DD',
-                    '#87CEEB'
-                ]
-            }]
+            datasets: isAdmin ? [
+                {
+                    label: 'Male',
+                    data: clientStats.boys,
+                    backgroundColor: '#36A2EB'
+                },
+                {
+                    label: 'Female',
+                    data: clientStats.girls,
+                    backgroundColor: '#FF69B4'
+                }
+            ] : [
+                {
+                    label: userGenderId == 1 ? 'Male' : 'Female',
+                    data: userGenderId == 1 ? clientStats.boys : clientStats.girls,
+                    backgroundColor: userGenderId == 1 ? '#36A2EB' : '#FF69B4'
+                }
+            ]
         },
         options: {
             responsive: true,
-            cutout: '70%',
             plugins: {
                 legend: {
-                    position: 'bottom'
+                    display: isAdmin,
+                    position: 'top'
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Case Type'
+                    },
+                    stacked: false
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Clients'
+                    },
+                    stacked: false
                 }
             }
         }
@@ -482,22 +533,50 @@
         type: 'bar',
         data: {
             labels: dischargeStats.labels,
-            datasets: [{
-                label: 'Discharged Clients',
-                data: dischargeStats.data,
-                backgroundColor: '#36A2EB'
-            }]
+            datasets: isAdmin ? [
+                {
+                    label: 'Male',
+                    data: dischargeStats.boys,
+                    backgroundColor: '#36A2EB'
+                },
+                {
+                    label: 'Female',
+                    data: dischargeStats.girls,
+                    backgroundColor: '#FF69B4'
+                }
+            ] : [
+                {
+                    label: userGenderId == 1 ? 'Male' : 'Female',
+                    data: userGenderId == 1 ? dischargeStats.boys : dischargeStats.girls,
+                    backgroundColor: userGenderId == 1 ? '#36A2EB' : '#FF69B4'
+                }
+            ]
         },
         options: {
             responsive: true,
+            plugins: {
+                legend: {
+                    display: isAdmin,
+                    position: 'top'
+                }
+            },
             scales: {
+                x: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Month'
+                    }
+                },
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Discharged Clients'
+                    }
                 }
             }
         }
     });
 </script>
 @endpush
-
-<!-- Modal for showing clients on a specific date -->

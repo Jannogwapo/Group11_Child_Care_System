@@ -64,6 +64,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{hearing}/edit', [HearingController::class, 'edit'])->name('hearings.edit');
             Route::put('/{hearing}', [HearingController::class, 'update'])->name('hearings.update');
             Route::delete('/{hearing}', [HearingController::class, 'destroy'])->name('hearings.destroy');
+            Route::get('/{hearing}', [HearingController::class, 'show'])->name('hearings.show');
         });
 
     // Calendar Routes

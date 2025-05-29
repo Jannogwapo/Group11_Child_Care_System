@@ -3,6 +3,7 @@
 @section('title', 'Calendar')
 
 @section('content')
+
 @php
     $previousMonth = $previousMonth ?? '';
     $nextMonth = $nextMonth ?? '';
@@ -10,6 +11,7 @@
     $currentDate = $currentDate ?? \Carbon\Carbon::now();
     $activeFilter = request('filter', 'upcoming');
 @endphp
+
 <div class="container mx-auto px-4 py-8">
     <!-- Notification Display -->
     @if(session('notification'))
@@ -17,61 +19,90 @@
             <p>{{ session('notification') }}</p>
         </div>
     @endif
+
+    <!-- Header Section -->
     <div class="flex justify-between items-center mb-6">
         @cannot('isAdmin')
-            <h1 class="text-2xl font-bold text-gray-800 text-center"> Calendar Hearing</h1>
-            <a href="{{ route('hearings.create') }}" class="px-4 py-2 rounded-full bg-pink-500 text-black hover:bg-pink-600 ml-auto">
-                <i class="bi bi-calendar-check"></i><i class="bi bi-plus-lg">Add Hearing</i>
+            <h1 class="text-2xl font-bold text-gray-800 text-center">Calendar Hearing</h1>
+            <a href="{{ route('hearings.create') }}" 
+               class="px-6 py-2.5 rounded-full bg-gradient-to-r from-pink-500 to-pink-600 text-white hover:from-pink-600 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2">
+                <i class="bi bi-calendar-check"></i>
+                <i class="bi bi-plus-lg"></i>
+                <span class="font-medium">Add Hearing</span>
             </a>
         @else
             <h1 class="text-2xl font-bold text-gray-800 text-center">Overall Calendar Hearing</h1>
         @endcannot
     </div>
 
-    <form method="GET" action="{{ route('calendar.index') }}" class="mb-6 flex items-center gap-4">
-        <input type="hidden" name="month" value="{{ $currentMonth }}">
-        <button type="submit" name="filter" value="upcoming" class="px-4 py-2 rounded {{ request('filter', 'upcoming') == 'upcoming' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800' }}">
-            Upcoming
-        </button>
-        <button type="submit" name="filter" value="finished" class="px-4 py-2 rounded {{ request('filter') == 'finished' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800' }}">
-            Completed
-        </button>
-        <button type="submit" name="filter" value="postponed" class="px-4 py-2 rounded {{ request('filter') == 'postponed' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800' }}">
-            Posponed
-        </button>
-        <button type="submit" name="filter" value="all" class="px-4 py-2 rounded {{ request('filter') == 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800' }}">
-            All
-        </button>
-        <button type="submit" name="filter" value="editable" class="px-4 py-2 rounded {{ request('filter') == 'editable' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800' }}">
-            <i class="bi bi-pencil-square"></i>
-        </button>
-    </form>
+    <!-- Filter Buttons -->
+    <div class="mb-6">
+        <form method="GET" action="{{ route('calendar.index') }}" class="flex flex-wrap items-center gap-3">
+            <input type="hidden" name="month" value="{{ $currentMonth }}">
+            
+            @php
+                $filterButtons = [
+                    'upcoming' => ['icon' => 'bi-calendar-event', 'text' => 'Upcoming'],
+                    'finished' => ['icon' => 'bi-check-circle', 'text' => 'Completed'],
+                    'postponed' => ['icon' => 'bi-clock-history', 'text' => 'Postponed'],
+                    'all' => ['icon' => 'bi-grid', 'text' => 'All'],
+                    'editable' => ['icon' => 'bi-pencil-square', 'text' => '']
+                ];
+            @endphp
+
+            @foreach($filterButtons as $value => $button)
+                <button type="submit" 
+                        name="filter" 
+                        value="{{ $value }}"
+                        class="px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all duration-200
+                               {{ request('filter', 'upcoming') == $value 
+                                  ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md' 
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                    <i class="bi {{ $button['icon'] }}"></i>
+                    @if($button['text'])
+                        <span class="font-medium">{{ $button['text'] }}</span>
+                    @endif
+                </button>
+            @endforeach
+        </form>
+    </div>
 
     <!-- Calendar Section -->
-    <div class="bg-white rounded-lg shadow-lg p-6 mt-3 {{ isset($allHearings) && count($allHearings) > 0 ? 'mb-8' : '' }}">
+    <div class="bg-white rounded-xl shadow-lg p-6 mt-3 {{ isset($allHearings) && count($allHearings) > 0 ? 'mb-8' : '' }}">
         <table id="cal-table" class="w-full">
             <tr>
-                <td colspan="7" class="text-center py-2">
-                    <a href="{{ route('calendar.index', ['month' => \Carbon\Carbon::now()->format('Y-m')]) }}" class="text-blue-500 hover:text-blue-700">Today</a>
+                <td colspan="7" class="text-center py-3">
+                    <a href="{{ route('calendar.index', ['month' => \Carbon\Carbon::now()->format('Y-m')]) }}" 
+                       class="text-blue-600 hover:text-blue-800 font-medium transition-colors">Today</a>
                 </td>
             </tr>
-            <tr class="border-b">
-                <td class="py-2 text-center">
-                    <a href="{{ route('calendar.index', ['month' => $previousMonth]) }}" class="text-blue-500 hover:text-blue-700">&lt;&lt; Prev</a>
+            <tr class="border-b border-gray-200">
+                <td class="py-3 text-center">
+                    <a href="{{ route('calendar.index', ['month' => $previousMonth]) }}" 
+                       class="text-blue-600 hover:text-blue-800 transition-colors flex items-center justify-center gap-1">
+                        <i class="bi bi-chevron-double-left"></i>
+                        <span>Prev</span>
+                    </a>
                 </td>
-                <th colspan="5" class="text-center text-xl font-semibold">{{ $currentDate->format('F Y') }}</th>
+                <th colspan="5" class="text-center text-xl font-semibold text-gray-800">
+                    {{ $currentDate->format('F Y') }}
+                </th>
                 <td class="text-center">
-                    <a href="{{ route('calendar.index', ['month' => $nextMonth]) }}" class="text-blue-500 hover:text-blue-700">Next &gt;&gt;</a>
+                    <a href="{{ route('calendar.index', ['month' => $nextMonth]) }}" 
+                       class="text-blue-600 hover:text-blue-800 transition-colors flex items-center justify-center gap-1">
+                        <span>Next</span>
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
                 </td>
             </tr>
-            <tr class="bg-gray-100">
-                <th class="day-headings p-2">Sun</th>
-                <th class="day-headings p-2">Mon</th>
-                <th class="day-headings p-2">Tue</th>
-                <th class="day-headings p-2">Wed</th>
-                <th class="day-headings p-2">Thu</th>
-                <th class="day-headings p-2">Fri</th>
-                <th class="day-headings p-2">Sat</th>
+            <tr class="bg-gradient-to-r from-gray-50 to-gray-100">
+                <th class="day-headings p-3 text-gray-600">Sun</th>
+                <th class="day-headings p-3 text-gray-600">Mon</th>
+                <th class="day-headings p-3 text-gray-600">Tue</th>
+                <th class="day-headings p-3 text-gray-600">Wed</th>
+                <th class="day-headings p-3 text-gray-600">Thu</th>
+                <th class="day-headings p-3 text-gray-600">Fri</th>
+                <th class="day-headings p-3 text-gray-600">Sat</th>
             </tr>
 
             @php
@@ -93,8 +124,11 @@
                                      \Carbon\Carbon::parse($currentMonth)->month == $today->month;
                             $date = $isCurrentMonth ? \Carbon\Carbon::parse($currentMonth)->day($currentDay) : null;
                         @endphp
-                        <td class="border p-2 min-h-[120px] {{ $isToday ? 'bg-blue-50' : '' }} {{ !$isCurrentMonth ? 'bg-gray-50' : '' }}"
-                            style="position:relative; cursor:pointer;"
+                        <td class="border border-gray-100 p-2 min-h-[120px] transition-colors duration-200
+                                 {{ $isToday ? 'bg-blue-50' : '' }} 
+                                 {{ !$isCurrentMonth ? 'bg-gray-50' : '' }}
+                                 {{ $isCurrentMonth ? 'hover:bg-gray-50' : '' }}"
+                            style="position:relative; {{ $isCurrentMonth ? 'cursor:pointer;' : '' }}"
                             @if($isCurrentMonth)
                                 onclick="showCalendarPopup(event, '{{ $date->format('Y-m-d') }}')"
                             @endif
@@ -112,7 +146,7 @@
                                                 && $hearing->status === 'scheduled'
                                                 && (
                                                     $dateStr > $today->format('Y-m-d')
-                                                    || ($dateStr === $today->format('Y-m-d') && $hearing->time > $today->format('H:i:s'))
+                                                    || ($dateStr === $today->format('Y-m-d') && $hearing->time >= $today->format('H:i:s'))
                                                 )) {
                                                 $filteredHearings[] = $hearing;
                                             } elseif ($activeFilter === 'editable'
@@ -136,12 +170,24 @@
                                     <span style="display:inline-block;
                                         width:10px;
                                         height:10px;
-                                        background:#dc3545;
+                                        background:{{ 
+                                            $activeFilter === 'finished' ? '#4CAF50' :
+                                            ($activeFilter === 'upcoming' ? '#2196F3' :
+                                            ($activeFilter === 'postponed' ? '#F44336' :
+                                            ($activeFilter === 'editable' ? '#FFC107' : '#607D8B'))) 
+                                        }};
                                         border-radius:50%;
                                         position:absolute;
                                         top:8px;
-                                        right:8px;"
-                                        title="{{ $activeFilter === 'editable' ? 'Editable hearing on this date' : 'Filtered hearing on this date' }}"></span>
+                                        right:8px;
+                                        cursor:pointer;"
+                                        onclick="showCalendarPopup(event, '{{ $date->format('Y-m-d') }}')"
+                                        title="{{ 
+                                            $activeFilter === 'upcoming' ? 'Upcoming hearing' :
+                                            ($activeFilter === 'finished' ? 'Completed hearing' :
+                                            ($activeFilter === 'postponed' ? 'Postponed hearing' :
+                                            ($activeFilter === 'editable' ? 'Editable hearing' : 'All hearings')))
+                                        }}"></span>
                                 @endif
                                 @php $currentDay++; @endphp
                             @endif
@@ -151,11 +197,11 @@
             @endfor
         </table>
     </div>
+</div>
 
-    <!-- Calendar Popup -->
-    <div id="calendarPopup" class="calendar-popup-modal" tabindex="-1">
-        <div id="calendarPopupContent"></div>
-    </div>
+<!-- Calendar Popup -->
+<div id="calendarPopup" class="calendar-popup-modal" tabindex="-1">
+    <div id="calendarPopupContent"></div>
 </div>
 
 <style>
@@ -167,45 +213,34 @@
         border: 1px solid #e2e8f0;
     }
     .day-headings {
-        background-color: #f7fafc;
         font-weight: 600;
         text-align: center;
     }
-    /* Popup container */
     .calendar-popup-modal {
         position: fixed;
         top: 0; left: 0; right: 0; bottom: 0;
         z-index: 1000;
         background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(4px);
         display: none;
         align-items: center;
         justify-content: center;
     }
-    .calendar-popup-modal > #calendarPopupContent,
-    .calendar-popup-modal > .flex {
-        margin: 0 auto;
-    }
     #calendarPopupContent {
         background: #fff;
-        border-radius: 12px;
+        border-radius: 16px;
         padding: 32px 24px;
         min-width: 500px;
         max-width: 98vw;
         min-height: 120px;
-        max-height: 60vh;
+        max-height: 80vh;
         overflow-y: auto;
-        box-shadow: 0 2px 32px rgba(0,0,0,0.25);
+        box-shadow: 0 4px 32px rgba(0,0,0,0.1);
+        animation: modalFade 0.2s ease-out;
     }
-    .calendar-popup .popup-arrow {
-        position: absolute;
-        top: -10px;
-        left: 30px;
-        width: 0;
-        height: 0;
-        border-left: 10px solid transparent;
-        border-right: 10px solid transparent;
-        border-bottom: 10px solid #fff;
-        filter: drop-shadow(0 -2px 2px rgba(0,0,0,0.1));
+    @keyframes modalFade {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
     }
 </style>
 
@@ -218,6 +253,7 @@
         let html = '';
 
         const filteredHearings = hearingsData[date] ? hearingsData[date] : [];
+        const isEditableFilter = @json(request('filter')) === 'editable';
 
         if (filteredHearings.length > 0) {
             html += `<table class="w-full mb-4"><tbody>`;
@@ -229,8 +265,14 @@
                     </td>
                     <td class="p-4 w-1/4 text-right">
                         <div class="flex flex-col space-y-2 items-end">
-                            <a href="/hearings/${hearing.id}/edit" class="px-3 py-1 bg-blue-500 text-black rounded text-xs w-32 text-center"><i class="bi bi-pencil-square"></i></a>
-                            <a href="/clients/${hearing.client.id}" class="px-3 py-1 bg-green-500 text-black rounded text-xs w-32 text-center"><i class="bi bi-ticket-detailed"></i></a>
+                            ${isEditableFilter ? 
+                                `<a href="/hearings/${hearing.id}/edit" class="px-3 py-1 bg-blue-500 text-black rounded text-xs w-32 text-center">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>` : ''
+                            }
+                            <a href="/hearings/${hearing.id}" class="px-3 py-1 bg-green-500 text-black rounded text-xs w-32 text-center">
+                                <i class="bi bi-eye"></i>
+                            </a>
                         </div>
                     </td>
                 </tr>
