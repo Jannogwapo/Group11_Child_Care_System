@@ -8,9 +8,12 @@ use App\Models\Event;
 use Illuminate\Support\Facades\DB;
 use App\Models\Incident;
 use Illuminate\Support\Facades\Storage;
+use App\Traits\CreatesNotifications;
 
 class EventController extends Controller
 {
+    use CreatesNotifications;
+
     /**
      * Display a listing of events and incidents.
      */
@@ -69,6 +72,13 @@ class EventController extends Controller
                     $event->images()->create(['image_path' => $path]);
                 }
             }
+
+            // Create notification for admins
+            $this->notifyAdmins(
+                'New Event Created',
+                "A new event titled '{$event->title}' has been created by {$request->user()->name}.",
+                route('admin.logs', ['filter' => 'events'])
+            );
 
             return redirect()->route('events.index')
                 ->with('success', 'Event created successfully.');

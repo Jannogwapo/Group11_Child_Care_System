@@ -124,35 +124,48 @@
             object-fit: contain;
         }
 
-        .btn-logout {
-            background-color: transparent;
-            border: 1px solid var(--accent-color);
-            color: var(--text-color);
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-logout:hover {
-            background-color: var(--accent-color);
-            color: white;
-        }
-
         .notification-badge {
             position: relative;
             cursor: pointer;
             color: var(--text-color);
+            font-size: 1.2rem;
+            padding: 4px;
+        }
+
+        .notification-badge i {
+            font-size: 1.2rem;
         }
 
         .notification-badge::after {
             content: '';
             position: absolute;
-            top: -5px;
-            right: -5px;
-            width: 10px;
-            height: 10px;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
             background-color: var(--accent-color);
             border-radius: 50%;
+        }
+
+        .btn-logout {
+            background-color: transparent;
+            border: 1px solid var(--accent-color);
+            color: var(--text-color);
+            padding: 0.2rem 0.75rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            position: relative;
+            top: 7px;
+        }
+
+        .btn-logout i {
+            font-size: 0.9rem;
+        }
+
+        .btn-logout:hover {
+            background-color: var(--accent-color);
+            color: white;
         }
 
         /* Card styling */
@@ -200,9 +213,7 @@
     <header class="header">
         <div class="header-title">HOMECARE CENTER FOR CHILDREN</div>
         <div class="header-actions">
-            <a href="#" class="notification-badge">
-                <i class="bi bi-bell"></i>
-            </a>
+            @include('components.notification-dropdown')
             <form action="{{ route('logout') }}" method="POST" class="d-inline">
                 @csrf
                 <button type="submit" class="btn-logout">

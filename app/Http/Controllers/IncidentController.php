@@ -6,9 +6,12 @@ use Illuminate\Http\Request;
 use App\Models\Incident;
 use App\Models\Event;
 use Illuminate\Support\Facades\Storage;
+use App\Traits\CreatesNotifications;
 
 class IncidentController extends Controller
 {
+    use CreatesNotifications;
+
     public function create()
     {
         return view('incidents.create');
@@ -41,6 +44,13 @@ class IncidentController extends Controller
                 $incident->images()->create(['image_path' => $path]);
             }
         }
+
+        // Create notification for admins
+        $this->notifyAdmins(
+            'New Incident Reported',
+            "A new incident of type '{$incident->incident_type}' has been reported by {$request->user()->name}.",
+            route('admin.logs', ['filter' => 'incidents']) // Link to the incidents tab in logs
+        );
 
         return redirect()->route('events.index')->with('success', 'Incident reported successfully!');
     }

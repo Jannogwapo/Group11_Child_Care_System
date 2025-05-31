@@ -13,12 +13,13 @@ use App\Models\IsAPwd;
 use App\Models\Branch;
 use App\Models\Location;
 use Illuminate\Support\Facades\Gate;
-
+use App\Traits\CreatesNotifications;
 
 use Illuminate\Support\Facades\DB;
 
 class ClientController extends Controller
 {
+    use CreatesNotifications;
 
     public function showClient(Request $request)
     {
@@ -248,31 +249,6 @@ class ClientController extends Controller
             'branches',
             'locations'
         ));
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'clientFirstName' => 'required|string|max:255',
-            'clientLastName' => 'required|string|max:255',
-            'clientgender' => 'required|exists:genders,id',
-            'clientdateofadmission' => 'required|date',
-            'clientaddress' => 'required|string',
-            'guardianphonenumber' => 'required|string',
-            'case_id' => 'required|exists:cases,id',
-            'status_id' => 'required|exists:statuses,id',
-            'branch_id' => 'required|exists:branches,id',
-            'location_id' => 'required|exists:locations,id',
-            'isAPwd' => 'required|boolean',
-            'isAStudent' => 'required|boolean'
-        ]);
-
-        try {
-            $client = Client::create($validated);
-            return redirect()->route('viewClient')->with('success', 'Client added successfully!');
-        } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Error adding client: ' . $e->getMessage());
-        }
     }
 
     public function show(Client $client)
