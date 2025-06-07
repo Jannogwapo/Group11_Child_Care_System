@@ -44,7 +44,7 @@ class DashboardController extends Controller
         if (Gate::allows('isAdmin')) {
             $clientCount = Client::count();
             $totalClients = $clientCount;
-        } 
+        }
         // If user is social worker, show only clients with same gender
         else {
             $clientCount = Client::where('clientgender', $user->gender_id)->count();
@@ -54,8 +54,8 @@ class DashboardController extends Controller
         // Get total number of users
         $totalUsers = User::count();
 
-        // Calculate total events (activities + incidents)
-        $activeEvents = Activity::count() + Incident::count();
+        // Re-fetch (or recount) events and incidents so that the dashboard's "Events" card always reflects the latest count.
+        $activeEvents = Event::count() + Incident::count();
 
         // Calculate start of week and days array
         $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY);

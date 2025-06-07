@@ -60,9 +60,8 @@
     <div class="col-md-4 mb-3">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Events</h5>
+                <h5 class="card-title">Total Events</h5>
                 <h2 class="card-text">{{ $activeEvents }}</h2>
-               
                 <a href="{{ route('events.index') }}" class="btn btn-sm btn-primary">View Events</a>
             </div>
         </div>
@@ -154,8 +153,8 @@
         $now = \Carbon\Carbon::now();
         foreach($weeklyHearings as $hearing) {
             if($hearing->hearing_date->format('Y-m-d') === $day->format('Y-m-d')) {
-                if($day->format('Y-m-d') > $now->format('Y-m-d') || 
-                   ($day->format('Y-m-d') === $now->format('Y-m-d') && 
+                if($day->format('Y-m-d') > $now->format('Y-m-d') ||
+                   ($day->format('Y-m-d') === $now->format('Y-m-d') &&
                     Carbon::parse($hearing->time)->format('H:i:s') > $now->format('H:i:s'))) {
                     $hasHearing = true;
                     break;
@@ -193,7 +192,7 @@
     </div>
 </div>
     </div>
-    
+
 </div>
 
 <div class="modal fade" id="weeklyHearingModal" tabindex="-1" aria-labelledby="weeklyHearingModalLabel" aria-hidden="true">
@@ -209,8 +208,9 @@
     </div>
   </div>
 </div>
-    
+
 </div>
+
 @endsection
 
 @section('styles')
@@ -385,7 +385,7 @@
     .table thead th {
         font-size: 15px !important;
     }
-    
+
     .btn-skyblue {
         background: linear-gradient(135deg, #0077CC 0%, #00a8ff 100%);
         border: none;
@@ -408,16 +408,16 @@
     // Prepare the data for quick lookup
     const weeklyHearingsData = {!! json_encode($weeklyHearings->groupBy('hearing_date_formatted')) !!};
     const currentDateTime = new Date();
-    
+
     console.log('Weekly Hearings Data:', weeklyHearingsData); // Debug log
 
     function showWeeklyHearingClients(date) {
         console.log('Showing hearings for date:', date); // Debug log
         console.log('Available hearings:', weeklyHearingsData[date]); // Debug log
-        
+
         const hearings = weeklyHearingsData[date] || [];
         let html = '';
-        
+
         if (hearings.length > 0) {
             // Filter hearings to only show upcoming ones
             const upcomingHearings = hearings.filter(hearing => {
@@ -434,11 +434,11 @@
                             console.log('Warning: Null client found for hearing:', hearing); // Debug log
                             return;
                         }
-                        
+
                         const genderClass = client.clientgender === 1 ? 'text-primary' : 'text-danger';
                         const genderIcon = client.clientgender === 1 ? '👦' : '👧';
                         const formattedTime = new Date('1970-01-01T' + hearing.time_formatted).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        
+
                         html += `<div class="mb-3 p-2 border-bottom">
                             <div class="d-flex justify-content-between align-items-center">
                                 <a href="/clients/${client.id}" target="_blank" class="${isAdmin ? genderClass : ''}">
@@ -457,8 +457,8 @@
         } else {
             html = '<div>No hearings for this date.</div>';
         }
-        
-        document.getElementById('modalDate').innerText = new Date(date).toLocaleDateString('en-US', { 
+
+        document.getElementById('modalDate').innerText = new Date(date).toLocaleDateString('en-US', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
