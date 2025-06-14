@@ -16,6 +16,7 @@
         gap: 10px;
         margin-bottom: 32px;
         flex-wrap: wrap;
+        text-decoration: none;
     }
     .case-filter-btn {
         display: inline-block;
@@ -28,6 +29,7 @@
         font-weight: 600;
         cursor: pointer;
         transition: background 0.2s, color 0.2s;
+        text-decoration: none;
     }
     .case-filter-btn.active, .case-filter-btn:hover {
         background: var(--primary-color);
@@ -172,4 +174,4 @@
         });
     });
 </script>
-@endsection 
+@endsection

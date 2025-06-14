@@ -56,17 +56,18 @@
             position: relative;
             cursor: pointer;
             color: var(--text-color);
+            font-size: 1.2rem;
+            padding: 4px;
+            &::before,
+            &::after {
+                content: none !important;
+                display: none !important;
+            }
         }
 
-        .notification-badge::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 8px;
-            height: 8px;
-            background-color: var(--accent-color);
-            border-radius: 50%;
+        .notification-badge i {
+            color: var(--text-color) !important;
+            font-size: 1.2rem !important;
         }
 
         .btn-logout {
@@ -77,6 +78,11 @@
             border-radius: 4px;
             font-size: 0.9rem;
             transition: all 0.3s ease;
+        }
+
+        .btn-logout i {
+            color: var(--text-color) !important;
+            font-size: 0.9rem !important;
         }
 
         .btn-logout:hover {
@@ -108,6 +114,7 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            text-decoration: none;
         }
 
         .sidebar-button:hover {
@@ -135,6 +142,28 @@
             padding-bottom: 80px;
         }
 
+        .footer {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            padding: 1rem;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            left: 250px;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .footer img {
+            height: 40px;
+            object-fit: contain;
+        }
+
+        /* Card styling */
         .card {
             border: none;
             border-radius: 10px;
@@ -181,11 +210,8 @@
             <img src="{{ asset('images/DSWD.png') }}" alt="DSWD logo"
                  style="max-height: 90px; max-width: 100px; object-fit: contain; margin-left: -15px;">
         </div>
-
         <div class="d-flex align-items-center gap-3">
-            <a href="#" class="notification-badge" title="Notifications">
-                <i class="bi bi-bell fs-5"></i>
-            </a>
+            @include('components.notification-dropdown')
             <form action="{{ route('logout') }}" method="POST" class="d-inline m-0 p-0">
                 @csrf
                 <button type="submit" class="btn-logout d-flex align-items-center gap-1">

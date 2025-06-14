@@ -20,18 +20,21 @@
                 <i class="bi bi-person-circle"></i>
             </div>
             <div class="greeting-text">
-                <h2>Welcome, {{ auth()->user()->name }}!</h2>
+                <h2>
+                    @php
+                        \Log::info('Dashboard - _just_logged_in session state:', ['value' => session('_just_logged_in')]);
+                    @endphp
+                    @if(session('_just_logged_in'))
+                        Welcome back, {{ auth()->user()->name }}!
+                    @else
+                        Welcome, {{ auth()->user()->name }}!
+                    @endif
+                </h2>
                 @can('isAdmin')
                 <p class="text-muted">Admin</p>
                 @else
                 <p class="text-muted">Social Worker</p>
                 @endcan
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                @endif
             </div>
         </div>
     </div>
