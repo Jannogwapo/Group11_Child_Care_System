@@ -41,10 +41,10 @@ class LogInController extends Controller
                 ])->withInput($request->only('email'));
             } elseif ($user->role_id === 3) {
                 return redirect()->route('admin.report')
-                ->with('success', 'Welcome back, ' . $user->name . '!');
+                ->with('_just_logged_in', true);
             }
             return redirect()->route('dashboard')
-                ->with('success', 'Welcome back, ' . $user->name . '!');
+                ->with('_just_logged_in', true);
         }
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
