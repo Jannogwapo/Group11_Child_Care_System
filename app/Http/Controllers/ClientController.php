@@ -24,6 +24,7 @@ class ClientController extends Controller
     {
         $currentFilter = $request->input('filter', 'ALL');
         $genderFilter = $request->input('gender', null);
+        $searchTerm = $request->input('search');
         
         $query = Client::with([
             'gender',
@@ -83,9 +84,25 @@ class ClientController extends Controller
                   });
         }
 
+        // Apply search filter if searchTerm is present
+        if ($searchTerm) {
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('clientFirstName', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('clientMiddleName', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('clientLastName', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
         $clients = $query->get();
         $cases = Cases::all();
 
+        // Check if it's an AJAX request
+        if ($request->ajax()) {
+            // If AJAX, return only the client grid HTML
+            return view('components.client_grid', compact('clients'));
+        }
+
+        // Otherwise, return the full view
         return view('viewClient', compact(
             'clients',
             'currentFilter',
@@ -99,6 +116,7 @@ class ClientController extends Controller
     {
         $currentFilter = $request->input('filter', 'ALL');
         $genderFilter = $request->input('gender', null);
+        $searchTerm = $request->input('search');
         
         $query = Client::with([
             'gender',
@@ -128,6 +146,14 @@ class ClientController extends Controller
         // Define location-based filters
         $locationFilters = ['DISCHARGED', 'ESCAPED', 'TRANSFER'];
         
+        if ($searchTerm) {
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('clientFirstName', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('clientMiddleName', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('clientLastName', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
         if ($currentFilter === 'ALL') {
             // For ALL filter, show all clients
             $query->whereHas('location', function($q) {
@@ -229,7 +255,8 @@ class ClientController extends Controller
             'isAPwd',
             'branches',
             'statistics',
-            'isAdmin'
+            'isAdmin',
+            'searchTerm'
         ));
     }
 
@@ -261,7 +288,6 @@ class ClientController extends Controller
             'guardianphonenumber' => 'required|string',
             'case_id' => 'required|exists:cases,id',
             'status_id' => 'required|exists:statuses,id',
-            'branch_id' => 'required|exists:branches,id',
             'location_id' => 'required|exists:locations,id',
             'isAPwd' => 'required|boolean',
             'isAStudent' => 'required|boolean'
@@ -330,9 +356,11 @@ class ClientController extends Controller
                 'clientguardianrelationship' => $request->input('guardianRelationship'),
                 'guardianphonenumber' => $request->filled('parentContact') ? $request->input('parentContact') : '',
                 'case_id' => $request->input('case_id'),
+                'cicl_case_details' => $request->input('cicl_case_details'),
                 'clientdateofadmission' => $request->input('admissionDate'),
                 'status_id' => $request->input('status_id'),
                 'location_id' => $request->input('location_id'),
+                'updated_at' => now(), // Manually set updated_at timestamp
             ];
 
             \Log::info('Attempting to update with data:', $updateData);
@@ -363,5 +391,30 @@ class ClientController extends Controller
                 ->withInput()
                 ->with('error', 'Error updating client: ' . $e->getMessage());
         }
+    }
+
+    public function searchSuggestions(Request $request)
+    {
+        $searchTerm = $request->input('query');
+
+        \Log::info('Search suggestions requested with term: ' . $searchTerm);
+
+        $query = Client::with('case') // Eager load the case relationship
+                       ->select('id', 'clientFirstName', 'clientMiddleName', 'clientLastName', 'case_id');
+
+        if ($searchTerm && strlen($searchTerm) > 1) { // Apply filter only if search term is more than 1 character
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('clientFirstName', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('clientMiddleName', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('clientLastName', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        $clients = $query->get();
+
+        \Log::info('Search suggestions found: ' . $clients->count());
+        \Log::info('Search suggestions data: ' . $clients->toJson());
+
+        return response()->json($clients);
     }
 }

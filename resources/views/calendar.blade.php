@@ -305,4 +305,131 @@
         }
     });
 </script>
+
+<!-- Hearings List Section -->
+<div class="mt-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Hearing Schedule</h2>
+
+    @if($isAdmin)
+        <!-- All Hearings for Admin -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">All Hearings</h3>
+            @if($allHearings->count() > 0)
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white">
+                        <thead>
+                            <tr>
+                                <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Client Name</th>
+                                <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+                                <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Time</th>
+                                <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Branch</th>
+                                <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Judge</th>
+                                <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($allHearings as $hearing)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ $hearing->client->clientFirstName }} {{ $hearing->client->clientLastName }}</td>
+                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ \Carbon\Carbon::parse($hearing->hearing_date)->format('M d, Y') }}</td>
+                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ \Carbon\Carbon::parse($hearing->time)->format('h:i A') }}</td>
+                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ $hearing->branch->branchName ?? 'N/A' }}</td>
+                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ $hearing->branch->judgeName ?? 'N/A' }}</td>
+                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">
+                                        @if($hearing->client->case && $hearing->client->case->case_name === 'CICL')
+                                            <a href="{{ route('clients.show', $hearing->client->id) }}?case=CICL" class="text-blue-600 hover:underline">View Details</a>
+                                        @else
+                                            <a href="{{ route('clients.show', $hearing->client->id) }}" class="text-blue-600 hover:underline">View Details</a>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <p class="text-gray-600">No hearings found for this filter.</p>
+            @endif
+        </div>
+    @else
+        <!-- Male Hearings for Social Worker -->
+        @if($maleHearings->count() > 0)
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">For Male Clients</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Client Name</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Date</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Time</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Branch</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Judge</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($maleHearings as $hearing)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ $hearing->client->clientFirstName }} {{ $hearing->client->clientLastName }}</td>
+                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ \Carbon\Carbon::parse($hearing->hearing_date)->format('M d, Y') }}</td>
+                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ \Carbon\Carbon::parse($hearing->time)->format('h:i A') }}</td>
+                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ $hearing->branch->branchName ?? 'N/A' }}</td>
+                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ $hearing->branch->judgeName ?? 'N/A' }}</td>
+                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">
+                                        @if($hearing->client->case && $hearing->client->case->case_name === 'CICL')
+                                            <a href="{{ route('clients.show', $hearing->client->id) }}?case=CICL" class="text-blue-600 hover:underline">View Details</a>
+                                        @else
+                                            <a href="{{ route('clients.show', $hearing->client->id) }}" class="text-blue-600 hover:underline">View Details</a>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @endif
+
+        <!-- Female Hearings for Social Worker -->
+        @if($femaleHearings->count() > 0)
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">For Female Clients</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Client Name</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Date</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Time</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Branch</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Judge</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($femaleHearings as $hearing)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ $hearing->client->clientFirstName }} {{ $hearing->client->clientLastName }}</td>
+                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ \Carbon\Carbon::parse($hearing->hearing_date)->format('M d, Y') }}</td>
+                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ \Carbon\Carbon::parse($hearing->time)->format('h:i A') }}</td>
+                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ $hearing->branch->branchName ?? 'N/A' }}</td>
+                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ $hearing->branch->judgeName ?? 'N/A' }}</td>
+                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">
+                                        @if($hearing->client->case && $hearing->client->case->case_name === 'CICL')
+                                            <a href="{{ route('clients.show', $hearing->client->id) }}?case=CICL" class="text-blue-600 hover:underline">View Details</a>
+                                        @else
+                                            <a href="{{ route('clients.show', $hearing->client->id) }}" class="text-blue-600 hover:underline">View Details</a>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @endif
+    @endif
+</div>
+
 @endsection

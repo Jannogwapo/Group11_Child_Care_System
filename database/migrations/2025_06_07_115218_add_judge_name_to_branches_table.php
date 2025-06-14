@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('incidents', function (Blueprint $table) {
-            if (Schema::hasColumn('incidents', 'client_id')) {
-                $table->dropForeign(['client_id']);
-                $table->dropColumn('client_id');
-            }
+        Schema::table('branch', function (Blueprint $table) {
+            $table->string('judge_name')->nullable()->after('branchName');
         });
     }
 
@@ -24,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('incidents', function (Blueprint $table) {
-            $table->foreignId('client_id')->constrained('clients');
+        Schema::table('branch', function (Blueprint $table) {
+            $table->dropColumn('judge_name');
         });
     }
 };

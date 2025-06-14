@@ -42,6 +42,10 @@
                         <div style="color: #888;">Gender</div>
                         <div style="font-weight: 500;">{{ $hearing->client->clientgender == 1 ? 'Male' : 'Female' }}</div>
                     </div>
+                    <div style="flex: 1; min-width: 120px;">
+                        <div style="color: #888;">Case</div>
+                        <div style="font-weight: 500;">{{ $hearing->client->case->case_name }}</div>
+                    </div>
                 </div>
             </div>
 
@@ -79,8 +83,8 @@
                         <div style="font-weight: 500;">{{ $hearing->branch->branchName }}</div>
                     </div>
                     <div style="flex: 1; min-width: 120px;">
-                        <div style="color: #888;">Location</div>
-                        <div style="font-weight: 500;">{{ $hearing->branch->branchLocation }}</div>
+                        <div style="color: #888;">Judge</div>
+                        <div style="font-weight: 500;">{{ $hearing->branch->judgeName }}</div>
                     </div>
                 </div>
             </div>

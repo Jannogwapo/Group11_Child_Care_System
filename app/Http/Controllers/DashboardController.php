@@ -55,7 +55,16 @@ class DashboardController extends Controller
         $totalUsers = User::count();
 
         // Calculate total events (activities + incidents)
-        $activeEvents = Activity::count() + Incident::count();
+        $activityCount = Event::count();
+        $incidentCount = Incident::count();
+        $activeEvents = $activityCount + $incidentCount;
+
+        // Log the counts for debugging
+        \Log::info('Dashboard Events Debug:', [
+            'activityCount' => $activityCount,
+            'incidentCount' => $incidentCount,
+            'activeEvents' => $activeEvents,
+        ]);
 
         // Calculate start of week and days array
         $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY);

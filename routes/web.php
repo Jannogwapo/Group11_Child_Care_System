@@ -15,6 +15,7 @@ use App\Http\Controllers\AccessController;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Controllers\LogsController;
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\BranchController;
 
 // IT user only
 Route::middleware(['auth', 'can:It'])->group(function () {
@@ -56,6 +57,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/view/all', [ClientController::class, 'showClient'])->name('viewClient');
             Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit');
             Route::patch('/{client}', [ClientController::class, 'update'])->name('clients.update');
+            Route::get('/search-suggestions', [ClientController::class, 'searchSuggestions'])->name('clients.searchSuggestions');
         });
 
         Route::prefix('hearings')->group(function () {
@@ -116,6 +118,14 @@ Route::middleware(['auth'])->group(function () {
 
         Route::middleware(['can:isAdmin'])->group(function () {
             Route::get('/logs', [LogsController::class, 'logs'])->name('admin.logs');
+            Route::prefix('branches')->group(function () {
+                Route::get('/', [BranchController::class, 'index'])->name('branches.index');
+                Route::get('/create', [BranchController::class, 'create'])->name('branches.create');
+                Route::post('/', [BranchController::class, 'store'])->name('branches.store');
+                Route::get('/{branch}/edit', [BranchController::class, 'edit'])->name('branches.edit');
+                Route::patch('/{branch}', [BranchController::class, 'update'])->name('branches.update');
+                Route::delete('/{branch}', [BranchController::class, 'destroy'])->name('branches.destroy');
+            });
         });
     
     });

@@ -178,6 +178,18 @@
                             </div>
                         </div>
 
+                        <div id="ciclCaseDetailsDiv" class="form-group row mb-3" style="display: none;">
+                            <label for="cicl_case_details" class="col-md-4 col-form-label text-md-right">{{ __('CICL Case Details') }}</label>
+                            <div class="col-md-6">
+                                <input id="cicl_case_details" type="text" class="form-control @error('cicl_case_details') is-invalid @enderror" name="cicl_case_details" value="{{ old('cicl_case_details', $client->cicl_case_details) }}" placeholder="Enter specific case details (e.g., drugs, theft, etc.)">
+                                @error('cicl_case_details')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
                         <!-- Admission Date -->
                         <div class="form-group row mb-3">
                             <label for="admissionDate" class="col-md-4 col-form-label text-md-right">{{ __('Admission Date') }}</label>
@@ -251,6 +263,24 @@ document.getElementById('editClientForm').addEventListener('submit', function(e)
     console.log('Form submitted');
     console.log('Client ID:', '{{ $client->id }}');
     console.log('Form data:', new FormData(this));
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const caseSelect = document.getElementById('case_id');
+    const ciclDetailsDiv = document.getElementById('ciclCaseDetailsDiv');
+    
+    function toggleCiclDetails() {
+        const selectedOption = caseSelect.options[caseSelect.selectedIndex];
+        if (selectedOption && selectedOption.text === 'CICL') {
+            ciclDetailsDiv.style.display = 'flex';
+        } else {
+            ciclDetailsDiv.style.display = 'none';
+        }
+    }
+    
+    caseSelect.addEventListener('change', toggleCiclDetails);
+    // Run on page load to handle pre-selected values
+    toggleCiclDetails();
 });
 </script>
 @endpush

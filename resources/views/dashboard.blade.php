@@ -476,7 +476,8 @@
     const userGenderId = {!! json_encode(auth()->user()->gender_id) !!};
 
     // Grouped Bar Chart for Boys and Girls per Case Type
-    const overallClientBarChart = new Chart(document.getElementById('overallClientChart'), {
+    const overallClientCtx = document.getElementById('overallClientChart').getContext('2d');
+    new Chart(overallClientCtx, {
         type: 'bar',
         data: {
             labels: clientStats.labels,
@@ -511,10 +512,9 @@
                 x: {
                     beginAtZero: true,
                     title: {
-                        display: true,
+                        display: false,
                         text: 'Case Type'
-                    },
-                    stacked: false
+                    }
                 },
                 y: {
                     beginAtZero: true,
@@ -573,6 +573,13 @@
                     title: {
                         display: true,
                         text: 'Number of Discharged Clients'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            if (Number.isInteger(value)) {
+                                return value;
+                            }
+                        }
                     }
                 }
             }

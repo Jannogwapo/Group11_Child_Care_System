@@ -11,6 +11,7 @@ use App\Models\IsAStudent;
 use App\Models\IsAPwd;
 use App\Models\User;
 use App\Models\Location;
+use App\Models\Branch;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
@@ -30,7 +31,8 @@ class AddClient extends Controller
         $isAPwd = IsAPwd::all();
         $locations = Location::all();
         $userGender = auth()->user()->gender_id;
-        return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations', 'userGender'));
+        $branches = Branch::all();
+        return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations', 'userGender', 'branches'));
     }
 
     public function index()
@@ -47,8 +49,9 @@ class AddClient extends Controller
         $isAPwd = IsAPwd::all();
         $locations = Location::all();
         $userGender = auth()->user()->gender_id;
+        $branches = Branch::all();
   
-        return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations', 'userGender'));
+        return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations', 'userGender', 'branches'));
     }
 
     public function create()
@@ -65,8 +68,9 @@ class AddClient extends Controller
         $isAPwd = IsAPwd::all();
         $locations = Location::all();
         $userGender = auth()->user()->gender_id;
+        $branches = Branch::all();
 
-        return view('client/addClient', compact('cases', 'genders', 'status', 'isAStudent', 'isAPwd', 'locations', 'userGender'));
+        return view('client/addClient', compact('cases', 'genders', 'status', 'isAStudent', 'isAPwd', 'locations', 'userGender', 'branches'));
     }
 
     public function store(Request $request)
@@ -91,6 +95,7 @@ class AddClient extends Controller
             'guardianRelationship' => 'required|string|max:255',
             'parentContact' => 'nullable|string|max:11',
             'case_id' => 'required|integer|exists:case,id',
+            'cicl_case_details' => 'nullable|string|max:255',
             'admissionDate' => 'required|date',
             'status_id' => 'required|integer|exists:status,id',
             'isAStudent' => 'required|integer|exists:isAStudent,id',
@@ -112,12 +117,12 @@ class AddClient extends Controller
                 'clientguardianrelationship' => $validated['guardianRelationship'],
                 'guardianphonenumber' => $validated['parentContact'] ?? 'N/A', // Set default value if null
                 'case_id' => $validated['case_id'],
+                'cicl_case_details' => $validated['cicl_case_details'] ?? null,
                 'clientdateofadmission' => $validated['admissionDate'],
                 'status_id' => $validated['status_id'],
                 'isAStudent' => $validated['isAStudent'],
                 'isAPwd' => $validated['isAPwd'],
                 'user_id' => Auth::id(),
-                'branch_id' => null,
                 'location_id' => $validated['location_id'],
             ]);
 

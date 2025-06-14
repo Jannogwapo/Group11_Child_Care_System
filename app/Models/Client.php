@@ -23,6 +23,7 @@ class Client extends Model
         'clientguardianrelationship',
         'guardianphonenumber',
         'case_id',
+        'cicl_case_details',
         'clientdateofadmission',
         'status_id',
         'isAStudent',

@@ -80,6 +80,12 @@
                         <div style="color: #888;">Case Type</div>
                         <div style="font-weight: 500;">{{ $client->case->case_name ?? 'Not specified' }}</div>
                     </div>
+                    @if($client->case->case_name === 'CICL' && $client->cicl_case_details)
+                    <div style="flex: 1; min-width: 120px;">
+                        <div style="color: #888;">CICL Case Details</div>
+                        <div style="font-weight: 500;">{{ $client->cicl_case_details }}</div>
+                    </div>
+                    @endif
                     <div style="flex: 1; min-width: 120px;">
                         <div style="color: #888;">Status</div>
                         <div style="font-weight: 500;">{{ $client->status->status_name ?? 'Not specified' }}</div>
@@ -109,10 +115,6 @@
                     <div style="flex: 1; min-width: 120px;">
                         <div style="color: #888;">PWD</div>
                         <div style="font-weight: 500;">{{ $client->isAPwd ? 'Yes' : 'No' }}</div>
-                    </div>
-                    <div style="flex: 1; min-width: 120px;">
-                        <div style="color: #888;">Branch</div>
-                        <div style="font-weight: 500;">{{ $client->branch->branchName ?? 'Not specified' }}</div>
                     </div>
                 </div>
             </div>

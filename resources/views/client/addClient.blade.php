@@ -68,7 +68,7 @@
                         <input id="guardianRelationship" type="text" class="form-control @error('guardianRelationship') is-invalid @enderror" name="guardianRelationship" value="{{ old('guardianRelationship') }}" required style="flex: 1;">
                     </div>
                     <div style="display: flex; align-items: center; gap: 18px;">
-                        <label for="parentContact" style="width: 160px; font-weight: 500;">Phone Number</label>
+                        <label for="parentContact" style="width: 160px; font-weight: 500;">Guardian Contact</label>
                         <input id="parentContact" type="text" class="form-control @error('parentContact') is-invalid @enderror" name="parentContact" value="{{ old('parentContact') }}" pattern="[0-9]{11}" maxlength="11" style="flex: 1;">
                     </div>
                     <div style="display: flex; align-items: center; gap: 18px;">
@@ -79,6 +79,10 @@
                                 <option value="{{ $case->id }}" {{ old('case_id') == $case->id ? 'selected' : '' }}>{{ $case->case_name }}</option>
                             @endforeach
                         </select>
+                    </div>
+                    <div id="ciclCaseDetailsDiv" style="display: none; align-items: center; gap: 18px;">
+                        <label for="cicl_case_details" style="width: 160px; font-weight: 500;">Specific Case</label>
+                        <input id="cicl_case_details" type="text" class="form-control @error('cicl_case_details') is-invalid @enderror" name="cicl_case_details" value="{{ old('cicl_case_details') }}" placeholder="Enter specific case" style="flex: 1;">
                     </div>
                     <div style="display: flex; align-items: center; gap: 18px;">
                         <label for="admissionDate" style="width: 160px; font-weight: 500;">Admission Date</label>
@@ -118,7 +122,7 @@
                     <div style="display: flex; align-items: center; gap: 18px;">
                         <label for="location_id" style="width: 160px; font-weight: 500;">Remarks</label>
                         <select id="location_id" class="form-control @error('location_id') is-invalid @enderror" name="location_id" required style="flex: 1;">
-                            <option value="">Select Location</option>
+                            <option value="">Remarks</option>
                             @foreach($locations as $location)
                                 <option value="{{ $location->id }}" {{ old('location_id') == $location->id ? 'selected' : '' }}>
                                     {{ $location->location }}
@@ -148,9 +152,27 @@ document.getElementById('birthdate').addEventListener('change', function() {
     document.getElementById('age').value = age;
 });
 </script>
-@endsection
 
-@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const caseSelect = document.getElementById('case_id');
+    const ciclDetailsDiv = document.getElementById('ciclCaseDetailsDiv');
+    
+    function toggleCiclDetails() {
+        const selectedOption = caseSelect.options[caseSelect.selectedIndex];
+        if (selectedOption && selectedOption.text === 'CICL') {
+            ciclDetailsDiv.style.display = 'flex';
+        } else {
+            ciclDetailsDiv.style.display = 'none';
+        }
+    }
+    
+    caseSelect.addEventListener('change', toggleCiclDetails);
+    // Run on page load to handle pre-selected values
+    toggleCiclDetails();
+});
+</script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const provinceSelect = document.getElementById('province');

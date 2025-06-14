@@ -15,16 +15,18 @@ use Carbon\Carbon;
 class HearingController extends Controller
 {
     public function create():View{
-        $userGender = Auth::user()->gender_id;
-        $clients = Client::whereHas('location', function($query) {
-            $query->where('location', 'IN-HOUSE');
-        })
-            ->whereHas('location', function($query) {
-            $query->where('location_id', '=', 1);
-        })
-            ->where('clientgender', $userGender)
-            ->orderBy('clientLastName')
-            ->get();
+        $user = Auth::user();
+        $isAdmin = Gate::allows('isAdmin');
+
+        $clientsQuery = Client::query();
+
+        if (!$isAdmin) {
+            $userGender = $user->gender_id;
+            $clientsQuery->where('clientgender', $userGender);
+        }
+
+        $clients = $clientsQuery->orderBy('clientLastName')->get();
+        
         $branches = Branch::orderBy('branchName')->get();
         $statuses = Status::orderBy('status_name')->get();
         return view('client.addHearing', compact('clients', 'branches', 'statuses'));
@@ -37,7 +39,8 @@ class HearingController extends Controller
             'branch_id' => 'required|exists:branch,id',
             'hearing_date' => 'required|date',
             'time' => 'required',
-            'notes' => 'nullable|string'
+            'notes' => 'nullable|string',
+            'judge_name' => 'nullable|string|max:255'
         ]);
         $validated['edit_count'] =1;
         $validated['status'] = 'scheduled';
@@ -54,11 +57,13 @@ class HearingController extends Controller
     $nextMonth = Carbon::parse($currentMonth)->addMonth()->format('Y-m');
     $filter = $request->input('filter', 'upcoming');
     $user = Auth::user();
+    $isAdmin = Gate::allows('isAdmin');
+
     $baseQuery = Hearing::whereYear('hearing_date', $currentDate->year)
         ->whereMonth('hearing_date', $currentDate->month)
-        ->with(['client', 'branch']);
+        ->with(['client.gender', 'client.case', 'branch']);
 
-    if (!Gate::allows('isAdmin')) {
+    if (!$isAdmin) {
         $baseQuery->whereHas('client', function ($query) use ($user) {
             $query->where('clientgender', $user->gender_id);
         });
@@ -103,13 +108,33 @@ class HearingController extends Controller
                          });
 
     $allHearings = $hearings->flatten();
+
+    $maleHearings = collect();
+    $femaleHearings = collect();
+
+    if ($isAdmin) {
+        $maleHearings = $allHearings->filter(function ($hearing) {
+            return optional($hearing->client)->gender_id === 1; // Assuming 1 for male
+        });
+        $femaleHearings = $allHearings->filter(function ($hearing) {
+            return optional($hearing->client)->gender_id === 2; // Assuming 2 for female
+        });
+    } elseif ($user->gender_id === 1) { // If social worker is male
+        $maleHearings = $allHearings;
+    } elseif ($user->gender_id === 2) { // If social worker is female
+        $femaleHearings = $allHearings;
+    }
+
     return view('calendar', compact(
         'currentDate',
         'previousMonth',
         'nextMonth',
         'hearings',
         'allHearings',
-        'currentMonth'
+        'maleHearings',
+        'femaleHearings',
+        'currentMonth',
+        'isAdmin'
     ));
 }
 
@@ -134,7 +159,8 @@ class HearingController extends Controller
                 'branch_id' => 'required',
                 'hearing_date' => 'required',
                 'time' => 'required',
-                'status' => 'required|in:completed,postponed'
+                'status' => 'required|in:completed,postponed',
+                'judge_name' => 'nullable|string|max:255'
             ]);
 
             // Update basic fields
@@ -143,6 +169,7 @@ class HearingController extends Controller
             $hearing->hearing_date = $request->hearing_date;
             $hearing->time = $request->time;
             $hearing->status = $request->status;
+            $hearing->judge_name = $request->judge_name;
             $hearing->edit_count += 1;
 
             // Clear any next hearing fields if they exist

@@ -9,7 +9,7 @@
             <div class="report-header">
                 <h2>ACTIVITY REPORTS</h2>
                 @cannot('isAdmin')
-                    <a href="{{ route('events.create') }}" class="add-btn">ADD EVENTS</a>
+                    <a href="{{ route('events.create') }}" class="add-btn">ADD ACTIVITY</a>
                 @endcannot
             </div>
 
