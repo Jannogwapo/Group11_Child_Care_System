@@ -14,9 +14,12 @@ use App\Models\Location;
 use App\Models\Branch;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use App\Traits\CreatesNotifications;
 
 class AddClient extends Controller
 {
+    use CreatesNotifications;
+
     public function showAddClientForm()
     {
         // Check if user is a social worker
@@ -105,7 +108,7 @@ class AddClient extends Controller
 
         try {
             // Create a new client with the user's gender
-            Client::create([
+            $client = Client::create([
                 'clientLastName' => $validated['lname'],
                 'clientFirstName' => $validated['fname'],
                 'clientMiddleName' => $validated['mname'] ?? null,
@@ -125,6 +128,13 @@ class AddClient extends Controller
                 'user_id' => Auth::id(),
                 'location_id' => $validated['location_id'],
             ]);
+
+            // Create notification for admins
+            $this->notifyAdmins(
+                'New Client Added',
+                "A new client {$client->clientFirstName} {$client->clientLastName} has been added by {$request->user()->name}.",
+                route('admin.logs', ['filter' => 'clients']) // Link to the clients tab in logs
+            );
 
             return redirect()->route('clients.view')->with('success', 'Client added successfully!');
         } catch (\Exception $e) {

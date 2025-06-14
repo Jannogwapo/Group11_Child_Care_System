@@ -13,12 +13,13 @@ use App\Models\IsAPwd;
 use App\Models\Branch;
 use App\Models\Location;
 use Illuminate\Support\Facades\Gate;
-
+use App\Traits\CreatesNotifications;
 
 use Illuminate\Support\Facades\DB;
 
 class ClientController extends Controller
 {
+    use CreatesNotifications;
 
     public function showClient(Request $request)
     {

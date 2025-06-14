@@ -19,7 +19,7 @@ class Event extends Model
         'status',
         'picture',
         'created_by',
-        
+
     ];
 
     protected $casts = [

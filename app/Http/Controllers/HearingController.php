@@ -11,9 +11,12 @@ use App\Models\Client;
 use App\Models\Branch;
 use App\Models\Status;
 use Carbon\Carbon;
+use App\Traits\CreatesNotifications;
 
 class HearingController extends Controller
 {
+    use CreatesNotifications;
+
     public function create():View{
         $user = Auth::user();
         $isAdmin = Gate::allows('isAdmin');
@@ -46,6 +49,14 @@ class HearingController extends Controller
         $validated['status'] = 'scheduled';
         $validated['user_id'] = auth()->id();
         $hearing = Hearing::create($validated);
+        $client = $hearing->client;
+
+        $this->notifyAdmins(
+            'New Hearing Scheduled',
+            "A new hearing has been scheduled for client {$client->clientFirstName} {$client->clientLastName} by {$request->user()->name}.",
+            route('admin.logs', ['filter' => 'hearings'])
+        );
+
         return redirect()->route('calendar.index')
                 ->with('success', 'Hearing added successfully!');
     }

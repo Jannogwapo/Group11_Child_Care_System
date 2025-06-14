@@ -9,7 +9,7 @@ use App\Models\Branch;
 
 class BranchSeeder extends Seeder
 {
-    /**
+    /** 
      * Run the database seeds.
      */
     public function run(): void
@@ -62,3 +62,4 @@ class BranchSeeder extends Seeder
         }
     }
 }
+       

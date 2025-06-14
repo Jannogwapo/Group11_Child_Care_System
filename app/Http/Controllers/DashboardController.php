@@ -44,7 +44,7 @@ class DashboardController extends Controller
         if (Gate::allows('isAdmin')) {
             $clientCount = Client::count();
             $totalClients = $clientCount;
-        } 
+        }
         // If user is social worker, show only clients with same gender
         else {
             $clientCount = Client::where('clientgender', $user->gender_id)->count();

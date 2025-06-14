@@ -15,6 +15,7 @@ use App\Http\Controllers\AccessController;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Controllers\LogsController;
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\BranchController;
 
 // IT user only
@@ -162,6 +163,11 @@ Route::get('/activities/{activity}', [ActivityController::class, 'show'])->name(
 Route::get('/activities/{activity}/edit', [ActivityController::class, 'edit'])->name('activities.edit');
 Route::patch('/activities/{activity}', [ActivityController::class, 'update'])->name('activities.update');
 Route::delete('/activities/{activity}', [ActivityController::class, 'destroy'])->name('activities.destroy');
+
+// Notification routes
+Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unreadCount');
 
 
 
