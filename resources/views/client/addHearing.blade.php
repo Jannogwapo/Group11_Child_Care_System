@@ -216,6 +216,31 @@
                                readonly style="flex: 1; background: #f8f9fa;">
                     </div>
 
+                    <div style="display: flex; align-items: center; gap: 18px;">
+                        <label for="status" style="width: 160px; font-weight: 500;">Status</label>
+                        <select name="status" id="status" class="form-control @error('status') is-invalid @enderror" required style="flex: 1;">
+                            <option value="">Select Status</option>
+                            <option value="ongoing" {{ old('status') == 'ongoing' ? 'selected' : '' }}>Ongoing</option>
+                            <option value="postponed" {{ old('status') == 'postponed' ? 'selected' : '' }}>Postponed</option>
+                            <option value="completed" {{ old('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                        </select>
+                    </div>
+
+                    <div id="next-schedule-fields" style="display: none; flex-direction: column; gap: 18px;">
+                        <div style="display: flex; align-items: center; gap: 18px;">
+                            <label for="next_hearing_date" style="width: 160px; font-weight: 500;">Next Hearing Date</label>
+                            <input type="date" name="next_hearing_date" id="next_hearing_date" class="form-control" style="flex: 1;">
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 18px;">
+                            <label for="next_hearing_time" style="width: 160px; font-weight: 500;">Next Hearing Time</label>
+                            <input type="time" name="next_hearing_time" id="next_hearing_time" class="form-control" style="flex: 1;">
+                        </div>
+                        <div style="display: flex; align-items: start; gap: 18px;">
+                            <label for="next_hearing_notes" style="width: 160px; font-weight: 500; padding-top: 8px;">Next Hearing Notes</label>
+                            <textarea name="next_hearing_notes" id="next_hearing_notes" class="form-control" style="flex: 1; min-height: 60px; resize: vertical;" placeholder="Enter details for the next hearing (optional)"></textarea>
+                        </div>
+                    </div>
+
                     <div style="display: flex; align-items: start; gap: 18px;">
                         <label for="notes" style="width: 160px; font-weight: 500; padding-top: 8px;">Notes</label>
                         <textarea name="notes" id="notes" 
@@ -240,6 +265,8 @@
     document.addEventListener('DOMContentLoaded', function() {
         const branchSelect = document.getElementById('branch_id');
         const judgeNameInput = document.getElementById('judge_name');
+        const statusSelect = document.getElementById('status');
+        const nextFields = document.getElementById('next-schedule-fields');
         
         function updateJudge() {
             const selectedOption = branchSelect.options[branchSelect.selectedIndex];
@@ -247,8 +274,18 @@
             judgeNameInput.value = judgeName;
         }
         
+        function toggleNextFields() {
+            if (statusSelect.value === 'ongoing' || statusSelect.value === 'postponed') {
+                nextFields.style.display = 'flex';
+            } else {
+                nextFields.style.display = 'none';
+            }
+        }
+        
         branchSelect.addEventListener('change', updateJudge);
+        statusSelect.addEventListener('change', toggleNextFields);
         updateJudge();
+        toggleNextFields();
     });
 </script>
 @endsection

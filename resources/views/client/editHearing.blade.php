@@ -300,19 +300,19 @@
                     <div style="display: flex; align-items: center; gap: 18px;">
                         <label for="status" style="width: 160px; font-weight: 500;">Status</label>
                         <select name="status" id="status" class="form-control @error('status') is-invalid @enderror" required style="flex: 1;">
-                            <option value="completed" {{ $hearing->status == 'completed' ? 'selected' : '' }}>Completed</option>
+                            <option value="ongoing" {{ $hearing->status == 'ongoing' ? 'selected' : '' }}>Ongoing</option>
                             <option value="postponed" {{ $hearing->status == 'postponed' ? 'selected' : '' }}>Postponed</option>
+                            <option value="completed" {{ $hearing->status == 'completed' ? 'selected' : '' }}>Completed</option>
                         </select>
                     </div>
 
                     <!-- Next Hearing Fields -->
-                    <div id="nextHearingFields" style="display: {{ $hearing->status === 'on-going' ? 'block' : 'none' }};">
+                    <div id="nextHearingFields" style="display: {{ ($hearing->status === 'ongoing' || $hearing->status === 'postponed') ? 'block' : 'none' }};">
                         <div style="background: #f8fdfa; border-radius: 12px; padding: 24px; margin-bottom: 0;">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
                                 <span class="material-icons" style="color: #21807a;">event_repeat</span>
                                 <span style="font-size: 1.2rem; font-weight: 600; color: #21807a;">Next Hearing Details</span>
                             </div>
-                            
                             <div style="display: flex; flex-direction: column; gap: 18px;">
                                 <div style="display: flex; align-items: center; gap: 18px;">
                                     <label for="next_hearing_date" style="width: 160px; font-weight: 500;">Next Date</label>
@@ -322,7 +322,6 @@
                                            min="{{ date('Y-m-d') }}"
                                            style="flex: 1;">
                                 </div>
-
                                 <div style="display: flex; align-items: center; gap: 18px;">
                                     <label for="next_hearing_time" style="width: 160px; font-weight: 500;">Next Time</label>
                                     <input type="time" name="next_hearing_time" id="next_hearing_time"
@@ -353,5 +352,20 @@
 
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const statusSelect = document.getElementById('status');
+    const nextFields = document.getElementById('nextHearingFields');
+    function toggleNextFields() {
+        if (statusSelect.value === 'ongoing' || statusSelect.value === 'postponed') {
+            nextFields.style.display = 'block';
+        } else {
+            nextFields.style.display = 'none';
+        }
+    }
+    statusSelect.addEventListener('change', toggleNextFields);
+    toggleNextFields();
+});
+</script>
 
 @endsection

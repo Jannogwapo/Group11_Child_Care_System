@@ -125,7 +125,24 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h5 >Weekly Hearing</h5>
+                @can('isAdmin')
+                    <h5 class="mb-0">In-House Clients by Gender</h5>
+                @else
+                    <h5 class="mb-0">Your In-House Clients</h5>
+                @endcan
+            </div>
+            <div class="card-body">
+                <canvas id="locationClientChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Weekly Hearing</h5>
             </div>
             <div class="card-body">
                 <div align="center" class="mb-2">
@@ -584,6 +601,35 @@
                             }
                         }
                     }
+                }
+            }
+        }
+    });
+
+    // Location-based client chart
+    const locationCtx = document.getElementById('locationClientChart').getContext('2d');
+    new Chart(locationCtx, {
+        type: 'pie',
+        data: {
+            labels: {!! json_encode($locationStats['labels']) !!},
+            datasets: [{
+                data: {!! json_encode($locationStats['data']) !!},
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 99, 132, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
                 }
             }
         }
