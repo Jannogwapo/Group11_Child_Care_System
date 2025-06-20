@@ -16,7 +16,7 @@
                         @method('DELETE')
                         <button type="submit" class="delete-btn">Delete Event</button>
                     </form>
-                    <a href="{{ route('events.edit', $event) }}" class="edit-btn">Edit Event</a>
+                    <a href="{{ route('events.edit', $event) }}" class="edit-event-btn">Edit Event</a>
                 @endcannot
             </div>
             <div class="date-badge">{{ \Carbon\Carbon::parse($event->start_date)->format('M d, Y') }}</div>
@@ -204,7 +204,7 @@
     background: #c82333;
 }
 
-.edit-btn {
+.edit-event-btn {
     background: #007bff;
     color: white;
     border: none;
@@ -216,7 +216,7 @@
     margin-left: 8px;
 }
 
-.edit-btn:hover {
+.edit-event-btn:hover {
     background: #0056b3;
 }
 </style>
