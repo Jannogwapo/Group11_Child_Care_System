@@ -1,0 +1,8 @@
+/* Add styling for unread notifications */
+.notification-item.unread {
+    background-color: #f0f7ff;
+}
+
+.notification-item.unread:hover {
+    background-color: #e6f0fa;
+}

@@ -25,16 +25,14 @@
     </div>
 
     @if($filter === 'all' || $filter === 'clients')
-
         <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
         @if($filter==='clients')
-        <h2 class="text-xl font-semibold mb-4">Recent Clients</h2>
+        <h2 class="text-xl font-semibold mb-4">Client Activity</h2>
         @endif
         @if($recentClients->isEmpty())
-            <p class="text-gray-500">No recent clients found.</p>
+            <p class="text-gray-500">No recent client activity found.</p>
         @else
         <table class="min-w-full bg-white">
-
             <tbody>
                 @foreach($recentClients as $client)
                 <tr>
@@ -43,10 +41,22 @@
                     </th>
                     <td class="p-6">
                         <p class="user-name font-bold"><strong>{{ $client->user->name ?? 'Unknown' }}</strong></p>
-                        <p class="">Added a new Client name <strong> {{ $client->clientFirstName ?? 'N/A' }} {{ $client->clientLastName ?? '' }}</strong> </p>
+                        <p class="">
+                            @if($client->created_at->eq($client->updated_at))
+                                Added a new Client name <strong> {{ $client->clientFirstName ?? 'N/A' }} {{ $client->clientLastName ?? '' }}</strong>
+                            @else
+                                Updated Client <strong> {{ $client->clientFirstName ?? 'N/A' }} {{ $client->clientLastName ?? '' }}</strong>
+                            @endif
+                        </p>
                     </td>
                     <td class="py-6 px-4 border-b text-end">
-                        <span style="color: #bbb; font-size: 0.8em;">{{ $client->created_at }}</span>
+                        <span style="color: #bbb; font-size: 0.8em;">
+                            @if($client->created_at->eq($client->updated_at))
+                                {{ $client->created_at }}
+                            @else
+                                {{ $client->updated_at }}
+                            @endif
+                        </span>
                     </td>
                 </tr>
                 @endforeach
@@ -54,8 +64,6 @@
         </table>
         @endif
     </div>
-
-
 @endif
 
 @if($filter === 'all' || $filter === 'hearings')

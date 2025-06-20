@@ -123,8 +123,22 @@ class EventController extends Controller
             'event_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
+        // Check if there are actual changes
+        $hasChanges = $event->title != $validated['event_title'] || 
+                      $event->description != $validated['event_description'] || 
+                      $event->start_date != $validated['event_date'];
+
         // Update the event
-        $event->update($validated);
+        $event->title = $validated['event_title'];
+        $event->description = $validated['event_description'];
+        $event->start_date = $validated['event_date'];
+        $event->end_date = $validated['event_date'];
+        
+        if ($hasChanges) {
+            $event->updated_at = now();
+        }
+        
+        $event->save();
 
         // Handle multiple image uploads
         if ($request->hasFile('event_images')) {
@@ -134,7 +148,19 @@ class EventController extends Controller
             }
         }
 
+        // Notify admins about the update if there were changes
+        if ($hasChanges) {
+            $this->notifyAdmins(
+                'Event Updated',
+                "Event '{$event->title}' has been updated by {$request->user()->name}.",
+                route('admin.logs', ['filter' => 'events'])
+            );
+        }
+
         return redirect()->route('events.show', $event)
             ->with('success', 'Event report updated successfully!');
     }
 }
+
+
+

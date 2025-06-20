@@ -68,6 +68,11 @@ class IncidentController extends Controller
                 Storage::disk('public')->delete($incident->incident_image);
             }
 
+            // Delete any associated images in the incident_images table
+            foreach ($incident->images as $image) {
+                Storage::disk('public')->delete($image->image_path);
+            }
+
             $incident->delete();
 
             return redirect()->route('events.index')
@@ -103,8 +108,21 @@ class IncidentController extends Controller
             'incident_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
+        // Check for actual changes
+        $hasChanges = $incident->incident_type != $validated['incident_type'] ||
+                      $incident->incident_description != $validated['incident_description'] ||
+                      $incident->incident_date != $validated['incident_date'];
+
         // Update the incident
-        $incident->update($validated);
+        $incident->incident_type = $validated['incident_type'];
+        $incident->incident_description = $validated['incident_description'];
+        $incident->incident_date = $validated['incident_date'];
+
+        if ($hasChanges) {
+            $incident->updated_at = now();
+        }
+
+        $incident->save();
 
         // Handle multiple image uploads
         if ($request->hasFile('incident_images')) {
@@ -114,7 +132,19 @@ class IncidentController extends Controller
             }
         }
 
+        // Notify admins if there were changes
+        if ($hasChanges) {
+            $this->notifyAdmins(
+                'Incident Updated',
+                "An incident of type '{$incident->incident_type}' has been updated by {$request->user()->name}.",
+                route('admin.logs', ['filter' => 'incidents'])
+            );
+        }
+
         return redirect()->route('incidents.show', $incident)
             ->with('success', 'Incident report updated successfully!');
     }
 }
+
+
+

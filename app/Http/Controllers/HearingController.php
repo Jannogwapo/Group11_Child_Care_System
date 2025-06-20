@@ -174,6 +174,14 @@ class HearingController extends Controller
                 'judge_name' => 'nullable|string|max:255'
             ]);
 
+            // Check for actual changes
+            $hasChanges = $hearing->client_id != $request->client_id ||
+                          $hearing->branch_id != $request->branch_id ||
+                          $hearing->hearing_date != $request->hearing_date ||
+                          $hearing->time != $request->time ||
+                          $hearing->status != $request->status ||
+                          $hearing->judge_name != $request->judge_name;
+
             // Update basic fields
             $hearing->client_id = $request->client_id;
             $hearing->branch_id = $request->branch_id;
@@ -188,6 +196,19 @@ class HearingController extends Controller
             $hearing->next_hearing_time = null;
 
             $hearing->save();
+            
+            // Notify admins if there were changes
+            if ($hasChanges) {
+                $client = Client::find($request->client_id);
+                $clientName = $client ? "{$client->clientFirstName} {$client->clientLastName}" : "Client #{$request->client_id}";
+                
+                $this->notifyAdmins(
+                    'Hearing Updated',
+                    "A hearing for {$clientName} has been updated by {$request->user()->name}.",
+                    route('admin.logs', ['filter' => 'hearings'])
+                );
+            }
+            
             return redirect()->route('calendar.index')->with('success', 'Hearing updated successfully!');
             
         } catch (\Exception $e) {
@@ -195,10 +216,27 @@ class HearingController extends Controller
         }
     }
 
-    public function destroy(Hearing $hearing): RedirectResponse {
+    public function destroy(Hearing $hearing)
+    {
         try {
+            // Store hearing information before deletion for notification
+            $clientId = $hearing->client_id;
+            $client = Client::find($clientId);
+            $clientName = $client ? "{$client->clientFirstName} {$client->clientLastName}" : "Client #{$clientId}";
+            $userName = auth()->user()->name;
+            $hearingDate = $hearing->hearing_date->format('F d, Y');
+
             $hearing->delete();
-            return redirect()->route('calendar.index')->with('success', 'Hearing deleted successfully!');
+
+            // Create notification for admins about the hearing deletion
+            $this->notifyAdmins(
+                'Hearing Deleted',
+                "A hearing scheduled for {$clientName} on {$hearingDate} has been deleted by {$userName}.",
+                route('admin.logs', ['filter' => 'hearings'])
+            );
+
+            return redirect()->route('calendar.index')
+                ->with('success', 'Hearing deleted successfully.');
         } catch (\Exception $e) {
             return back()->with('error', 'Error deleting hearing: ' . $e->getMessage());
         }
@@ -210,3 +248,5 @@ class HearingController extends Controller
         return view('client.viewHearing', compact('hearing'));
     }
 }
+
+

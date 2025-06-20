@@ -24,9 +24,35 @@ class LogsController extends Controller
         $currentMonth = now()->month;
 
         // Fetch data based on the filter
-        $recentClients = $filter === 'all' || $filter === 'clients'
-            ? Client::whereMonth('created_at', $currentMonth)->latest('created_at')->get()
-            : collect();
+        $recentClients = collect();
+        
+        if ($filter === 'all' || $filter === 'clients') {
+            // Get new clients (created this month)
+            $newClients = Client::whereMonth('created_at', $currentMonth)
+                ->latest('created_at')
+                ->get()
+                ->map(function ($client) {
+                    $client->is_new = true;
+                    $client->activity_time = $client->created_at;
+                    return $client;
+                });
+                
+            // Get updated clients (updated this month but created earlier)
+            $updatedClients = Client::whereMonth('updated_at', $currentMonth)
+                ->whereRaw('DATE(created_at) != DATE(updated_at)') // Only get actual updates
+                ->latest('updated_at')
+                ->get()
+                ->map(function ($client) {
+                    $client->is_new = false;
+                    $client->activity_time = $client->updated_at;
+                    return $client;
+                });
+                
+            // Merge and sort by most recent activity
+            $recentClients = $newClients->concat($updatedClients)
+                ->sortByDesc('activity_time')
+                ->values();
+        }
 
         $recentHearings = $filter === 'all' || $filter === 'hearings'
             ? Hearing::whereMonth('created_at', $currentMonth)->latest('created_at')->get()
@@ -49,3 +75,4 @@ class LogsController extends Controller
         ));
     }
 }
+

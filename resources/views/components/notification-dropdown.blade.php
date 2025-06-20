@@ -37,7 +37,7 @@
 <div class="notification-dropdown">
     <div class="notification-badge" id="notificationBell">
         <i class="bi bi-bell"></i>
-        @if($notifications->where('read_at', null)->count() + $upcomingHearings->count() > 0)
+        @if($notifications->where('read_at', null)->count() > 0)
             <span class="notification-dot"></span>
         @endif
     </div>
@@ -51,11 +51,15 @@
             <div class="notification-list">
                 @forelse($notifications as $notification)
                     <a href="{{ $notification->data['link'] ?? '#' }}"
-                       class="notification-item">
+                       class="notification-item {{ is_null($notification->read_at) ? 'unread' : '' }}"
+                       data-notification-id="{{ $notification->id }}">
                         <div class="notification-content">
                             <h4>{{ $notification->data['title'] }}</h4>
                             <p>{{ $notification->data['message'] }}</p>
                             <small>{{ $notification->created_at->diffForHumans() }}</small>
+                            @if(!is_null($notification->read_at))
+                                <small class="read-time">Read: <span style="color: #dc3545;">{{ $notification->read_at->diffForHumans() }}</span></small>
+                            @endif
                         </div>
                     </a>
                 @empty
@@ -188,6 +192,20 @@
         border-radius: 50%;
         z-index: 2;
     }
+
+    .notification-item.unread {
+        background-color: #f0f7ff;
+    }
+    
+    .notification-item.unread:hover {
+        background-color: #e6f0fa;
+    }
+    
+    .read-time {
+        display: block;
+        margin-top: 4px;
+        font-style: italic;
+    }
 </style>
 
 <script>
@@ -213,3 +231,8 @@
         }
     });
 </script>
+
+
+
+
+
