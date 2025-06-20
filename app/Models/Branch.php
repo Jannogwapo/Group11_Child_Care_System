@@ -11,7 +11,6 @@ class Branch extends Model
 
     protected $fillable = [
         'branchName',
-        'judgeName',
         'judge_name'
     ];
 

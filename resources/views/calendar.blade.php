@@ -21,43 +21,44 @@
     @endif
 
     <!-- Header Section -->
-    <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800 text-center mb-4">Calendar Hearing</h1>
+    <div class="flex items-center gap-4 mb-6 justify-end">
+        <div class="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+            <button id="calendarViewBtn" class="case-filter-btn{{ $activeFilter == 'calendar' ? ' active' : '' }}" type="button">
+                <i class="bi bi-calendar3 text-xl"></i>
+            </button>
+            <button id="listViewBtn" class="case-filter-btn{{ $activeFilter == 'list' ? ' active' : '' }}" type="button">
+                <i class="bi bi-list-ul text-xl"></i>
+            </button>
+        </div>
         @cannot('isAdmin')
-            <h1 class="text-2xl font-bold text-gray-800 text-center">Calendar Hearing</h1>
-            <a href="{{ route('hearings.create') }}" 
-               class="px-6 py-2.5 rounded-full bg-gradient-to-r from-pink-500 to-pink-600 text-white hover:from-pink-600 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2">
-                <i class="bi bi-calendar-check"></i>
-                <i class="bi bi-plus-lg"></i>
-                <span class="font-medium">Add Hearing</span>
-            </a>
-        @else
-            <h1 class="text-2xl font-bold text-gray-800 text-center">Overall Calendar Hearing</h1>
+        <a href="{{ route('hearings.create') }}" class="case-filter-btn flex items-center gap-2">
+            <i class="bi bi-calendar-check"></i>
+            <i class="bi bi-plus-lg"></i>
+            <span class="font-medium">Add Hearing</span>
+        </a>
         @endcannot
     </div>
 
     <!-- Filter Buttons -->
     <div class="mb-6">
-        <form method="GET" action="{{ route('calendar.index') }}" class="flex flex-wrap items-center gap-3">
+        <form method="GET" action="{{ route('calendar.index') }}" class="case-filter-bar flex flex-wrap items-center gap-3" style="margin-bottom: 32px;">
             <input type="hidden" name="month" value="{{ $currentMonth }}">
-            
             @php
                 $filterButtons = [
                     'upcoming' => ['icon' => 'bi-calendar-event', 'text' => 'Upcoming'],
+                    'ongoing' => ['icon' => 'bi-play-circle', 'text' => 'Ongoing Hearing'],
                     'finished' => ['icon' => 'bi-check-circle', 'text' => 'Completed'],
                     'postponed' => ['icon' => 'bi-clock-history', 'text' => 'Postponed'],
                     'all' => ['icon' => 'bi-grid', 'text' => 'All'],
                     'editable' => ['icon' => 'bi-pencil-square', 'text' => '']
                 ];
             @endphp
-
             @foreach($filterButtons as $value => $button)
-                <button type="submit" 
-                        name="filter" 
+                <button type="submit"
+                        name="filter"
                         value="{{ $value }}"
-                        class="px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all duration-200
-                               {{ request('filter', 'upcoming') == $value 
-                                  ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md' 
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                        class="case-filter-btn{{ request('filter', 'upcoming') == $value ? ' active' : '' }} flex items-center gap-2">
                     <i class="bi {{ $button['icon'] }}"></i>
                     @if($button['text'])
                         <span class="font-medium">{{ $button['text'] }}</span>
@@ -68,7 +69,7 @@
     </div>
 
     <!-- Calendar Section -->
-    <div class="bg-white rounded-xl shadow-lg p-6 mt-3 {{ isset($allHearings) && count($allHearings) > 0 ? 'mb-8' : '' }}">
+    <div class="calendar-section bg-white rounded-xl shadow-lg p-6 mt-3 {{ isset($allHearings) && count($allHearings) > 0 ? 'mb-8' : '' }}">
         <table id="cal-table" class="w-full">
             <tr>
                 <td colspan="7" class="text-center py-3">
@@ -242,10 +243,75 @@
         from { opacity: 0; transform: scale(0.95); }
         to { opacity: 1; transform: scale(1); }
     }
+    .calendar-section {
+        display: block;
+    }
+    .list-section {
+        display: none;
+    }
+    .view-active {
+        background-color: white !important;
+        color: #2563eb !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .case-filter-bar {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+        margin-bottom: 32px;
+        flex-wrap: wrap;
+        text-decoration: none;
+    }
+    .case-filter-btn {
+        display: inline-block;
+        margin: 0;
+        padding: 6px 18px;
+        border-radius: 20px;
+        border: none;
+        background: #e0e7ef;
+        color: #222;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+        text-decoration: none;
+    }
+    .case-filter-btn.active, .case-filter-btn:hover {
+        background: var(--primary-color, #2563eb);
+        color: var(--text-color, #fff);
+    }
 </style>
 
 <script>
     const hearingsData = @json($hearings);
+
+    // View toggle functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendarViewBtn = document.getElementById('calendarViewBtn');
+        const listViewBtn = document.getElementById('listViewBtn');
+        const calendarSection = document.querySelector('.calendar-section');
+        const listSection = document.querySelector('.list-section');
+
+        function setActiveView(view) {
+            if (view === 'calendar') {
+                calendarSection.style.display = 'block';
+                listSection.style.display = 'none';
+                calendarViewBtn.classList.add('view-active');
+                listViewBtn.classList.remove('view-active');
+            } else {
+                calendarSection.style.display = 'none';
+                listSection.style.display = 'block';
+                listViewBtn.classList.add('view-active');
+                calendarViewBtn.classList.remove('view-active');
+            }
+        }
+
+        calendarViewBtn.addEventListener('click', () => setActiveView('calendar'));
+        listViewBtn.addEventListener('click', () => setActiveView('list'));
+
+        // Set initial view
+        setActiveView('calendar');
+    });
 
     function showCalendarPopup(e, date) {
         const popup = document.getElementById('calendarPopup');
@@ -307,40 +373,94 @@
 </script>
 
 <!-- Hearings List Section -->
-<div class="mt-8">
-    <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Hearing Schedule</h2>
-
+<div class="list-section mt-8">
     @if($isAdmin)
         <!-- All Hearings for Admin -->
         <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-            <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">All Hearings</h3>
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-gray-700">All Hearings</h3>
+                <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                        In-House: {{ $allHearings->where('client.status', 'in-house')->count() }}
+                    </span>
+                </div>
+            </div>
             @if($allHearings->count() > 0)
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white">
-                        <thead>
+                <div class="overflow-x-auto rounded-lg border border-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
                             <tr>
-                                <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Client Name</th>
-                                <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
-                                <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Time</th>
-                                <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Branch</th>
-                                <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Judge</th>
-                                <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Details</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client Information</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hearing Details</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Court Information</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @foreach($allHearings as $hearing)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ $hearing->client->clientFirstName }} {{ $hearing->client->clientLastName }}</td>
-                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ \Carbon\Carbon::parse($hearing->hearing_date)->format('M d, Y') }}</td>
-                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ \Carbon\Carbon::parse($hearing->time)->format('h:i A') }}</td>
-                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ $hearing->branch->branchName ?? 'N/A' }}</td>
-                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ $hearing->branch->judgeName ?? 'N/A' }}</td>
-                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">
-                                        @if($hearing->client->case && $hearing->client->case->case_name === 'CICL')
-                                            <a href="{{ route('clients.show', $hearing->client->id) }}?case=CICL" class="text-blue-600 hover:underline">View Details</a>
-                                        @else
-                                            <a href="{{ route('clients.show', $hearing->client->id) }}" class="text-blue-600 hover:underline">View Details</a>
-                                        @endif
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach($allHearings->where('client.status', 'in-house') as $hearing)
+                                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                                <i class="bi bi-person text-blue-600 text-lg"></i>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">
+                                                    {{ $hearing->client->clientFirstName }} {{ $hearing->client->clientLastName }}
+                                                </div>
+                                                <div class="text-sm text-gray-500">
+                                                    Case: {{ $hearing->client->case->case_name ?? 'N/A' }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            <div class="flex items-center gap-2">
+                                                <i class="bi bi-calendar-date text-gray-400"></i>
+                                                {{ \Carbon\Carbon::parse($hearing->hearing_date)->format('M d, Y') }}
+                                            </div>
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <i class="bi bi-clock text-gray-400"></i>
+                                                {{ \Carbon\Carbon::parse($hearing->time)->format('h:i A') }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            <div class="flex items-center gap-2">
+                                                <i class="bi bi-building text-gray-400"></i>
+                                                {{ $hearing->branch->branchName ?? 'N/A' }}
+                                            </div>
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <i class="bi bi-person-badge text-gray-400"></i>
+                                                {{ $hearing->branch->judgeName ?? 'N/A' }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <div class="flex items-center gap-2">
+                                            @if($hearing->client->case && $hearing->client->case->case_name === 'CICL')
+                                                <a href="{{ route('clients.show', $hearing->client->id) }}?case=CICL" 
+                                                   class="inline-flex items-center px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors duration-200">
+                                                    <i class="bi bi-eye mr-1"></i>
+                                                    View
+                                                </a>
+                                            @else
+                                                <a href="{{ route('clients.show', $hearing->client->id) }}" 
+                                                   class="inline-flex items-center px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors duration-200">
+                                                    <i class="bi bi-eye mr-1"></i>
+                                                    View
+                                                </a>
+                                            @endif
+                                            @if(request('filter') === 'editable')
+                                                <a href="{{ route('hearings.edit', $hearing->id) }}" 
+                                                   class="inline-flex items-center px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200 transition-colors duration-200">
+                                                    <i class="bi bi-pencil-square mr-1"></i>
+                                                    Edit
+                                                </a>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -348,87 +468,125 @@
                     </table>
                 </div>
             @else
-                <p class="text-gray-600">No hearings found for this filter.</p>
+                <div class="text-center py-12">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                        <i class="bi bi-calendar-x text-3xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-1">No In-House Hearings Found</h3>
+                    <p class="text-gray-500">There are no in-house hearings matching your current filter.</p>
+                </div>
             @endif
         </div>
     @else
-        <!-- Male Hearings for Social Worker -->
-        @if($maleHearings->count() > 0)
-            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-                <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">For Male Clients</h3>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-                        <thead class="bg-gray-100">
+        @php
+            $userGender = auth()->user()->gender_id;
+            $hearings = $userGender == 1 ? $maleHearings : $femaleHearings;
+            $genderText = $userGender == 1 ? 'Male' : 'Female';
+            $inHouseHearings = $hearings->where('client.status', 'in-house');
+        @endphp
+        
+        <!-- Hearings for Social Worker based on gender -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-gray-700">For {{ $genderText }} Clients</h3>
+                <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                        In-House: {{ $inHouseHearings->count() }}
+                    </span>
+                </div>
+            </div>
+            @if($inHouseHearings->count() > 0)
+                <div class="overflow-x-auto rounded-lg border border-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
                             <tr>
-                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Client Name</th>
-                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Date</th>
-                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Time</th>
-                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Branch</th>
-                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Judge</th>
-                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Details</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client Information</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hearing Details</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Court Information</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @foreach($maleHearings as $hearing)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ $hearing->client->clientFirstName }} {{ $hearing->client->clientLastName }}</td>
-                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ \Carbon\Carbon::parse($hearing->hearing_date)->format('M d, Y') }}</td>
-                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ \Carbon\Carbon::parse($hearing->time)->format('h:i A') }}</td>
-                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ $hearing->branch->branchName ?? 'N/A' }}</td>
-                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ $hearing->branch->judgeName ?? 'N/A' }}</td>
-                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">
-                                        @if($hearing->client->case && $hearing->client->case->case_name === 'CICL')
-                                            <a href="{{ route('clients.show', $hearing->client->id) }}?case=CICL" class="text-blue-600 hover:underline">View Details</a>
-                                        @else
-                                            <a href="{{ route('clients.show', $hearing->client->id) }}" class="text-blue-600 hover:underline">View Details</a>
-                                        @endif
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach($inHouseHearings as $hearing)
+                                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                                <i class="bi bi-person text-blue-600 text-lg"></i>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">
+                                                    {{ $hearing->client->clientFirstName }} {{ $hearing->client->clientLastName }}
+                                                </div>
+                                                <div class="text-sm text-gray-500">
+                                                    Case: {{ $hearing->client->case->case_name ?? 'N/A' }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            <div class="flex items-center gap-2">
+                                                <i class="bi bi-calendar-date text-gray-400"></i>
+                                                {{ \Carbon\Carbon::parse($hearing->hearing_date)->format('M d, Y') }}
+                                            </div>
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <i class="bi bi-clock text-gray-400"></i>
+                                                {{ \Carbon\Carbon::parse($hearing->time)->format('h:i A') }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            <div class="flex items-center gap-2">
+                                                <i class="bi bi-building text-gray-400"></i>
+                                                {{ $hearing->branch->branchName ?? 'N/A' }}
+                                            </div>
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <i class="bi bi-person-badge text-gray-400"></i>
+                                                {{ $hearing->branch->judgeName ?? 'N/A' }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <div class="flex items-center gap-2">
+                                            @if($hearing->client->case && $hearing->client->case->case_name === 'CICL')
+                                                <a href="{{ route('clients.show', $hearing->client->id) }}?case=CICL" 
+                                                   class="inline-flex items-center px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors duration-200">
+                                                    <i class="bi bi-eye mr-1"></i>
+                                                    View
+                                                </a>
+                                            @else
+                                                <a href="{{ route('clients.show', $hearing->client->id) }}" 
+                                                   class="inline-flex items-center px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors duration-200">
+                                                    <i class="bi bi-eye mr-1"></i>
+                                                    View
+                                                </a>
+                                            @endif
+                                            @if(request('filter') === 'editable')
+                                                <a href="{{ route('hearings.edit', $hearing->id) }}" 
+                                                   class="inline-flex items-center px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200 transition-colors duration-200">
+                                                    <i class="bi bi-pencil-square mr-1"></i>
+                                                    Edit
+                                                </a>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
-            </div>
-        @endif
-
-        <!-- Female Hearings for Social Worker -->
-        @if($femaleHearings->count() > 0)
-            <div class="bg-white rounded-xl shadow-lg p-6">
-                <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">For Female Clients</h3>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-                        <thead class="bg-gray-100">
-                            <tr>
-                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Client Name</th>
-                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Date</th>
-                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Time</th>
-                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Branch</th>
-                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Judge</th>
-                                <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Details</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($femaleHearings as $hearing)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ $hearing->client->clientFirstName }} {{ $hearing->client->clientLastName }}</td>
-                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ \Carbon\Carbon::parse($hearing->hearing_date)->format('M d, Y') }}</td>
-                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ \Carbon\Carbon::parse($hearing->time)->format('h:i A') }}</td>
-                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ $hearing->branch->branchName ?? 'N/A' }}</td>
-                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">{{ $hearing->branch->judgeName ?? 'N/A' }}</td>
-                                    <td class="py-2 px-4 border-b border-gray-200 whitespace-nowrap">
-                                        @if($hearing->client->case && $hearing->client->case->case_name === 'CICL')
-                                            <a href="{{ route('clients.show', $hearing->client->id) }}?case=CICL" class="text-blue-600 hover:underline">View Details</a>
-                                        @else
-                                            <a href="{{ route('clients.show', $hearing->client->id) }}" class="text-blue-600 hover:underline">View Details</a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+            @else
+                <div class="text-center py-12">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                        <i class="bi bi-calendar-x text-3xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-1">No In-House {{ strtolower($genderText) }} Client Hearings</h3>
+                    <p class="text-gray-500">There are no in-house {{ strtolower($genderText) }} client hearings at this time.</p>
                 </div>
-            </div>
-        @endif
+            @endif
+        </div>
     @endif
 </div>
 

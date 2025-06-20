@@ -21,7 +21,7 @@ class HearingController extends Controller
         $user = Auth::user();
         $isAdmin = Gate::allows('isAdmin');
 
-        $clientsQuery = Client::query();
+        $clientsQuery = Client::query()->where('location_id', 1);
 
         if (!$isAdmin) {
             $userGender = $user->gender_id;
@@ -170,7 +170,7 @@ class HearingController extends Controller
                 'branch_id' => 'required',
                 'hearing_date' => 'required',
                 'time' => 'required',
-                'status' => 'required|in:completed,postponed',
+                'status' => 'required|in:completed,postponed,ongoing',
                 'judge_name' => 'nullable|string|max:255'
             ]);
 
@@ -183,9 +183,17 @@ class HearingController extends Controller
             $hearing->judge_name = $request->judge_name;
             $hearing->edit_count += 1;
 
-            // Clear any next hearing fields if they exist
-            $hearing->next_hearing_date = null;
-            $hearing->next_hearing_time = null;
+            if ($request->status === 'completed') {
+                // Clear any next hearing fields if they exist
+                $hearing->next_hearing_date = null;
+                $hearing->next_hearing_time = null;
+                $hearing->next_hearing_notes = null;
+            } else {
+                // Update next hearing fields if present
+                $hearing->next_hearing_date = $request->next_hearing_date;
+                $hearing->next_hearing_time = $request->next_hearing_time;
+                $hearing->next_hearing_notes = $request->next_hearing_notes;
+            }
 
             $hearing->save();
             return redirect()->route('calendar.index')->with('success', 'Hearing updated successfully!');

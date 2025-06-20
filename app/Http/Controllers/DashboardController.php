@@ -33,6 +33,9 @@ class DashboardController extends Controller
         // Get case status statistics (filtered by gender for social worker)
         $caseStatusStats = $this->getCaseStatusStats($user);
 
+        // Get location-based statistics
+        $locationStats = $this->getLocationStats($user);
+
         // Get calendar data
         $calendarData = $this->getCalendarData();
 
@@ -150,6 +153,7 @@ class DashboardController extends Controller
             'clientStats' => $clientStats,
             'dischargeStats' => $dischargeStats,
             'caseStatusStats' => $caseStatusStats,
+            'locationStats' => $locationStats,
             'currentMonth' => $calendarData['currentMonth'],
             'previousMonth' => $calendarData['previousMonth'],
             'nextMonth' => $calendarData['nextMonth'],
@@ -281,6 +285,33 @@ class DashboardController extends Controller
             'labels' => $months->toArray(),
             'boys' => $boysCount->toArray(),
             'girls' => $girlsCount->toArray()
+        ];
+    }
+
+    /**
+     * Get client statistics by location.
+     * Admin: shows all clients in location_id 1 by gender.
+     * Social worker: shows only clients of their gender in location_id 1.
+     */
+    private function getLocationStats($user)
+    {
+        $isAdmin = Gate::allows('isAdmin');
+        $query = Client::query()->where('location_id', 1);
+
+        if (!$isAdmin) {
+            $query->where('clientgender', $user->gender_id);
+        }
+
+        $stats = $query->select('clientgender', DB::raw('count(*) as count'))
+            ->groupBy('clientgender')
+            ->get();
+
+        $boys = $stats->where('clientgender', 1)->sum('count');
+        $girls = $stats->where('clientgender', 2)->sum('count');
+
+        return [
+            'labels' => ['Boys', 'Girls'],
+            'data' => [$boys, $girls]
         ];
     }
 
