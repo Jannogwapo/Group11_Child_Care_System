@@ -373,4 +373,4 @@ input[type="submit"] {
         @endif
     </div>
 </div>
-@endsection
+@endsection@endsection

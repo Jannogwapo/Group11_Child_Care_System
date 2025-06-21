@@ -24,7 +24,6 @@ return new class extends Migration
             $table->string('clientguardianrelationship');
             $table->string('guardianphonenumber'); // Changed from integer to string
             $table->foreignId('case_id')->references('id')->on('case')->onDelete('cascade');
-            $table->string('specific_case')->nullable();
             $table->date('clientdateofadmission');
             $table->foreignId('status_id')->references('id')->on('status')->onDelete('cascade'); // Corrected from `id` to `unsignedBigInteger`// Corrected
             $table->foreignId('isAStudent')->references('id')->on('isAStudent')->onDelete('cascade');
