@@ -50,7 +50,8 @@ class HearingController extends Controller
         $validated['user_id'] = auth()->id();
         $hearing = Hearing::create($validated);
         $client = $hearing->client;
-
+        $hearing->reminder_code = random_int(100000, 999999);
+        $hearing->save();
         $this->notifyAdmins(
             'New Hearing Scheduled',
             "A new hearing has been scheduled for client {$client->clientFirstName} {$client->clientLastName} by {$request->user()->name}.",
@@ -62,7 +63,9 @@ class HearingController extends Controller
     }
 
     public function index(Request $request) : View {
-    $currentMonth = $request->input('month', Carbon::now()->format('Y-m'));
+   $user = Auth::user();
+   $isAdmin = Gate::allows('isAdmin');
+$currentMonth = $request->input('month', Carbon::now()->format('Y-m'));
     $currentDate = Carbon::parse($currentMonth);
     $previousMonth = Carbon::parse($currentMonth)->subMonth()->format('Y-m');
     $nextMonth = Carbon::parse($currentMonth)->addMonth()->format('Y-m');
@@ -83,31 +86,33 @@ class HearingController extends Controller
     $now = Carbon::now();
     if ($filter === 'upcoming') {
         $baseQuery->where('status', 'scheduled')
-            ->where(function($query) use ($now) {
-                $query->where('hearing_date', '>', $now->toDateString())
-                      ->orWhere(function($q) use ($now) {
-                          $q->where('hearing_date','>=', $now->toDateString())
-                            ->where('time', '>', $now->format('H:i:s'));
-                      });
-            });
+                  ->where(function ($query) use ($now) {
+                      $query->where('hearing_date', '>', $now->toDateString())
+                            ->orWhere(function ($q) use ($now) {
+                                $q->where('hearing_date', $now->toDateString())
+                                   ->where('time', '>=', $now->format('H:i:s'));
+                            });
+                  });
     
     } elseif ($filter === 'editable') {
         $baseQuery->where('status', 'scheduled')
-            ->where(function($query) use ($now) {
-                $query->where('hearing_date', '<=', $now->toDateString())  
-                      ->orWhere(function($q) use ($now) {
-                          $q->where('hearing_date', $now->toDateString()) 
-                            ->where('time', '<=', $now->format('H:i:s')); 
-                      });
-            });
-    
+                  ->where(function ($query) use ($now) {
+                      $query->where('hearing_date', '<', $now->toDateString())
+                            ->orWhere(function ($q) use ($now) {
+                                $q->where('hearing_date',  $now->toDateString())
+                                   ->where('time', '<=', $now->format('H:i:s'));
+                            });
+                  });
     } elseif ($filter === 'finished') {
         $baseQuery->where('status', 'completed');
     
     } elseif ($filter === 'postponed') {
         $baseQuery->where('status', 'postponed');
     
-    } elseif ($filter === 'all') {
+    } elseif ($filter === 'ongoing') {
+        $baseQuery->where('status', 'ongoing');
+    
+    }elseif ($filter === 'all') {
         // No additional where clause (show all hearings)
     }
     
@@ -162,46 +167,66 @@ class HearingController extends Controller
     }
 
     public function update(Request $request, Hearing $hearing): RedirectResponse
-    {
-        try {
-            // Basic validation
-            $request->validate([
-                'client_id' => 'required',
-                'branch_id' => 'required',
-                'hearing_date' => 'required',
-                'time' => 'required',
-                'status' => 'required|in:completed,postponed,ongoing',
-                'judge_name' => 'nullable|string|max:255'
-            ]);
+{
+    try {
+        // Validation
+        $request->validate([
+            'client_id' => 'required|exists:clients,id', // Add exists validation
+            'branch_id' => 'required|exists:branch,id', // Add exists validation
+            'hearing_date' => 'required|date', // Specify date format if needed
+            'time' => 'required', // Consider adding time format validation
+            'status' => 'required|in:completed,postponed,ongoing',
+            'notes' => 'nullable|string',
+            'reminder_code' => 'nullable|string',
+        ]);
 
-            // Update basic fields
-            $hearing->client_id = $request->client_id;
-            $hearing->branch_id = $request->branch_id;
-            $hearing->hearing_date = $request->hearing_date;
-            $hearing->time = $request->time;
+        // Update hearing data. Use mass assignment for better readability and security.
+        $hearing->update([
+            'client_id' => $request->client_id,
+            'branch_id' => $request->branch_id,
+            'hearing_date' => $request->hearing_date,
+            'time' => $request->time,
+            'status' => $request->status,
+            'judge_name' => null,
+            'edit_count' => $hearing->edit_count + 1,
+            'reminder_code' => $request->status === 'completed' ? null : $request->reminder_code,
+            'notes' => $request->notes,
+        ]);
+
+        // If status is 'ongoing' or 'postponed', create a new hearing with the same reminder_code, client, branch, and judge, but new date and time
+        if (in_array($request->status, ['ongoing', 'postponed'])) {
+            // Mark the current hearing as postponed or ongoing
             $hearing->status = $request->status;
-            $hearing->judge_name = $request->judge_name;
-            $hearing->edit_count += 1;
-
-            if ($request->status === 'completed') {
-                // Clear any next hearing fields if they exist
-                $hearing->next_hearing_date = null;
-                $hearing->next_hearing_time = null;
-                $hearing->next_hearing_notes = null;
-            } else {
-                // Update next hearing fields if present
-                $hearing->next_hearing_date = $request->next_hearing_date;
-                $hearing->next_hearing_time = $request->next_hearing_time;
-                $hearing->next_hearing_notes = $request->next_hearing_notes;
-            }
-
             $hearing->save();
-            return redirect()->route('calendar.index')->with('success', 'Hearing updated successfully!');
-            
-        } catch (\Exception $e) {
-            return back()->with('error', 'Could not update hearing. Please try again.')->withInput();
+
+            // Create a new hearing for the next date/time (if provided)
+            if ($request->next_hearing_date && $request->next_hearing_time) {
+                $newHearing = $hearing->replicate();
+                $newHearing->hearing_date = $request->next_hearing_date;
+                $newHearing->time = $request->next_hearing_time;
+                $newHearing->status = 'upcoming';// New hearing starts as ongoing
+                $newHearing->edit_count = 1;
+                $newHearing->reminder_code = $hearing->reminder_code;
+                $newHearing->notes = $request->next_hearing_notes ?? null;
+                $newHearing->save();
+            }
         }
+
+        return redirect()->route('calendar.index')->with('success', 'Hearing updated successfully!');
+
+    } catch (ValidationException $e) {
+        return back()->withErrors($e->errors())->withInput(); // Return specific validation errors
+    } catch (QueryException $e) {
+        // Handle database errors more specifically.  Log the error for debugging.
+        \Log::error("Database error updating hearing: " . $e->getMessage());
+        return back()->with('error', 'A database error occurred. Please contact support.')->withInput();
+    } catch (\Exception $e) {
+        // Log the exception for debugging purposes
+        \Log::error("Error updating hearing: " . $e->getMessage());
+        dd($e);
+        return back()->with('error', 'An unexpected error occurred. Please try again later.')->withInput();
     }
+}
 
     public function destroy(Hearing $hearing): RedirectResponse {
         try {
@@ -215,6 +240,9 @@ class HearingController extends Controller
     public function show(Hearing $hearing): View
     {
         $hearing->load(['client', 'branch']); // Eager load relationships
-        return view('client.viewHearing', compact('hearing'));
+        $relatedHearings = Hearing::where('reminder_code', $hearing->reminder_code)
+            ->orderBy('hearing_date', 'asc')
+            ->get();
+        return view('client.viewHearing', compact('hearing', 'relatedHearings'));
     }
 }

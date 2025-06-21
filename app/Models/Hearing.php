@@ -19,11 +19,14 @@ class Hearing extends Model
         'time',
         'status',
         'notes',
-        'edit_count'
+        'edit_count',  
+        'reminder_code',
+
     ];
 
     protected $casts = [
         'hearing_date' => 'date',
+        'next_hearing_date' => 'date',
     ];
 
     public function client(): BelongsTo
@@ -48,7 +51,6 @@ class Hearing extends Model
             'scheduled' => 'blue',
             'completed' => 'green',
             'postponed' => 'yellow',
-            'cancelled' => 'red',
             default => 'gray'
         };
     }
