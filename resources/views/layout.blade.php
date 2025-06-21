@@ -241,9 +241,7 @@
             <i class="bi bi-calendar-event"></i> Events
         </a>
         @else
-        <a href="{{ route('admin.report') }}" class="sidebar-button {{ request()->routeIs('admin.report') ? 'active' : '' }}">
-            <i class="bi bi-bar-chart"></i> Reports
-        </a>
+        
         <a href="{{ route('admin.access') }}" class="sidebar-button {{ request()->routeIs('admin.access') ? 'active' : '' }}">
             <i class="bi bi-shield-lock"></i> Access
         </a>
@@ -252,6 +250,9 @@
         @can('isAdmin')
         <a href="{{ route('admin.logs') }}" class="sidebar-button {{ request()->routeIs('admin.logs') ? 'active' : '' }}">
             <i class="bi bi-journal-text"></i> Logs
+        </a>
+        <a href="{{ route('admin.report') }}" class="sidebar-button {{ request()->routeIs('admin.report') ? 'active' : '' }}">
+            <i class="bi bi-bar-chart"></i> Reports
         </a>
         @endcan
     </div>

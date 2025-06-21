@@ -14,7 +14,7 @@ class ReportController extends Controller
     public function report(Request $request)
     {
 
-        if (!Gate::allows('It')) {
+        if (!Gate::allows('isAdmin')) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
@@ -41,7 +41,7 @@ class ReportController extends Controller
      */
     public function downloadInHouse(Request $request)
     {
-        if (!Gate::allows('It')) {
+        if (!Gate::allows('isAdmin  ')) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 

@@ -16,14 +16,12 @@ return new class extends Migration
             $table->foreignId('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->foreignId('branch_id')->references('id')->on('branch')->onDelete('cascade');
             $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->date('next_hearing_date')->nullable();
-            $table->time('next_hearing_time')->nullable();
             $table->date('hearing_date');
             $table->time('time');
             $table->string('status');
             $table->integer('edit_count');
             $table->text('notes')->nullable();
-            
+            $table->string('reminder_code')->nullable();
             $table->timestamps();
         });
     }

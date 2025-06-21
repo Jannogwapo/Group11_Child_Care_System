@@ -35,8 +35,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
     Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
 });
-Route::get('/report', [\App\Http\Controllers\ReportController::class, 'report'])->name('admin.report.index');
-Route::get('/report/download', [\App\Http\Controllers\ReportController::class, 'downloadInHouse'])->name('admin.report.download');
+
 
 
 // Authenticated Routes
@@ -98,9 +97,23 @@ Route::middleware(['auth'])->group(function () {
             Route::patch('/{incident}', [IncidentController::class, 'update'])->name('incidents.update');
         });
 
+        // Activity Routes
+Route::get('/activities', [ActivityController::class, 'index'])->name('activities.index');
+Route::get('/activities/create', [ActivityController::class, 'create'])->name('activities.create');
+Route::post('/activities', [ActivityController::class, 'store'])->name('activities.store');
+Route::get('/activities/{activity}', [ActivityController::class, 'show'])->name('activities.show');
+Route::get('/activities/{activity}/edit', [ActivityController::class, 'edit'])->name('activities.edit');
+Route::patch('/activities/{activity}', [ActivityController::class, 'update'])->name('activities.update');
+Route::delete('/activities/{activity}', [ActivityController::class, 'destroy'])->name('activities.destroy');
+
+// Notification routes
+Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unreadCount');
+
     // Reports
         Route::prefix('reports')->group(function () {
-            Route::get('/events', [EventController::class, 'report'])->name('reports.events');
+            Route::get('/incidents', [EventController::class, 'report'])->name('reports.events');
             Route::get('/incidents', [EventController::class, 'incidents'])->name('reports.incidents');
             Route::get('/incidents/boy', [EventController::class, 'incidentsBoy'])->name('reports.incidents.boy');
             Route::get('/incidents/girl', [EventController::class, 'incidentsGirl'])->name('reports.incidents.girl');
@@ -117,6 +130,8 @@ Route::middleware(['auth'])->group(function () {
 
         Route::middleware(['can:isAdmin'])->group(function () {
             Route::get('/logs', [LogsController::class, 'logs'])->name('admin.logs');
+            Route::get('/report', [\App\Http\Controllers\ReportController::class, 'report'])->name('admin.report.index');
+Route::get('/report/download', [\App\Http\Controllers\ReportController::class, 'downloadInHouse'])->name('admin.report.download');
             Route::prefix('branches')->group(function () {
                 Route::get('/', [BranchController::class, 'index'])->name('branches.index');
                 Route::get('/create', [BranchController::class, 'create'])->name('branches.create');
@@ -135,37 +150,11 @@ Route::middleware(['auth'])->group(function () {
 
 // Define middleware for admin routes
 
-// Incident Routes
-Route::get('/incidents', [IncidentController::class, 'index'])->name('incidents.index');
-Route::get('/incidents/create', [IncidentController::class, 'create'])->name('incidents.create');
-Route::post('/incidents', [IncidentController::class, 'store'])->name('incidents.store');
-Route::get('/incidents/{incident}', [IncidentController::class, 'show'])->name('incidents.show');
-Route::get('/incidents/{incident}/edit', [IncidentController::class, 'edit'])->name('incidents.edit');
-Route::patch('/incidents/{incident}', [IncidentController::class, 'update'])->name('incidents.update');
-Route::delete('/incidents/{incident}', [IncidentController::class, 'destroy'])->name('incidents.destroy');
 
-// Event Routes
-Route::get('/events', [EventController::class, 'index'])->name('events.index');
-Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
-Route::post('/events', [EventController::class, 'store'])->name('events.store');
-Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
-Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
-Route::patch('/events/{event}', [EventController::class, 'update'])->name('events.update');
-Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
 
-// Activity Routes
-Route::get('/activities', [ActivityController::class, 'index'])->name('activities.index');
-Route::get('/activities/create', [ActivityController::class, 'create'])->name('activities.create');
-Route::post('/activities', [ActivityController::class, 'store'])->name('activities.store');
-Route::get('/activities/{activity}', [ActivityController::class, 'show'])->name('activities.show');
-Route::get('/activities/{activity}/edit', [ActivityController::class, 'edit'])->name('activities.edit');
-Route::patch('/activities/{activity}', [ActivityController::class, 'update'])->name('activities.update');
-Route::delete('/activities/{activity}', [ActivityController::class, 'destroy'])->name('activities.destroy');
 
-// Notification routes
-Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
-Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
-Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unreadCount');
+
+
 
 
 

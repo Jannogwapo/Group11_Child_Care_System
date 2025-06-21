@@ -22,6 +22,14 @@
 
     <!-- Header Section -->
     <h1 class="text-2xl font-bold text-gray-800 text-center mb-4">Calendar Hearing</h1>
+      @cannot('isAdmin')
+        <a href="{{ route('hearings.create') }}" class="case-filter-btn flex items-center gap-2">
+            <i class="bi bi-calendar-check"></i>
+            <i class="bi bi-plus-lg"></i>
+            <span class="font-medium">Add Hearing</span>
+        </a>
+        @endcannot
+    
     <div class="flex items-center gap-4 mb-6 justify-end">
         <div class="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
             <button id="calendarViewBtn" class="case-filter-btn{{ $activeFilter == 'calendar' ? ' active' : '' }}" type="button">
@@ -31,13 +39,7 @@
                 <i class="bi bi-list-ul text-xl"></i>
             </button>
         </div>
-        @cannot('isAdmin')
-        <a href="{{ route('hearings.create') }}" class="case-filter-btn flex items-center gap-2">
-            <i class="bi bi-calendar-check"></i>
-            <i class="bi bi-plus-lg"></i>
-            <span class="font-medium">Add Hearing</span>
-        </a>
-        @endcannot
+       
     </div>
 
     <!-- Filter Buttons -->
@@ -175,8 +177,9 @@
                                             $activeFilter === 'finished' ? '#4CAF50' :
                                             ($activeFilter === 'upcoming' ? '#2196F3' :
                                             ($activeFilter === 'postponed' ? '#F44336' :
-                                            ($activeFilter === 'editable' ? '#FFC107' : '#607D8B'))) 
-                                        }};
+                                            ($activeFilter === 'editable' ? '#FFC107' :
+                                            ($activeFilter === 'ongoing' ? '#FF9800' : '#607D8B'))) 
+                                        )}};
                                         border-radius:50%;
                                         position:absolute;
                                         top:8px;
@@ -187,7 +190,8 @@
                                             $activeFilter === 'upcoming' ? 'Upcoming hearing' :
                                             ($activeFilter === 'finished' ? 'Completed hearing' :
                                             ($activeFilter === 'postponed' ? 'Postponed hearing' :
-                                            ($activeFilter === 'editable' ? 'Editable hearing' : 'All hearings')))
+                                            ($activeFilter === 'editable' ? 'Editable hearing' :
+                                            ($activeFilter === 'ongoing' ? 'Ongoing hearing' : 'All hearings'))))
                                         }}"></span>
                                 @endif
                                 @php $currentDay++; @endphp
@@ -385,7 +389,7 @@
                     </span>
                 </div>
             </div>
-            @if($allHearings->count() > 0)
+            @if($allHearings->where('client.status', 'in-house')->count() > 0)
                 <div class="overflow-x-auto rounded-lg border border-gray-200">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -484,7 +488,6 @@
             $genderText = $userGender == 1 ? 'Male' : 'Female';
             $inHouseHearings = $hearings->where('client.status', 'in-house');
         @endphp
-        
         <!-- Hearings for Social Worker based on gender -->
         <div class="bg-white rounded-xl shadow-lg p-6">
             <div class="flex justify-between items-center mb-6">

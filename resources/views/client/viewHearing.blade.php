@@ -90,7 +90,6 @@
             </div>
 
             <!-- Notes -->
-          
             <div style="background: #f8fdfa; border-radius: 12px; padding: 24px; margin-bottom: 0;">
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
                     <span class="material-icons" style="color: #21807a;">notes</span>
@@ -100,8 +99,78 @@
                     {{ $hearing->notes ?? 'No Remarks' }}
                 </div>
             </div>
-           
+
+        
         </div>
+
+        @if(isset($relatedHearings) && $relatedHearings->count() > 1)
+        @php
+            $now = \Carbon\Carbon::now();
+            $nextHearing = $relatedHearings->filter(function($h) use ($now) {
+                $date = $h->hearing_date instanceof \Carbon\Carbon ? $h->hearing_date : \Carbon\Carbon::parse($h->hearing_date);
+                if ($h->time) {
+                    $date->setTimeFromTimeString($h->time);
+                }
+                return $date->gt($now);
+            })->sortBy(function($h) {
+                $date = $h->hearing_date instanceof \Carbon\Carbon ? $h->hearing_date : \Carbon\Carbon::parse($h->hearing_date);
+                if ($h->time) {
+                    $date->setTimeFromTimeString($h->time);
+                }
+                return $date;
+            })->first();
+        @endphp
+        @if($nextHearing)
+        <!-- Next Scheduled Hearing Section -->
+        <div style="background: #fffde7; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #ffe082;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                <span class="material-icons" style="color: #ffb300;">event_upcoming</span>
+                <span style="font-size: 1.1rem; font-weight: 600; color: #ffb300;">Next Scheduled Hearing</span>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 32px;">
+                <div style="flex: 1; min-width: 120px;">
+                    <div style="color: #888;">Date</div>
+                    <div style="font-weight: 500;">{{ \Carbon\Carbon::parse($nextHearing->hearing_date)->format('F j, Y') }}</div>
+                </div>
+                <div style="flex: 1; min-width: 120px;">
+                    <div style="color: #888;">Time</div>
+                    <div style="font-weight: 500;">{{ \Carbon\Carbon::parse($nextHearing->time)->format('g:i A') }}</div>
+                </div>
+                <div style="flex: 1; min-width: 120px;">
+                    <div style="color: #888;">Status</div>
+                    <div style="font-weight: 500;">{{ ucfirst($nextHearing->status) }}</div>
+                </div>
+            </div>
+        </div>
+        @endif
+        <!-- Related Hearings Section -->
+        <div style="background: #e3f2fd; border-radius: 12px; padding: 24px; margin-top: 32px; border: 1px solid #90caf9;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                <span class="material-icons" style="color: #1976d2;">link</span>
+                <span style="font-size: 1.1rem; font-weight: 600; color: #1976d2;">All Related Hearings (Reminder Code: {{ $hearing->reminder_code }})</span>
+            </div>
+            <table style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr style="background:#bbdefb;">
+                        <th style="padding:8px; text-align:left;">Date</th>
+                        <th style="padding:8px; text-align:left;">Time</th>
+                        <th style="padding:8px; text-align:left;">Status</th>
+                        <th style="padding:8px; text-align:left;">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($relatedHearings as $rel)
+                        <tr style="border-bottom:1px solid #e3f2fd;">
+                            <td style="padding:8px;">{{ \Carbon\Carbon::parse($rel->hearing_date)->format('F j, Y') }}</td>
+                            <td style="padding:8px;">{{ \Carbon\Carbon::parse($rel->time)->format('g:i A') }}</td>
+                            <td style="padding:8px;">{{ ucfirst($rel->status) }}</td>
+                            <td style="padding:8px;">{{ $rel->notes ?? '-' }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @endif
     </div>
 </div>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
