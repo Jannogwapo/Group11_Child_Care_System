@@ -175,7 +175,7 @@ $currentMonth = $request->input('month', Carbon::now()->format('Y-m'));
             'branch_id' => 'required|exists:branch,id', // Add exists validation
             'hearing_date' => 'required|date', // Specify date format if needed
             'time' => 'required', // Consider adding time format validation
-            'status' => 'required|in:completed,postponed,ongoing',
+            'status' => 'required|in:completed,postponed,ongoing,ongoing-upcoming',
             'notes' => 'nullable|string',
             'reminder_code' => 'nullable|string',
         ]);
@@ -204,7 +204,7 @@ $currentMonth = $request->input('month', Carbon::now()->format('Y-m'));
                 $newHearing = $hearing->replicate();
                 $newHearing->hearing_date = $request->next_hearing_date;
                 $newHearing->time = $request->next_hearing_time;
-                $newHearing->status = 'upcoming';// New hearing starts as ongoing
+                $newHearing->status = 'ongoing-upcoming';// New hearing starts as ongoing
                 $newHearing->edit_count = 1;
                 $newHearing->reminder_code = $hearing->reminder_code;
                 $newHearing->notes = $request->next_hearing_notes ?? null;
