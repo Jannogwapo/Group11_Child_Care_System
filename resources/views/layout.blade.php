@@ -265,19 +265,19 @@
     <footer class="py-3" style="background: #7AE2CF; border-top: 1px solid #e0e0e0; margin-left:220px;">
         <div class="container">
             <div class="row align-items-center" style="min-height: 1px;">
-                <div class="col-md-4 text-center text-md-left">
+                <div class="col-md-4 d-flex flex-column align-items-center justify-content-center text-center" style="max-width: 400px; margin: 0 auto;">
                     <h6 class="fw-bold mb-2">Mission</h6>
-                    <p class="mb-0 small">
+                    <p class="mb-0 small" style="max-width: 350px;">
                         Homecare Center for Children shall strive to empower admitted clients by providing immediate custodial care, collaborative intervention process ready for his reintegration to his family and community as well.
                     </p>
                 </div>
-                <div class="col-md-4 text-center">
+                <div class="col-md-4 text-center d-flex flex-column align-items-center justify-content-center">
                     <img src="{{ asset('images/500_years.png') }}" alt="500 Years Logo" style="height: 130px; width: auto;">
                 </div>
-                <div class="col-md-4 text-center text-md-right">
+                <div class="col-md-4 d-flex flex-column align-items-center justify-content-center text-center" style="max-width: 400px; margin: 0 auto;">
                     <h6 class="fw-bold mb-2">Vision</h6>
-                    <p class="mb-0 small">
-                        Active collaboration is transparently achieved through cooperation and networking to enhance total development and transfonnation of clients.
+                    <p class="mb-0 small" style="max-width: 350px;">
+                        Active collaboration is transparently achieved through cooperation and networking to enhance total development and transformation of clients.
                     </p>
                 </div>
             </div>

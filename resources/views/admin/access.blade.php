@@ -372,5 +372,5 @@ input[type="submit"] {
             </table>
         @endif
     </div>
-
+</div>
 @endsection

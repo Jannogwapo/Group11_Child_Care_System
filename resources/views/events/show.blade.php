@@ -1,224 +1,80 @@
 @extends('layout')
 
-@section('content')
-<link rel="stylesheet" href="{{ asset('css/event.css') }}">
-<div class="container">
-    <div class="event-detail-card">
-        <div class="event-header">
-            <a href="{{ route('events.index') }}" class="back-btn">
-                <i class="bi bi-arrow-left"></i> Back to Reports
-            </a>
-            <div class="header-actions">
-                <h1>{{ $event->title }}</h1>
-                @cannot('isAdmin')
-                    <form action="{{ route('events.destroy', $event) }}" method="POST" class="delete-form" onsubmit="return confirm('Are you sure you want to delete this event report?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="delete-btn">Delete Event</button>
-                    </form>
-                    <a href="{{ route('events.edit', $event) }}" class="edit-event-btn">Edit Event</a>
-                @endcannot
-            </div>
-            <div class="date-badge">{{ \Carbon\Carbon::parse($event->start_date)->format('M d, Y') }}</div>
-        </div>
+@section('title', $event->title)
 
-        <div class="event-content">
-            @if($event->images && $event->images->count())
-                <div class="event-image">
-                    @foreach($event->images as $img)
-                        <a href="{{ asset('storage/' . $img->image_path) }}" target="_blank">
-                            <img src="{{ asset('storage/' . $img->image_path) }}" alt="Event Image" style="max-width: 200px; margin: 5px;">
-                        </a>
-                    @endforeach
+@section('content')
+<div class="container my-4">
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <a href="{{ route('events.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Events
+            </a>
+            @cannot('isAdmin')
+            <div class="d-flex">
+                <a href="{{ route('events.edit', $event) }}" class="btn btn-primary me-2">
+                    <i class="bi bi-pencil-square"></i> Edit
+                </a>
+                <form action="{{ route('events.destroy', $event) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this event?');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
+                </form>
+            </div>
+            @endcannot
+        </div>
+        <div class="card-body">
+            <h1 class="card-title">{{ $event->title }}</h1>
+            <p class="text-muted">
+                <i class="bi bi-calendar-event"></i>
+                {{ \Carbon\Carbon::parse($event->start_date)->format('F d, Y') }}
+            </p>
+
+            @if($event->images->isNotEmpty())
+                <div class="mb-4">
+                    <h5>Images</h5>
+                    <div class="row row-cols-1 row-cols-md-3 g-4">
+                        @foreach($event->images as $image)
+                            <div class="col">
+                                <div class="card h-100">
+                                    <a href="{{ asset('storage/' . $image->image_path) }}" data-lightbox="event-images">
+                                        <img src="{{ asset('storage/' . $image->image_path) }}" class="card-img-top" alt="Event Image" style="height: 200px; object-fit: cover;">
+                                    </a>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
-            @endif
-            @if($event->picture)
-                <div class="event-image">
-                    <a href="{{ asset('storage/' . $event->picture) }}" target="_blank">
-                        <img src="{{ asset('storage/' . $event->picture) }}" alt="Event Image">
+            @elseif($event->picture)
+                <div class="mb-4">
+                     <h5>Image</h5>
+                    <a href="{{ asset('storage/' . $event->picture) }}" data-lightbox="event-images">
+                        <img src="{{ asset('storage/' . $event->picture) }}" class="img-fluid rounded" alt="Event Image">
                     </a>
                 </div>
             @endif
 
-            <div class="event-details">
-                <div class="detail-section">
-                    <h3>Description</h3>
-                    <p>{{ $event->description }}</p>
-                </div>
-
-                <div class="detail-section">
-                    <h3>Event Information</h3>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="label">Date:</span>
-                            <span class="value">{{ \Carbon\Carbon::parse($event->start_date)->format('F d, Y') }}</span>
-                        </div>
-                        @if($event->location)
-                            <div class="info-item">
-                                <span class="label">Location:</span>
-                                <span class="value">{{ $event->location }}</span>
-                            </div>
-                        @endif
-                        @if($event->type)
-                            <div class="info-item">
-                                <span class="label">Type:</span>
-                                <span class="value">{{ $event->type }}</span>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="detail-section">
-                    <h3>Report Information</h3>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="label">Reported by:</span>
-                            <span class="value">{{ $event->createdBy ? $event->createdBy->name : 'Unknown User' }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Created:</span>
-                            <span class="value">{{ $event->created_at->format('F d, Y h:i A') }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Last Updated:</span>
-                            <span class="value">{{ $event->updated_at->format('F d, Y h:i A') }}</span>
-                        </div>
-                    </div>
-                </div>
+            <div class="mt-4">
+                <h5>Description</h5>
+                <p>{{ $event->description }}</p>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-.event-detail-card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 24px;
-    margin: 20px 0;
-}
-
-.event-header {
-    margin-bottom: 24px;
-}
-
-.back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: #666;
-    text-decoration: none;
-    margin-bottom: 16px;
-}
-
-.back-btn:hover {
-    color: #333;
-}
-
-.event-header h1 {
-    margin: 0 0 16px 0;
-    font-size: 1.8rem;
-    color: #222;
-}
-
-.event-content {
-    display: grid;
-    gap: 24px;
-}
-
-.event-image {
-    width: 100%;
-    max-height: 400px;
-    overflow: hidden;
-    border-radius: 8px;
-}
-
-.event-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.event-details {
-    display: grid;
-    gap: 24px;
-}
-
-.detail-section {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 20px;
-}
-
-.detail-section h3 {
-    margin: 0 0 16px 0;
-    font-size: 1.2rem;
-    color: #333;
-}
-
-.info-grid {
-    display: grid;
-    gap: 16px;
-}
-
-.info-item {
-    display: grid;
-    grid-template-columns: 120px 1fr;
-    gap: 8px;
-}
-
-.label {
-    color: #666;
-    font-size: 0.9rem;
-}
-
-.value {
-    color: #333;
-    font-weight: 500;
-}
-
-.header-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-}
-
-.delete-form {
-    margin: 0;
-}
-
-.delete-btn {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background-color 0.2s;
-}
-
-.delete-btn:hover {
-    background: #c82333;
-}
-
-.edit-event-btn {
-    background: #007bff;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background-color 0.2s;
-    margin-left: 8px;
-}
-
-.edit-event-btn:hover {
-    background: #0056b3;
-}
-</style>
 @endsection
+
+@push('styles')
+<link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
+<style>
+    .card-title {
+        font-weight: 300;
+        font-size: 2.5rem;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+@endpush
 

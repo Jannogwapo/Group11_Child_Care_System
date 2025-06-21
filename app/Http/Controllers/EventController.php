@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Incident;
 use Illuminate\Support\Facades\Storage;
 use App\Traits\CreatesNotifications;
+use App\Models\EventImage;
 
 class EventController extends Controller
 {
@@ -134,25 +135,61 @@ class EventController extends Controller
             'event_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
+<<<<<<< HEAD
         // Check if there are actual changes
         $hasChanges = $event->title != $validated['event_title'] ||
                       $event->description != $validated['event_description'] ||
                       $event->start_date != $validated['event_date'];
 
         // Update the event
+=======
+        // Update the event fields
+>>>>>>> 75f7d855feae62311736a9f99f65823f2b012e55
         $event->title = $validated['event_title'];
         $event->description = $validated['event_description'];
         $event->start_date = $validated['event_date'];
         $event->end_date = $validated['event_date'];
+<<<<<<< HEAD
 
         if ($hasChanges) {
             $event->updated_at = now();
         }
 
+=======
+>>>>>>> 75f7d855feae62311736a9f99f65823f2b012e55
         $event->save();
 
-        // Handle multiple image uploads
+        // Delete selected images
+        if ($request->has('delete_images')) {
+            foreach ($request->delete_images as $imgId) {
+                $img = EventImage::find($imgId);
+                if ($img) {
+                    \Storage::disk('public')->delete($img->image_path);
+                    $img->delete();
+                }
+            }
+        }
+        // Delete single picture if requested
+        if ($request->has('delete_picture') && $event->picture) {
+            \Storage::disk('public')->delete($event->picture);
+            $event->picture = null;
+            $event->save();
+        }
+
+        // If new images are uploaded, delete all old images and replace
         if ($request->hasFile('event_images')) {
+            // Delete all EventImage images
+            foreach ($event->images as $img) {
+                \Storage::disk('public')->delete($img->image_path);
+                $img->delete();
+            }
+            // Delete single picture if exists
+            if ($event->picture) {
+                \Storage::disk('public')->delete($event->picture);
+                $event->picture = null;
+                $event->save();
+            }
+            // Save new images
             foreach ($request->file('event_images') as $file) {
                 $path = $file->store('events', 'public');
                 $event->images()->create(['image_path' => $path]);
