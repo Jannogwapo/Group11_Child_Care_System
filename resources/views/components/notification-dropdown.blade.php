@@ -57,9 +57,7 @@
                             <h4>{{ $notification->data['title'] }}</h4>
                             <p>{{ $notification->data['message'] }}</p>
                             <small>{{ $notification->created_at->diffForHumans() }}</small>
-                            @if(!is_null($notification->read_at))
-                                <small class="read-time">Read: <span style="color: #dc3545;">{{ $notification->read_at->diffForHumans() }}</span></small>
-                            @endif
+                            
                         </div>
                     </a>
                 @empty
@@ -196,11 +194,11 @@
     .notification-item.unread {
         background-color: #f0f7ff;
     }
-    
+
     .notification-item.unread:hover {
         background-color: #e6f0fa;
     }
-    
+
     .read-time {
         display: block;
         margin-top: 4px;

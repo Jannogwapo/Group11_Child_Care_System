@@ -95,12 +95,23 @@ class EventController extends Controller
     public function destroy(Event $event)
     {
         try {
+            // Save event details for notification before deletion
+            $eventTitle = $event->title;
+            $userName = auth()->user()->name ?? 'Unknown User';
+
             // Delete the associated image if it exists
             if ($event->picture) {
                 Storage::disk('public')->delete($event->picture);
             }
 
             $event->delete();
+
+            // Notify admins about the event deletion
+            $this->notifyAdmins(
+                'Event Deleted',
+                "Event '{$eventTitle}' has been deleted by {$userName}.",
+                route('admin.logs', ['filter' => 'events'])
+            );
 
             return redirect()->route('events.index')
                 ->with('success', 'Event deleted successfully.');
@@ -124,8 +135,8 @@ class EventController extends Controller
         ]);
 
         // Check if there are actual changes
-        $hasChanges = $event->title != $validated['event_title'] || 
-                      $event->description != $validated['event_description'] || 
+        $hasChanges = $event->title != $validated['event_title'] ||
+                      $event->description != $validated['event_description'] ||
                       $event->start_date != $validated['event_date'];
 
         // Update the event
@@ -133,11 +144,11 @@ class EventController extends Controller
         $event->description = $validated['event_description'];
         $event->start_date = $validated['event_date'];
         $event->end_date = $validated['event_date'];
-        
+
         if ($hasChanges) {
             $event->updated_at = now();
         }
-        
+
         $event->save();
 
         // Handle multiple image uploads

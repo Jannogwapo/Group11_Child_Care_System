@@ -20,54 +20,45 @@ class LogsController extends Controller
         // Get the filter from the request (default to 'all')
         $filter = $request->get('filter', 'all');
 
-        // Get the current month
-        $currentMonth = now()->month;
-
-        // Fetch data based on the filter
+        // Initialize all collections
+        $allLogs = collect();
         $recentClients = collect();
-        
-        if ($filter === 'all' || $filter === 'clients') {
-            // Get new clients (created this month)
-            $newClients = Client::whereMonth('created_at', $currentMonth)
-                ->latest('created_at')
-                ->get()
-                ->map(function ($client) {
-                    $client->is_new = true;
-                    $client->activity_time = $client->created_at;
-                    return $client;
-                });
-                
-            // Get updated clients (updated this month but created earlier)
-            $updatedClients = Client::whereMonth('updated_at', $currentMonth)
-                ->whereRaw('DATE(created_at) != DATE(updated_at)') // Only get actual updates
-                ->latest('updated_at')
-                ->get()
-                ->map(function ($client) {
-                    $client->is_new = false;
-                    $client->activity_time = $client->updated_at;
-                    return $client;
-                });
-                
-            // Merge and sort by most recent activity
-            $recentClients = $newClients->concat($updatedClients)
-                ->sortByDesc('activity_time')
-                ->values();
+        $recentHearings = collect();
+        $recentEvents = collect();
+        $recentIncidents = collect();
+
+        if ($filter === 'all') {
+            $allLogs = \App\Models\Notification::latest()->get();
         }
 
-        $recentHearings = $filter === 'all' || $filter === 'hearings'
-            ? Hearing::whereMonth('created_at', $currentMonth)->latest('created_at')->get()
-            : collect();
+        if ($filter === 'clients') {
+            $recentClients = \App\Models\Notification::where('data', 'like', '%"title":"%Client %')
+                ->latest()
+                ->get();
+        }
 
-        $recentEvents = $filter === 'all' || $filter === 'events'
-            ? Event::whereMonth('created_at', $currentMonth)->latest('created_at')->get()
-            : collect();
+        if ($filter === 'hearings') {
+            // Assuming hearings also create notifications. If not, this needs adjustment.
+            $recentHearings = \App\Models\Notification::where('data', 'like', '%"title":"%Hearing%')
+                ->latest()
+                ->get();
+        }
 
-        $recentIncidents = $filter === 'all' || $filter === 'incidents'
-            ? Incident::whereMonth('created_at', $currentMonth)->latest('created_at')->get()
-            : collect();
+        if ($filter === 'events') {
+            $recentEvents = \App\Models\Notification::where('data', 'like', '%"title":"%Event %')
+                ->latest()
+                ->get();
+        }
+
+        if ($filter === 'incidents') {
+            $recentIncidents = \App\Models\Notification::where('data', 'like', '%"title":"%Incident %')
+                ->latest()
+                ->get();
+        }
 
         return view('admin.logs', compact(
             'filter',
+            'allLogs',
             'recentClients',
             'recentHearings',
             'recentEvents',

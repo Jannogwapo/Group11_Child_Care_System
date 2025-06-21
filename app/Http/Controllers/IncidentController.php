@@ -63,6 +63,10 @@ class IncidentController extends Controller
     public function destroy(Incident $incident)
     {
         try {
+            // Save incident details for notification before deletion
+            $incidentType = $incident->incident_type;
+            $userName = auth()->user()->name ?? 'Unknown User';
+
             // Delete the associated image if it exists
             if ($incident->incident_image) {
                 Storage::disk('public')->delete($incident->incident_image);
@@ -74,6 +78,13 @@ class IncidentController extends Controller
             }
 
             $incident->delete();
+
+            // Notify admins about the incident deletion
+            $this->notifyAdmins(
+                'Incident Deleted',
+                "An incident of type '{$incidentType}' has been deleted by {$userName}.",
+                route('admin.logs', ['filter' => 'incidents'])
+            );
 
             return redirect()->route('events.index')
                 ->with('success', 'Incident report deleted successfully.');
