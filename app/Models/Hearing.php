@@ -19,7 +19,7 @@ class Hearing extends Model
         'time',
         'status',
         'notes',
-        'edit_count',  
+        'edit_count',
         'reminder_code',
 
     ];
@@ -57,12 +57,12 @@ class Hearing extends Model
 
     public function getFormattedDateAttribute()
     {
-        return Carbon::parse($this->hearing_date)->format('F j, Y');
+        return $this->hearing_date ? Carbon::parse($this->hearing_date)->format('F j, Y') : 'N/A';
     }
 
     public function getFormattedTimeAttribute()
     {
-        return Carbon::parse($this->time)->format('g:i A');
+        return $this->time ? Carbon::parse($this->time)->format('g:i A') : 'N/A';
     }
 
     public function scopeUpcoming($query)
@@ -79,4 +79,4 @@ class Hearing extends Model
                     ->where('status', 'completed')
                     ->orderBy('hearing_date', 'desc');
     }
-} 
+}

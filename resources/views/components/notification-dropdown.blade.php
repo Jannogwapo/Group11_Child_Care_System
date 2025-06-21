@@ -57,7 +57,7 @@
                             <h4>{{ $notification->data['title'] }}</h4>
                             <p>{{ $notification->data['message'] }}</p>
                             <small>{{ $notification->created_at->diffForHumans() }}</small>
-                            
+
                         </div>
                     </a>
                 @empty
@@ -76,7 +76,7 @@
                     <a href="{{ route('hearings.show', $hearing->id) }}" class="notification-item">
                         <div class="notification-content">
                             <h4>Hearing with {{ $hearing->client->clientFirstName }} {{ $hearing->client->clientLastName }}</h4>
-                            <p>Date: {{ \Carbon\Carbon::parse($hearing->hearing_date)->format('M d, Y') }} at {{ \Carbon\Carbon::parse($hearing->time)->format('h:i A') }}</p>
+                            <p>Date: {{ $hearing->hearing_date ? \Carbon\Carbon::parse($hearing->hearing_date)->format('M d, Y') : 'N/A' }} at {{ $hearing->time ? \Carbon\Carbon::parse($hearing->time)->format('h:i A') : 'N/A' }}</p>
                             <small>Location: {{ $hearing->branch->branchName ?? 'N/A' }}</small>
                             <br>
                             <small>Judge: {{ $hearing->branch->judgeName ?? 'N/A' }}</small>

@@ -39,9 +39,7 @@ class LogsController extends Controller
 
         if ($filter === 'hearings') {
             // Assuming hearings also create notifications. If not, this needs adjustment.
-            $recentHearings = \App\Models\Notification::where('data', 'like', '%"title":"%Hearing%')
-                ->latest()
-                ->get();
+            $recentHearings = \App\Models\Hearing::with(['user', 'client'])->latest()->get();
         }
 
         if ($filter === 'events') {

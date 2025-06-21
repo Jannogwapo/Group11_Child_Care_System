@@ -29,7 +29,7 @@ class HearingController extends Controller
         }
 
         $clients = $clientsQuery->orderBy('clientLastName')->get();
-
+        
         $branches = Branch::orderBy('branchName')->get();
         $statuses = Status::orderBy('status_name')->get();
         return view('client.addHearing', compact('clients', 'branches', 'statuses'));
@@ -93,7 +93,7 @@ $currentMonth = $request->input('month', Carbon::now()->format('Y-m'));
                                    ->where('time', '>=', $now->format('H:i:s'));
                             });
                   });
-
+    
     } elseif ($filter === 'editable') {
         $baseQuery->where('status', 'scheduled')
                   ->where(function ($query) use ($now) {
@@ -105,17 +105,17 @@ $currentMonth = $request->input('month', Carbon::now()->format('Y-m'));
                   });
     } elseif ($filter === 'finished') {
         $baseQuery->where('status', 'completed');
-
+    
     } elseif ($filter === 'postponed') {
         $baseQuery->where('status', 'postponed');
-
+    
     } elseif ($filter === 'ongoing') {
         $baseQuery->where('status', 'ongoing');
-
+    
     }elseif ($filter === 'all') {
         // No additional where clause (show all hearings)
     }
-
+    
     $hearings = $baseQuery->orderBy('hearing_date', 'desc')
                          ->orderBy('time', 'desc')
                          ->get()
@@ -157,12 +157,12 @@ $currentMonth = $request->input('month', Carbon::now()->format('Y-m'));
     public function edit(Request $request, Hearing $hearing) :View {
         $client = Client::find($hearing->client_id);
         $branch = Branch::find($hearing->branch_id);
-
+        
         // Handle initial status choice for first edit
         if ($hearing->edit_count === 1 && $request->has('initial_status')) {
             $hearing->status = 'postponed'; // Default to postponed for the form
         }
-
+        
         return view('client.editHearing', compact('hearing', 'client', 'branch'));
     }
 
@@ -228,27 +228,10 @@ $currentMonth = $request->input('month', Carbon::now()->format('Y-m'));
     }
 }
 
-    public function destroy(Hearing $hearing)
-    {
+    public function destroy(Hearing $hearing): RedirectResponse {
         try {
-            // Store hearing information before deletion for notification
-            $clientId = $hearing->client_id;
-            $client = Client::find($clientId);
-            $clientName = $client ? "{$client->clientFirstName} {$client->clientLastName}" : "Client #{$clientId}";
-            $userName = auth()->user()->name;
-            $hearingDate = $hearing->hearing_date->format('F d, Y');
-
             $hearing->delete();
-
-            // Create notification for admins about the hearing deletion
-            $this->notifyAdmins(
-                'Hearing Deleted',
-                "A hearing scheduled for {$clientName} on {$hearingDate} has been deleted by {$userName}.",
-                route('admin.logs', ['filter' => 'hearings'])
-            );
-
-            return redirect()->route('calendar.index')
-                ->with('success', 'Hearing deleted successfully.');
+            return redirect()->route('calendar.index')->with('success', 'Hearing deleted successfully!');
         } catch (\Exception $e) {
             return back()->with('error', 'Error deleting hearing: ' . $e->getMessage());
         }
@@ -263,5 +246,3 @@ $currentMonth = $request->input('month', Carbon::now()->format('Y-m'));
         return view('client.viewHearing', compact('hearing', 'relatedHearings'));
     }
 }
-
-

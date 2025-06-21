@@ -109,8 +109,8 @@ class DashboardController extends Controller
 
         // Transform the hearings data for easier JavaScript handling
         $weeklyHearings = $weeklyHearings->map(function ($hearing) {
-            $hearing->hearing_date_formatted = $hearing->hearing_date->format('Y-m-d');
-            $hearing->time_formatted = Carbon::parse($hearing->time)->format('H:i:s');
+            $hearing->hearing_date_formatted = $hearing->hearing_date ? $hearing->hearing_date->format('Y-m-d') : 'N/A';
+            $hearing->time_formatted = $hearing->time ? Carbon::parse($hearing->time)->format('H:i:s') : 'N/A';
             return $hearing;
         });
 

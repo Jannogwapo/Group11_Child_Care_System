@@ -141,11 +141,11 @@
                         <i class="bi bi-calendar-check"></i>
                     </th>
                     <td class="py-2 px-4 border-b">
-    {{ $hearing->hearing_date->format('Y-m-d') }}
-    {{ \Carbon\Carbon::parse($hearing->time)->format('h:i A') }}
+    {{ $hearing->hearing_date ? $hearing->hearing_date->format('Y-m-d') : 'N/A' }}
+    {{ $hearing->time ? \Carbon\Carbon::parse($hearing->time)->format('h:i A') : 'N/A' }}
 </td>
                     <td class="py-2 px-4 border-b">
-                        <strong>{{ $hearing->user->name }}</strong> added a hearing to Client <strong> {{ $hearing->client->clientFirstName }} {{ $hearing->client->clientLastName }}</strong>
+                        <strong>{{ $hearing->user ? $hearing->user->name : 'Unknown User' }}</strong> added a hearing to Client <strong> {{ $hearing->client ? $hearing->client->clientFirstName . ' ' . $hearing->client->clientLastName : 'Unknown Client' }}</strong>
                     </td>
                     <td>
                         <span style="color: #bbb; font-size: 0.8em;">{{ $hearing->created_at }}</span>
