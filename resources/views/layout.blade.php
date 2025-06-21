@@ -211,7 +211,7 @@
         <div class="d-flex align-items-center gap-1 text-center">
             <img src="{{ asset('images/logo2.png') }}" alt="logo2 logo"
                  style="max-height: 70px; max-width: 90px; object-fit: contain; margin-left: -20px;">
-            <h1 class="center-title display-6 fw-bold m-0">HOMECARE CENTER FOR CHILDREN</h1>
+            <h1 class="center-title display-6 fw-semi-bold m-0">HOMECARE CENTER FOR CHILDREN</h1>
             <img src="{{ asset('images/DSWD.png') }}" alt="DSWD logo"
                  style="max-height: 90px; max-width: 100px; object-fit: contain; margin-left: -15px;">
         </div>
