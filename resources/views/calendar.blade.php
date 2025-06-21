@@ -22,6 +22,14 @@
 
     <!-- Header Section -->
     <h1 class="text-2xl font-bold text-gray-800 text-center mb-4">Calendar Hearing</h1>
+      @cannot('isAdmin')
+        <a href="{{ route('hearings.create') }}" class="case-filter-btn flex items-center gap-2">
+            <i class="bi bi-calendar-check"></i>
+            <i class="bi bi-plus-lg"></i>
+            <span class="font-medium">Add Hearing</span>
+        </a>
+        @endcannot
+    
     <div class="flex items-center gap-4 mb-6 justify-end">
         <div class="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
             <button id="calendarViewBtn" class="case-filter-btn{{ $activeFilter == 'calendar' ? ' active' : '' }}" type="button">
@@ -31,13 +39,7 @@
                 <i class="bi bi-list-ul text-xl"></i>
             </button>
         </div>
-        @cannot('isAdmin')
-        <a href="{{ route('hearings.create') }}" class="case-filter-btn flex items-center gap-2">
-            <i class="bi bi-calendar-check"></i>
-            <i class="bi bi-plus-lg"></i>
-            <span class="font-medium">Add Hearing</span>
-        </a>
-        @endcannot
+       
     </div>
 
     <!-- Filter Buttons -->
@@ -157,6 +159,8 @@
                                                     || ($dateStr === $today->format('Y-m-d') && $hearing->time <= $today->format('H:i:s'))
                                                 )) {
                                                 $filteredHearings[] = $hearing;
+                                            } elseif ($activeFilter === 'ongoing' && in_array($hearing->status, ['ongoing', 'ongoing-upcoming'])) {
+                                                $filteredHearings[] = $hearing;
                                             } elseif ($activeFilter === 'finished' && $hearing->status === 'completed') {
                                                 $filteredHearings[] = $hearing;
                                             } elseif ($activeFilter === 'postponed' && $hearing->status === 'postponed') {
@@ -175,8 +179,9 @@
                                             $activeFilter === 'finished' ? '#4CAF50' :
                                             ($activeFilter === 'upcoming' ? '#2196F3' :
                                             ($activeFilter === 'postponed' ? '#F44336' :
-                                            ($activeFilter === 'editable' ? '#FFC107' : '#607D8B'))) 
-                                        }};
+                                            ($activeFilter === 'editable' ? '#FFC107' :
+                                            ($activeFilter === 'ongoing' ? '#FF9800' : '#607D8B'))) 
+                                        )}};
                                         border-radius:50%;
                                         position:absolute;
                                         top:8px;
@@ -187,7 +192,8 @@
                                             $activeFilter === 'upcoming' ? 'Upcoming hearing' :
                                             ($activeFilter === 'finished' ? 'Completed hearing' :
                                             ($activeFilter === 'postponed' ? 'Postponed hearing' :
-                                            ($activeFilter === 'editable' ? 'Editable hearing' : 'All hearings')))
+                                            ($activeFilter === 'editable' ? 'Editable hearing' :
+                                            ($activeFilter === 'ongoing' ? 'Ongoing hearing' : 'All hearings'))))
                                         }}"></span>
                                 @endif
                                 @php $currentDay++; @endphp
@@ -331,11 +337,11 @@
                     </td>
                     <td class="p-4 w-1/4 text-right">
                         <div class="flex flex-col space-y-2 items-end">
-                            ${isEditableFilter ? 
-                                `<a href="/hearings/${hearing.id}/edit" class="px-3 py-1 bg-blue-500 text-black rounded text-xs w-32 text-center">
+                            
+                                <a href="/hearings/${hearing.id}/edit" class="px-3 py-1 bg-blue-500 text-black rounded text-xs w-32 text-center">
                                     <i class="bi bi-pencil-square"></i>
-                                </a>` : ''
-                            }
+                                </a>  
+                            
                             <a href="/hearings/${hearing.id}" class="px-3 py-1 bg-green-500 text-black rounded text-xs w-32 text-center">
                                 <i class="bi bi-eye"></i>
                             </a>
@@ -380,12 +386,43 @@
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-semibold text-gray-700">All Hearings</h3>
                 <div class="flex items-center gap-2">
+                    @php
+                        $inHouseCount = $allHearings->where('client.status', 'in-house')->count();
+                        $ongoingCount = $allHearings->whereIn('status', ['ongoing', 'ongoing-upcoming'])->count();
+                    @endphp
                     <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                        In-House: {{ $allHearings->where('client.status', 'in-house')->count() }}
+                        In-House: {{ $inHouseCount }}
+                    </span>
+                    <span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+                        Ongoing: {{ $ongoingCount }}
                     </span>
                 </div>
             </div>
-            @if($allHearings->count() > 0)
+            @php
+                $filteredHearings = $allHearings->filter(function($hearing) {
+                    $activeFilter = request('filter', 'upcoming');
+                    $isInHouse = $hearing->client->status === 'in-house';
+                    $isOngoing = in_array($hearing->status, ['ongoing', 'ongoing-upcoming']);
+                    
+                    // Show hearings based on filter and status
+                    if ($activeFilter === 'ongoing') {
+                        return $isOngoing;
+                    } elseif ($activeFilter === 'upcoming') {
+                        return $isInHouse && $hearing->status === 'scheduled';
+                    } elseif ($activeFilter === 'finished') {
+                        return $isInHouse && $hearing->status === 'completed';
+                    } elseif ($activeFilter === 'postponed') {
+                        return $isInHouse && $hearing->status === 'postponed';
+                    } elseif ($activeFilter === 'editable') {
+                        return $isInHouse && $hearing->status === 'scheduled';
+                    } elseif ($activeFilter === 'all') {
+                        return $isInHouse || $isOngoing;
+                    }
+                    
+                    return $isInHouse;
+                });
+            @endphp
+            @if($filteredHearings->count() > 0)
                 <div class="overflow-x-auto rounded-lg border border-gray-200">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -393,11 +430,12 @@
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client Information</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hearing Details</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Court Information</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($allHearings->where('client.status', 'in-house') as $hearing)
+                            @foreach($filteredHearings as $hearing)
                                 <tr class="hover:bg-gray-50 transition-colors duration-200">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
@@ -410,6 +448,9 @@
                                                 </div>
                                                 <div class="text-sm text-gray-500">
                                                     Case: {{ $hearing->client->case->case_name ?? 'N/A' }}
+                                                </div>
+                                                <div class="text-sm text-gray-400">
+                                                    {{ $hearing->client->status === 'in-house' ? 'In-House' : 'External' }}
                                                 </div>
                                             </div>
                                         </div>
@@ -438,6 +479,21 @@
                                             </div>
                                         </div>
                                     </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @php
+                                            $statusColors = [
+                                                'scheduled' => 'bg-blue-100 text-blue-800',
+                                                'ongoing' => 'bg-orange-100 text-orange-800',
+                                                'ongoing-upcoming' => 'bg-yellow-100 text-yellow-800',
+                                                'completed' => 'bg-green-100 text-green-800',
+                                                'postponed' => 'bg-red-100 text-red-800'
+                                            ];
+                                            $statusColor = $statusColors[$hearing->status] ?? 'bg-gray-100 text-gray-800';
+                                        @endphp
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full {{ $statusColor }}">
+                                            {{ ucfirst(str_replace('-', ' ', $hearing->status)) }}
+                                        </span>
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex items-center gap-2">
                                             @if($hearing->client->case && $hearing->client->case->case_name === 'CICL')
@@ -453,7 +509,7 @@
                                                     View
                                                 </a>
                                             @endif
-                                            @if(request('filter') === 'editable')
+                                            @if(request('filter') === 'editable' || in_array($hearing->status, ['ongoing', 'ongoing-upcoming']))
                                                 <a href="{{ route('hearings.edit', $hearing->id) }}" 
                                                    class="inline-flex items-center px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200 transition-colors duration-200">
                                                     <i class="bi bi-pencil-square mr-1"></i>
@@ -472,8 +528,8 @@
                     <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
                         <i class="bi bi-calendar-x text-3xl text-gray-400"></i>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-1">No In-House Hearings Found</h3>
-                    <p class="text-gray-500">There are no in-house hearings matching your current filter.</p>
+                    <h3 class="text-lg font-medium text-gray-900 mb-1">No Hearings Found</h3>
+                    <p class="text-gray-500">There are no hearings matching your current filter.</p>
                 </div>
             @endif
         </div>
@@ -482,20 +538,47 @@
             $userGender = auth()->user()->gender_id;
             $hearings = $userGender == 1 ? $maleHearings : $femaleHearings;
             $genderText = $userGender == 1 ? 'Male' : 'Female';
-            $inHouseHearings = $hearings->where('client.status', 'in-house');
+            
+            $filteredHearings = $hearings->filter(function($hearing) {
+                $activeFilter = request('filter', 'upcoming');
+                $isInHouse = $hearing->client->status === 'in-house';
+                $isOngoing = in_array($hearing->status, ['ongoing', 'ongoing-upcoming']);
+                
+                // Show hearings based on filter and status
+                if ($activeFilter === 'ongoing') {
+                    return $isOngoing;
+                } elseif ($activeFilter === 'upcoming') {
+                    return $isInHouse && $hearing->status === 'scheduled';
+                } elseif ($activeFilter === 'finished') {
+                    return $isInHouse && $hearing->status === 'completed';
+                } elseif ($activeFilter === 'postponed') {
+                    return $isInHouse && $hearing->status === 'postponed';
+                } elseif ($activeFilter === 'editable') {
+                    return $isInHouse && $hearing->status === 'scheduled';
+                } elseif ($activeFilter === 'all') {
+                    return $isInHouse || $isOngoing;
+                }
+                
+                return $isInHouse;
+            });
+            
+            $inHouseCount = $hearings->where('client.status', 'in-house')->count();
+            $ongoingCount = $hearings->whereIn('status', ['ongoing', 'ongoing-upcoming'])->count();
         @endphp
-        
         <!-- Hearings for Social Worker based on gender -->
         <div class="bg-white rounded-xl shadow-lg p-6">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-semibold text-gray-700">For {{ $genderText }} Clients</h3>
                 <div class="flex items-center gap-2">
                     <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                        In-House: {{ $inHouseHearings->count() }}
+                        In-House: {{ $inHouseCount }}
+                    </span>
+                    <span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+                        Ongoing: {{ $ongoingCount }}
                     </span>
                 </div>
             </div>
-            @if($inHouseHearings->count() > 0)
+            @if($filteredHearings->count() > 0)
                 <div class="overflow-x-auto rounded-lg border border-gray-200">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -503,11 +586,12 @@
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client Information</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hearing Details</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Court Information</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($inHouseHearings as $hearing)
+                            @foreach($filteredHearings as $hearing)
                                 <tr class="hover:bg-gray-50 transition-colors duration-200">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
@@ -520,6 +604,9 @@
                                                 </div>
                                                 <div class="text-sm text-gray-500">
                                                     Case: {{ $hearing->client->case->case_name ?? 'N/A' }}
+                                                </div>
+                                                <div class="text-sm text-gray-400">
+                                                    {{ $hearing->client->status === 'in-house' ? 'In-House' : 'External' }}
                                                 </div>
                                             </div>
                                         </div>
@@ -548,6 +635,21 @@
                                             </div>
                                         </div>
                                     </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @php
+                                            $statusColors = [
+                                                'scheduled' => 'bg-blue-100 text-blue-800',
+                                                'ongoing' => 'bg-orange-100 text-orange-800',
+                                                'ongoing-upcoming' => 'bg-yellow-100 text-yellow-800',
+                                                'completed' => 'bg-green-100 text-green-800',
+                                                'postponed' => 'bg-red-100 text-red-800'
+                                            ];
+                                            $statusColor = $statusColors[$hearing->status] ?? 'bg-gray-100 text-gray-800';
+                                        @endphp
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full {{ $statusColor }}">
+                                            {{ ucfirst(str_replace('-', ' ', $hearing->status)) }}
+                                        </span>
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex items-center gap-2">
                                             @if($hearing->client->case && $hearing->client->case->case_name === 'CICL')
@@ -563,7 +665,7 @@
                                                     View
                                                 </a>
                                             @endif
-                                            @if(request('filter') === 'editable')
+                                            @if(request('filter') === 'editable' || in_array($hearing->status, ['ongoing', 'ongoing-upcoming']))
                                                 <a href="{{ route('hearings.edit', $hearing->id) }}" 
                                                    class="inline-flex items-center px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200 transition-colors duration-200">
                                                     <i class="bi bi-pencil-square mr-1"></i>
@@ -582,8 +684,8 @@
                     <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
                         <i class="bi bi-calendar-x text-3xl text-gray-400"></i>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-1">No In-House {{ strtolower($genderText) }} Client Hearings</h3>
-                    <p class="text-gray-500">There are no in-house {{ strtolower($genderText) }} client hearings at this time.</p>
+                    <h3 class="text-lg font-medium text-gray-900 mb-1">No {{ strtolower($genderText) }} Client Hearings</h3>
+                    <p class="text-gray-500">There are no {{ strtolower($genderText) }} client hearings matching your current filter.</p>
                 </div>
             @endif
         </div>

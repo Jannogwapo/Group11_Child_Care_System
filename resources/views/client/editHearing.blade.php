@@ -258,6 +258,7 @@
             <form action="{{ route('hearings.update', $hearing) }}" method="POST">
                 @csrf
                 @method('PUT')
+                <input type="hidden" name="reminder_code" value="{{ $hearing->reminder_code }}">
                 <div style="display: flex; flex-direction: column; gap: 18px;">
                     <!-- Client Information -->
                     <div style="display: flex; align-items: center; gap: 18px;">
@@ -306,6 +307,12 @@
                         </select>
                     </div>
 
+                    <!-- Notes (Current/Past Hearing) -->
+                    <div style="display: flex; align-items: flex-start; gap: 18px;">
+                        <label for="notes" style="width: 160px; font-weight: 500;">Notes (Current Hearing)</label>
+                        <textarea name="notes" id="notes" class="form-control @error('notes') is-invalid @enderror" rows="3" style="flex: 1; resize: vertical;">{{ old('notes', $hearing->notes) }}</textarea>
+                    </div>
+
                     <!-- Next Hearing Fields -->
                     <div id="nextHearingFields" style="display: {{ ($hearing->status === 'ongoing' || $hearing->status === 'postponed') ? 'block' : 'none' }};">
                         <div style="background: #f8fdfa; border-radius: 12px; padding: 24px; margin-bottom: 0;">
@@ -328,6 +335,11 @@
                                            class="form-control @error('next_hearing_time') is-invalid @enderror"
                                            value="{{ $hearing->next_hearing_time ?? '' }}"
                                            style="flex: 1;">
+                                </div>
+                                <!-- Next Hearing Notes -->
+                                <div style="display: flex; align-items: flex-start; gap: 18px;">
+                                    <label for="next_hearing_notes" style="width: 160px; font-weight: 500;">Notes (Next Hearing)</label>
+                                    <textarea name="next_hearing_notes" id="next_hearing_notes" class="form-control @error('next_hearing_notes') is-invalid @enderror" rows="3" style="flex: 1; resize: vertical;">{{ old('next_hearing_notes', $hearing->next_hearing_notes) }}</textarea>
                                 </div>
                             </div>
                         </div>
