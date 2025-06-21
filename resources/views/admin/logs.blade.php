@@ -24,38 +24,105 @@
 </form>
     </div>
 
-    @if($filter === 'all' || $filter === 'clients')
+    @if($filter === 'all')
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">All Recent Activity</h2>
+            @if($allLogs->isEmpty())
+                <p class="text-gray-500">No recent activity found.</p>
+            @else
+            <table class="min-w-full bg-white">
+                <tbody>
+                    @foreach($allLogs as $notification)
+                        @php
+                            $data = $notification->data;
+                            $title = $data['title'] ?? '';
+                        @endphp
+                        <tr>
+                            <th class="pr-4">
+                                @if(Str::contains($title, 'Client'))
+                                    <i class="bi bi-person text-blue-500" style="font-size: 22px;"></i>
+                                @elseif(Str::contains($title, 'Hearing'))
+                                    <i class="bi bi-calendar-check text-purple-500" style="font-size: 22px;"></i>
+                                @elseif(Str::contains($title, 'Event'))
+                                    <i class="bi bi-calendar-event text-green-500" style="font-size: 22px;"></i>
+                                @elseif(Str::contains($title, 'Incident'))
+                                     <i class="bi bi-exclamation-triangle text-yellow-500" style="font-size: 22px;"></i>
+                                @else
+                                    <i class="bi bi-bell text-gray-400" style="font-size: 22px;"></i>
+                                @endif
+                            </th>
+                            <td class="py-4">
+                                <p class="uppercase" style="font-weight: bold;">{{ $data['title'] ?? 'Notification' }}</p>
+                                @php
+                                    $message = $data['message'] ?? 'No message.';
+                                    $parts = explode(' by ', $message);
+                                @endphp
+                                <p class="text-gray-600">
+                                    @if(count($parts) === 2)
+                                        {!! $parts[0] . ' by <strong>' . e($parts[1]) . '</strong>' !!}
+                                    @else
+                                        {{ $message }}
+                                    @endif
+                                </p>
+                            </td>
+                            <td class="py-4 px-4 text-right" style="font-size: 0.85em;">
+                                {{ $notification->created_at->diffForHumans() }}
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            @endif
+        </div>
+    @endif
 
+    @if($filter === 'clients')
         <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
         @if($filter==='clients')
-        <h2 class="text-xl font-semibold mb-4">Recent Clients</h2>
+        <h2 class="text-xl font-semibold mb-4">Client Activity</h2>
         @endif
         @if($recentClients->isEmpty())
-            <p class="text-gray-500">No recent clients found.</p>
+            <p class="text-gray-500">No recent client activity found.</p>
         @else
         <table class="min-w-full bg-white">
-
             <tbody>
-                @foreach($recentClients as $client)
-                <tr>
-                    <th>
-                        <i class="bi bi-people text-6xl text-gray-700"></i>
-                    </th>
-                    <td class="p-6">
-                        <p class="user-name font-bold"><strong>{{ $client->user->name ?? 'Unknown' }}</strong></p>
-                        <p class="">Added a new Client name <strong> {{ $client->clientFirstName ?? 'N/A' }} {{ $client->clientLastName ?? '' }}</strong> </p>
-                    </td>
-                    <td class="py-6 px-4 border-b text-end">
-                        <span style="color: #bbb; font-size: 0.8em;">{{ $client->created_at }}</span>
-                    </td>
-                </tr>
+                @foreach($recentClients as $notification)
+                    @php
+                        $data = $notification->data;
+                    @endphp
+                    <tr>
+                        <th class="pr-4">
+                            @if(Str::contains($data['title'], 'Deleted'))
+                                <i class="bi bi-person-x text-red-500" style="font-size: 22px;"></i>
+                            @elseif(Str::contains($data['title'], 'Updated'))
+                                <i class="bi bi-person-check text-blue-500" style="font-size: 22px;"></i>
+                            @else
+                                <i class="bi bi-person-plus text-green-500" style="font-size: 22px;"></i>
+                            @endif
+                        </th>
+                        <td class="py-4">
+                            <p class="uppercase" style="font-weight: bold;">{{ $data['title'] ?? 'Notification' }}</p>
+                            @php
+                                $message = $data['message'] ?? 'No message.';
+                                $parts = explode(' by ', $message);
+                            @endphp
+                            <p class="text-gray-600">
+                                @if(count($parts) === 2)
+                                    {!! $parts[0] . ' by <strong>' . e($parts[1]) . '</strong>' !!}
+                                @else
+                                    {{ $message }}
+                                @endif
+                            </p>
+                        </td>
+                        <td class="py-4 px-4 text-right" style="font-size: 0.85em;">
+                            {{ $notification->created_at->diffForHumans() }}
+                        </td>
+                    </tr>
                 @endforeach
             </tbody>
         </table>
         @endif
     </div>
-
-
 @endif
 
 @if($filter === 'all' || $filter === 'hearings')
@@ -74,11 +141,11 @@
                         <i class="bi bi-calendar-check"></i>
                     </th>
                     <td class="py-2 px-4 border-b">
-    {{ $hearing->hearing_date->format('Y-m-d') }}
-    {{ \Carbon\Carbon::parse($hearing->time)->format('h:i A') }}
+    {{ $hearing->hearing_date ? $hearing->hearing_date->format('Y-m-d') : 'N/A' }}
+    {{ $hearing->time ? \Carbon\Carbon::parse($hearing->time)->format('h:i A') : 'N/A' }}
 </td>
                     <td class="py-2 px-4 border-b">
-                        <strong>{{ $hearing->user->name }}</strong> added a hearing to Client <strong> {{ $hearing->client->clientFirstName }} {{ $hearing->client->clientLastName }}</strong>
+                        <strong>{{ $hearing->user ? $hearing->user->name : 'Unknown User' }}</strong> added a hearing to Client <strong> {{ $hearing->client ? $hearing->client->clientFirstName . ' ' . $hearing->client->clientLastName : 'Unknown Client' }}</strong>
                     </td>
                     <td>
                         <span style="color: #bbb; font-size: 0.8em;">{{ $hearing->created_at }}</span>
@@ -97,24 +164,40 @@
         <h2 class="text-xl font-semibold mb-4">Recent Events</h2>
         @endif
         @if($recentEvents->isEmpty())
-            <p class="text-gray-500">No recent events found.</p>
+            <p class="text-gray-500">No recent event activity found.</p>
         @else
         <table class="min-w-full bg-white">
             <tbody>
-                @foreach($recentEvents as $event)
+                @foreach($recentEvents as $notification)
+                    @php
+                        $data = $notification->data;
+                    @endphp
                     <tr>
-                        <th>
-                            <i class="bi bi-calendar-event text-6xl text-gray-700"></i>
+                        <th class="pr-4">
+                            @if(Str::contains($data['title'], 'Deleted'))
+                                <i class="bi bi-trash text-red-500" style="font-size: 22px;"></i>
+                            @elseif(Str::contains($data['title'], 'Updated'))
+                                <i class="bi bi-pencil-square text-blue-500" style="font-size: 22px;"></i>
+                            @else
+                                <i class="bi bi-calendar-event text-green-500" style="font-size: 22px;"></i>
+                            @endif
                         </th>
-
-                        <td>
-                            <strong>{{ $event->createdBy->name ?? 'Unknown User' }}</strong> created an event:
-                            <span class="event-title">{{ $event->title }}</span>
-
+                        <td class="py-4">
+                            <p class="uppercase" style="font-weight: bold;">{{ $data['title'] ?? 'Notification' }}</p>
+                            @php
+                                $message = $data['message'] ?? 'No message.';
+                                $parts = explode(' by ', $message);
+                            @endphp
+                            <p class="text-gray-600">
+                                @if(count($parts) === 2)
+                                    {!! $parts[0] . ' by <strong>' . e($parts[1]) . '</strong>' !!}
+                                @else
+                                    {{ $message }}
+                                @endif
+                            </p>
                         </td>
-                        <td>
-                        <span style="color: #bbb; font-size: 0.8em;">{{ $event->created_at->format('Y-m-d H:i:s') }} </span>
-
+                        <td class="py-4 px-4 text-right" style="font-size: 0.85em;">
+                            {{ $notification->created_at->diffForHumans() }}
                         </td>
                     </tr>
                 @endforeach
@@ -130,25 +213,40 @@
     <h2 class="text-xl font-semibold mb-4">Recent Incidents</h2>
     @endif
     @if($recentIncidents->isEmpty())
-        <p class="text-gray-500">No recent incidents found.</p>
+        <p class="text-gray-500">No recent incident activity found.</p>
     @else
         <table class="min-w-full bg-white">
             <tbody>
-                @foreach($recentIncidents as $incident)
+                @foreach($recentIncidents as $notification)
+                    @php
+                        $data = $notification->data; // data is already an array/object
+                    @endphp
                     <tr>
-                        <th>
-                        <i class="bi bi-calendar-event"></i>
+                        <th class="pr-4">
+                            @if(Str::contains($data['title'], 'Deleted'))
+                                <i class="bi bi-trash text-red-500" style="font-size: 22px;"></i>
+                            @elseif(Str::contains($data['title'], 'Updated'))
+                                <i class="bi bi-pencil-square text-blue-500" style="font-size: 22px;"></i>
+                            @else
+                                <i class="bi bi-exclamation-triangle text-yellow-500" style="font-size: 22px;"></i>
+                            @endif
                         </th>
-                        <td>
-                            <strong>{{ $incident->user->name ?? 'Unknown User' }}</strong> created an incident:
-                            <br>
-                            <br>
-                            <span class="incident-title">{{ $incident->title }}</span>
-                        <p>{{ $incident->incident_type }}</p>                        </td>
-                        <td class="py-2 px-4 border-b">Client Involve: None</td>
-
-                        <td>
-                        <span style="color: #bbb; font-size: 0.8em;">{{ $incident->created_at->format('Y-m-d H:i:s') }} </span>
+                        <td class="py-4">
+                            <p class="uppercase" style="font-weight: bold;">{{ $data['title'] ?? 'Notification' }}</p>
+                            @php
+                                $message = $data['message'] ?? 'No message.';
+                                $parts = explode(' by ', $message);
+                            @endphp
+                            <p class="text-gray-600">
+                                @if(count($parts) === 2)
+                                    {!! $parts[0] . ' by <strong>' . e($parts[1]) . '</strong>' !!}
+                                @else
+                                    {{ $message }}
+                                @endif
+                            </p>
+                        </td>
+                        <td class="py-4 px-4 text-right text-gray-500" style="font-size: 0.85em;">
+                            {{ $notification->created_at->diffForHumans() }}
                         </td>
                     </tr>
                 @endforeach

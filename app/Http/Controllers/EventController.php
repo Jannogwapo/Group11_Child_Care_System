@@ -95,12 +95,23 @@ class EventController extends Controller
     public function destroy(Event $event)
     {
         try {
+            // Save event details for notification before deletion
+            $eventTitle = $event->title;
+            $userName = auth()->user()->name ?? 'Unknown User';
+
             // Delete the associated image if it exists
             if ($event->picture) {
                 Storage::disk('public')->delete($event->picture);
             }
 
             $event->delete();
+
+            // Notify admins about the event deletion
+            $this->notifyAdmins(
+                'Event Deleted',
+                "Event '{$eventTitle}' has been deleted by {$userName}.",
+                route('admin.logs', ['filter' => 'events'])
+            );
 
             return redirect()->route('events.index')
                 ->with('success', 'Event deleted successfully.');
@@ -123,8 +134,22 @@ class EventController extends Controller
             'event_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
+        // Check if there are actual changes
+        $hasChanges = $event->title != $validated['event_title'] ||
+                      $event->description != $validated['event_description'] ||
+                      $event->start_date != $validated['event_date'];
+
         // Update the event
-        $event->update($validated);
+        $event->title = $validated['event_title'];
+        $event->description = $validated['event_description'];
+        $event->start_date = $validated['event_date'];
+        $event->end_date = $validated['event_date'];
+
+        if ($hasChanges) {
+            $event->updated_at = now();
+        }
+
+        $event->save();
 
         // Handle multiple image uploads
         if ($request->hasFile('event_images')) {
@@ -134,7 +159,19 @@ class EventController extends Controller
             }
         }
 
+        // Notify admins about the update if there were changes
+        if ($hasChanges) {
+            $this->notifyAdmins(
+                'Event Updated',
+                "Event '{$event->title}' has been updated by {$request->user()->name}.",
+                route('admin.logs', ['filter' => 'events'])
+            );
+        }
+
         return redirect()->route('events.show', $event)
             ->with('success', 'Event report updated successfully!');
     }
 }
+
+
+

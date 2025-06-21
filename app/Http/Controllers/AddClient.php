@@ -53,7 +53,7 @@ class AddClient extends Controller
         $locations = Location::all();
         $userGender = auth()->user()->gender_id;
         $branches = Branch::all();
-  
+
         return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations', 'userGender', 'branches'));
     }
 
@@ -82,7 +82,7 @@ class AddClient extends Controller
         if (Gate::allows('isAdmin')) {
             return redirect()->route('clients.view')->with('error', 'Unauthorized access.');
         }
-       
+
         // Get the user's gender
         $userGender = auth()->user()->gender_id;
 

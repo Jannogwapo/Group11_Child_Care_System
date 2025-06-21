@@ -17,11 +17,12 @@ class Notification extends Model
     ];
 
     protected $casts = [
-        'is_read' => 'boolean'
+        'is_read' => 'boolean',
+        'data' => 'array',
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
-} 
+}

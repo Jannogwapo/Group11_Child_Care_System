@@ -29,7 +29,7 @@
             <span class="font-medium">Add Hearing</span>
         </a>
         @endcannot
-    
+
     <div class="flex items-center gap-4 mb-6 justify-end">
         <div class="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
             <button id="calendarViewBtn" class="case-filter-btn{{ $activeFilter == 'calendar' ? ' active' : '' }}" type="button">
@@ -39,7 +39,7 @@
                 <i class="bi bi-list-ul text-xl"></i>
             </button>
         </div>
-       
+
     </div>
 
     <!-- Filter Buttons -->
@@ -75,13 +75,13 @@
         <table id="cal-table" class="w-full">
             <tr>
                 <td colspan="7" class="text-center py-3">
-                    <a href="{{ route('calendar.index', ['month' => \Carbon\Carbon::now()->format('Y-m')]) }}" 
+                    <a href="{{ route('calendar.index', ['month' => \Carbon\Carbon::now()->format('Y-m')]) }}"
                        class="text-blue-600 hover:text-blue-800 font-medium transition-colors">Today</a>
                 </td>
             </tr>
             <tr class="border-b border-gray-200">
                 <td class="py-3 text-center">
-                    <a href="{{ route('calendar.index', ['month' => $previousMonth]) }}" 
+                    <a href="{{ route('calendar.index', ['month' => $previousMonth]) }}"
                        class="text-blue-600 hover:text-blue-800 transition-colors flex items-center justify-center gap-1">
                         <i class="bi bi-chevron-double-left"></i>
                         <span>Prev</span>
@@ -91,7 +91,7 @@
                     {{ $currentDate->format('F Y') }}
                 </th>
                 <td class="text-center">
-                    <a href="{{ route('calendar.index', ['month' => $nextMonth]) }}" 
+                    <a href="{{ route('calendar.index', ['month' => $nextMonth]) }}"
                        class="text-blue-600 hover:text-blue-800 transition-colors flex items-center justify-center gap-1">
                         <span>Next</span>
                         <i class="bi bi-chevron-double-right"></i>
@@ -120,15 +120,15 @@
                 <tr>
                     @for($dayOfWeek = 0; $dayOfWeek < $daysInWeek; $dayOfWeek++)
                         @php
-                            $isCurrentMonth = ($week == 0 && $dayOfWeek >= $firstDayOfMonth) || 
+                            $isCurrentMonth = ($week == 0 && $dayOfWeek >= $firstDayOfMonth) ||
                                             ($week > 0 && $currentDay <= $daysInMonth);
-                            $isToday = $isCurrentMonth && 
-                                     $currentDay == $today->day && 
+                            $isToday = $isCurrentMonth &&
+                                     $currentDay == $today->day &&
                                      \Carbon\Carbon::parse($currentMonth)->month == $today->month;
                             $date = $isCurrentMonth ? \Carbon\Carbon::parse($currentMonth)->day($currentDay) : null;
                         @endphp
                         <td class="border border-gray-100 p-2 min-h-[120px] transition-colors duration-200
-                                 {{ $isToday ? 'bg-blue-50' : '' }} 
+                                 {{ $isToday ? 'bg-blue-50' : '' }}
                                  {{ !$isCurrentMonth ? 'bg-gray-50' : '' }}
                                  {{ $isCurrentMonth ? 'hover:bg-gray-50' : '' }}"
                             style="position:relative; {{ $isCurrentMonth ? 'cursor:pointer;' : '' }}"
@@ -175,12 +175,12 @@
                                     <span style="display:inline-block;
                                         width:10px;
                                         height:10px;
-                                        background:{{ 
+                                        background:{{
                                             $activeFilter === 'finished' ? '#4CAF50' :
                                             ($activeFilter === 'upcoming' ? '#2196F3' :
                                             ($activeFilter === 'postponed' ? '#F44336' :
                                             ($activeFilter === 'editable' ? '#FFC107' :
-                                            ($activeFilter === 'ongoing' ? '#FF9800' : '#607D8B'))) 
+                                            ($activeFilter === 'ongoing' ? '#FF9800' : '#607D8B')))
                                         )}};
                                         border-radius:50%;
                                         position:absolute;
@@ -188,7 +188,7 @@
                                         right:8px;
                                         cursor:pointer;"
                                         onclick="showCalendarPopup(event, '{{ $date->format('Y-m-d') }}')"
-                                        title="{{ 
+                                        title="{{
                                             $activeFilter === 'upcoming' ? 'Upcoming hearing' :
                                             ($activeFilter === 'finished' ? 'Completed hearing' :
                                             ($activeFilter === 'postponed' ? 'Postponed hearing' :
@@ -459,11 +459,11 @@
                                         <div class="text-sm text-gray-900">
                                             <div class="flex items-center gap-2">
                                                 <i class="bi bi-calendar-date text-gray-400"></i>
-                                                {{ \Carbon\Carbon::parse($hearing->hearing_date)->format('M d, Y') }}
+                                                {{ $hearing->hearing_date ? \Carbon\Carbon::parse($hearing->hearing_date)->format('M d, Y') : 'N/A' }}
                                             </div>
                                             <div class="flex items-center gap-2 mt-1">
                                                 <i class="bi bi-clock text-gray-400"></i>
-                                                {{ \Carbon\Carbon::parse($hearing->time)->format('h:i A') }}
+                                                {{ $hearing->time ? \Carbon\Carbon::parse($hearing->time)->format('h:i A') : 'N/A' }}
                                             </div>
                                         </div>
                                     </td>
@@ -497,13 +497,13 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex items-center gap-2">
                                             @if($hearing->client->case && $hearing->client->case->case_name === 'CICL')
-                                                <a href="{{ route('clients.show', $hearing->client->id) }}?case=CICL" 
+                                                <a href="{{ route('clients.show', $hearing->client->id) }}?case=CICL"
                                                    class="inline-flex items-center px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors duration-200">
                                                     <i class="bi bi-eye mr-1"></i>
                                                     View
                                                 </a>
                                             @else
-                                                <a href="{{ route('clients.show', $hearing->client->id) }}" 
+                                                <a href="{{ route('clients.show', $hearing->client->id) }}"
                                                    class="inline-flex items-center px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors duration-200">
                                                     <i class="bi bi-eye mr-1"></i>
                                                     View
@@ -615,11 +615,11 @@
                                         <div class="text-sm text-gray-900">
                                             <div class="flex items-center gap-2">
                                                 <i class="bi bi-calendar-date text-gray-400"></i>
-                                                {{ \Carbon\Carbon::parse($hearing->hearing_date)->format('M d, Y') }}
+                                                {{ $hearing->hearing_date ? \Carbon\Carbon::parse($hearing->hearing_date)->format('M d, Y') : 'N/A' }}
                                             </div>
                                             <div class="flex items-center gap-2 mt-1">
                                                 <i class="bi bi-clock text-gray-400"></i>
-                                                {{ \Carbon\Carbon::parse($hearing->time)->format('h:i A') }}
+                                                {{ $hearing->time ? \Carbon\Carbon::parse($hearing->time)->format('h:i A') : 'N/A' }}
                                             </div>
                                         </div>
                                     </td>
@@ -653,13 +653,13 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex items-center gap-2">
                                             @if($hearing->client->case && $hearing->client->case->case_name === 'CICL')
-                                                <a href="{{ route('clients.show', $hearing->client->id) }}?case=CICL" 
+                                                <a href="{{ route('clients.show', $hearing->client->id) }}?case=CICL"
                                                    class="inline-flex items-center px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors duration-200">
                                                     <i class="bi bi-eye mr-1"></i>
                                                     View
                                                 </a>
                                             @else
-                                                <a href="{{ route('clients.show', $hearing->client->id) }}" 
+                                                <a href="{{ route('clients.show', $hearing->client->id) }}"
                                                    class="inline-flex items-center px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors duration-200">
                                                     <i class="bi bi-eye mr-1"></i>
                                                     View

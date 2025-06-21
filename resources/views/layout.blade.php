@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Homecare Center for Children')</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ asset('js/notifications.js') }}" defer></script>
     <style>
         :root {
             --primary-color: #7AE2CF;
@@ -25,7 +27,7 @@
         }
 
         .top-bar {
-            background-color: var(--primary-color);
+            background-color:#7AE2CF;
             height: 80px;
             display: flex;
             align-items: center;
@@ -45,11 +47,14 @@
         }
 
         .center-title {
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: var(--text-color);
+            font-size: 1.3rem;
+            font-weight: 300;
+            color: black;
             margin: 0;
             white-space: nowrap;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+            letter-spacing: 0.5px;
+            font-family: 'Arial', sans-serif;
         }
 
         .notification-badge {
@@ -206,7 +211,7 @@
         <div class="d-flex align-items-center gap-1 text-center">
             <img src="{{ asset('images/logo2.png') }}" alt="logo2 logo"
                  style="max-height: 70px; max-width: 90px; object-fit: contain; margin-left: -20px;">
-            <h1 class="center-title m-0">HOMECARE CENTER FOR CHILDREN</h1>
+            <h1 class="center-title display-6 fw-bold m-0">HOMECARE CENTER FOR CHILDREN</h1>
             <img src="{{ asset('images/DSWD.png') }}" alt="DSWD logo"
                  style="max-height: 90px; max-width: 100px; object-fit: contain; margin-left: -15px;">
         </div>
@@ -284,3 +289,6 @@
     @stack('scripts')
 </body>
 </html>
+
+
+

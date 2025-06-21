@@ -22,4 +22,4 @@ trait CreatesNotifications
             $this->createNotification($admin, $title, $message, $link);
         }
     }
-} 
+}
