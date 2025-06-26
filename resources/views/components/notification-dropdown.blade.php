@@ -34,6 +34,7 @@
     }
 @endphp
 
+@can('isAdmin')
 <div class="notification-dropdown">
     <div class="notification-badge" id="notificationBell">
         <i class="bi bi-bell"></i>
@@ -233,4 +234,4 @@
 
 
 
-
+@endcan

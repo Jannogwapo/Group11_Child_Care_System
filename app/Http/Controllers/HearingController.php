@@ -84,7 +84,7 @@ $currentMonth = $request->input('month', Carbon::now()->format('Y-m'));
     }
 
     $now = Carbon::now();
-    if ($filter === 'upcoming') {
+    if ($filter === 'upcoming' && $filter === 'ongoing-upcoming'){
         $baseQuery->where('status', 'scheduled')
                   ->where(function ($query) use ($now) {
                       $query->where('hearing_date', '>', $now->toDateString())

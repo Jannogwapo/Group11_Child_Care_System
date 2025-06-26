@@ -39,9 +39,9 @@ class LogInController extends Controller
                 return back()->withErrors([
                     'email' => 'Your account has been disabled. Please contact the administrator.',
                 ])->withInput($request->only('email'));
-            } elseif ($user->role_id === 3) {
-                return redirect()->route('admin.report')
-                ->with('_just_logged_in', true);
+            } elseif ($user->role_id == 3) {
+                return redirect()->route('admin.access');
+                
             }
             return redirect()->route('dashboard')
                 ->with('_just_logged_in', true);

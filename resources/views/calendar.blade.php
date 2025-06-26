@@ -30,17 +30,17 @@
         </a>
         @endcannot
 
-    <div class="flex items-center gap-4 mb-6 justify-end">
+    <!-- <div class="flex items-center gap-4 mb-6 justify-end">
         <div class="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
             <button id="calendarViewBtn" class="case-filter-btn{{ $activeFilter == 'calendar' ? ' active' : '' }}" type="button">
                 <i class="bi bi-calendar3 text-xl"></i>
             </button>
             <button id="listViewBtn" class="case-filter-btn{{ $activeFilter == 'list' ? ' active' : '' }}" type="button">
                 <i class="bi bi-list-ul text-xl"></i>
-            </button>
+            </button> 
         </div>
 
-    </div>
+    </div> -->
 
     <!-- Filter Buttons -->
     <div class="mb-6">
@@ -147,9 +147,10 @@
                                         foreach ($hearings[$dateStr] as $hearing) {
                                             if ($activeFilter === 'upcoming'
                                                 && $hearing->status === 'scheduled'
+                                                ||$activeFilter ==='ongoing-upcoming'
                                                 && (
                                                     $dateStr > $today->format('Y-m-d')
-                                                    || ($dateStr === $today->format('Y-m-d') && $hearing->time >= $today->format('H:i:s'))
+                                                    || ($dateStr === $today->format('Y-m-d') && $hearing->time <= $today->format('H:i:s'))
                                                 )) {
                                                 $filteredHearings[] = $hearing;
                                             } elseif ($activeFilter === 'editable'

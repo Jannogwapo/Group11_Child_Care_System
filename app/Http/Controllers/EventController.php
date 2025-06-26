@@ -135,28 +135,11 @@ class EventController extends Controller
             'event_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-<<<<<<< HEAD
-        // Check if there are actual changes
-        $hasChanges = $event->title != $validated['event_title'] ||
-                      $event->description != $validated['event_description'] ||
-                      $event->start_date != $validated['event_date'];
-
-        // Update the event
-=======
         // Update the event fields
->>>>>>> 75f7d855feae62311736a9f99f65823f2b012e55
         $event->title = $validated['event_title'];
         $event->description = $validated['event_description'];
         $event->start_date = $validated['event_date'];
         $event->end_date = $validated['event_date'];
-<<<<<<< HEAD
-
-        if ($hasChanges) {
-            $event->updated_at = now();
-        }
-
-=======
->>>>>>> 75f7d855feae62311736a9f99f65823f2b012e55
         $event->save();
 
         // Delete selected images
@@ -197,13 +180,13 @@ class EventController extends Controller
         }
 
         // Notify admins about the update if there were changes
-        if ($hasChanges) {
+       
             $this->notifyAdmins(
                 'Event Updated',
                 "Event '{$event->title}' has been updated by {$request->user()->name}.",
                 route('admin.logs', ['filter' => 'events'])
             );
-        }
+        
 
         return redirect()->route('events.show', $event)
             ->with('success', 'Event report updated successfully!');
