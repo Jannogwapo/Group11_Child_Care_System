@@ -32,7 +32,7 @@ class LogsController extends Controller
         }
 
         if ($filter === 'clients') {
-            $recentClients = \App\Models\Notification::where('data', 'like', '%"title":"%Client %')
+            $recentClients = \App\Models\Notification::where('data->type', 'client')
                 ->latest()
                 ->get();
         }
@@ -43,13 +43,13 @@ class LogsController extends Controller
         }
 
         if ($filter === 'events') {
-            $recentEvents = \App\Models\Notification::where('data', 'like', '%"title":"%Event %')
+            $recentEvents = \App\Models\Notification::where('data->type', 'event')
                 ->latest()
                 ->get();
         }
 
         if ($filter === 'incidents') {
-            $recentIncidents = \App\Models\Notification::where('data', 'like', '%"title":"%Incident %')
+            $recentIncidents = \App\Models\Notification::where('data->type', 'incident')
                 ->latest()
                 ->get();
         }

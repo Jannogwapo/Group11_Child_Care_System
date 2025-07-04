@@ -51,14 +51,21 @@
             </div>
             <div class="notification-list">
                 @forelse($notifications as $notification)
-                    <a href="{{ $notification->data['link'] ?? '#' }}"
+                    @php
+                        $type = $notification->data['type'] ?? null;
+                        $tab = 'all';
+                        if ($type === 'client') $tab = 'clients';
+                        elseif ($type === 'event') $tab = 'events';
+                        elseif ($type === 'hearing') $tab = 'hearings';
+                        elseif ($type === 'incident') $tab = 'incidents';
+                    @endphp
+                    <a href="{{ route('admin.logs', ['filter' => $tab]) }}#log-{{ $notification->id }}"
                        class="notification-item {{ is_null($notification->read_at) ? 'unread' : '' }}"
                        data-notification-id="{{ $notification->id }}">
                         <div class="notification-content">
                             <h4>{{ $notification->data['title'] }}</h4>
                             <p>{{ $notification->data['message'] }}</p>
                             <small>{{ $notification->created_at->diffForHumans() }}</small>
-
                         </div>
                     </a>
                 @empty

@@ -133,7 +133,8 @@ class AddClient extends Controller
             $this->notifyAdmins(
                 'New Client Added',
                 "A new client {$client->clientFirstName} {$client->clientLastName} has been added by {$request->user()->name}.",
-                route('admin.logs', ['filter' => 'clients']) // Link to the clients tab in logs
+                route('clients.show', $client->id),
+                'client'
             );
 
             return redirect()->route('clients.view')->with('success', 'Client added successfully!');

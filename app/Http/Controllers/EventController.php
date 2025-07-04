@@ -78,7 +78,8 @@ class EventController extends Controller
             $this->notifyAdmins(
                 'New Event Created',
                 "A new event titled '{$event->title}' has been created by {$request->user()->name}.",
-                route('admin.logs', ['filter' => 'events'])
+                route('events.show', $event->id),
+                'event'
             );
 
             return redirect()->route('events.index')
@@ -111,7 +112,8 @@ class EventController extends Controller
             $this->notifyAdmins(
                 'Event Deleted',
                 "Event '{$eventTitle}' has been deleted by {$userName}.",
-                route('admin.logs', ['filter' => 'events'])
+                route('admin.logs', ['filter' => 'events']),
+                'event'
             );
 
             return redirect()->route('events.index')
@@ -180,13 +182,12 @@ class EventController extends Controller
         }
 
         // Notify admins about the update if there were changes
-       
-            $this->notifyAdmins(
-                'Event Updated',
-                "Event '{$event->title}' has been updated by {$request->user()->name}.",
-                route('admin.logs', ['filter' => 'events'])
-            );
-        
+        $this->notifyAdmins(
+            'Event Updated',
+            "Event '{$event->title}' has been updated by {$request->user()->name}.",
+            route('events.show', $event->id),
+            'event'
+        );
 
         return redirect()->route('events.show', $event)
             ->with('success', 'Event report updated successfully!');

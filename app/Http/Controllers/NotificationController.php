@@ -9,12 +9,12 @@ class NotificationController extends Controller
     public function markAsRead($id)
     {
         $notification = auth()->user()->notifications()->findOrFail($id);
-        
+
         // Only mark as read if it hasn't been read yet
         if (is_null($notification->read_at)) {
             $notification->markAsRead();
         }
-        
+
         return response()->json(['success' => true]);
     }
 
@@ -29,4 +29,10 @@ class NotificationController extends Controller
         $count = auth()->user()->unreadNotifications()->count();
         return response()->json(['count' => $count]);
     }
-} 
+
+    public function show($id)
+    {
+        $notification = \App\Models\Notification::findOrFail($id);
+        return view('notifications.show', compact('notification'));
+    }
+}

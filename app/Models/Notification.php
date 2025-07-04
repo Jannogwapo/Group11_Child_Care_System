@@ -21,6 +21,9 @@ class Notification extends Model
         'data' => 'array',
     ];
 
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

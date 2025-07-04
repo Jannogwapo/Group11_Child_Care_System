@@ -241,7 +241,7 @@
             <i class="bi bi-calendar-event"></i> Events
         </a>
         @else
-        
+
         <a href="{{ route('admin.access') }}" class="sidebar-button {{ request()->routeIs('admin.access') ? 'active' : '' }}">
             <i class="bi bi-shield-lock"></i> Access
         </a>
@@ -287,6 +287,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     @yield('styles')
     @stack('scripts')
+    @yield('scripts')
 </body>
 </html>
 

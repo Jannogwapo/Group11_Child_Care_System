@@ -37,7 +37,7 @@
                             $data = $notification->data;
                             $title = $data['title'] ?? '';
                         @endphp
-                        <tr>
+                        <tr class="clickable-row" data-href="{{ $data['link'] ?? route('notifications.show', $notification->id) }}">
                             <th class="pr-4">
                                 @if(Str::contains($title, 'Client'))
                                     <i class="bi bi-person text-blue-500" style="font-size: 22px;"></i>
@@ -90,7 +90,7 @@
                     @php
                         $data = $notification->data;
                     @endphp
-                    <tr>
+                    <tr class="clickable-row" data-href="{{ $data['link'] ?? route('notifications.show', $notification->id) }}">
                         <th class="pr-4">
                             @if(Str::contains($data['title'], 'Deleted'))
                                 <i class="bi bi-person-x text-red-500" style="font-size: 22px;"></i>
@@ -125,37 +125,37 @@
     </div>
 @endif
 
-@if($filter === 'all' || $filter === 'hearings')
+@if($filter === 'hearings')
     <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-        @if($filter === 'hearings')
-        <h2 class="text-xl font-semibold mb-4">Recent Hearings</h2>
-        @endif
-        @if($recentHearings->isEmpty() && $filter ==='hearings')
-            <p class="text-gray-500">No recent hearings found.</p>
-        @else
-        <table class="min-w-full bg-white">
-            <tbody>
-                @foreach($recentHearings as $hearing)
-                <tr>
-                    <th>
-                        <i class="bi bi-calendar-check"></i>
-                    </th>
-                    <td class="py-2 px-4 border-b">
-    {{ $hearing->hearing_date ? $hearing->hearing_date->format('Y-m-d') : 'N/A' }}
-    {{ $hearing->time ? \Carbon\Carbon::parse($hearing->time)->format('h:i A') : 'N/A' }}
-</td>
-                    <td class="py-2 px-4 border-b">
-                        <strong>{{ $hearing->user ? $hearing->user->name : 'Unknown User' }}</strong> added a hearing to Client <strong> {{ $hearing->client ? $hearing->client->clientFirstName . ' ' . $hearing->client->clientLastName : 'Unknown Client' }}</strong>
-                    </td>
-                    <td>
-                        <span style="color: #bbb; font-size: 0.8em;">{{ $hearing->created_at }}</span>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-        @endif
-    </div>
+    <h2 class="text-xl font-semibold mb-4">Recent Hearings</h2>
+    @if($recentHearings->isEmpty())
+        <p class="text-gray-500">No recent hearings found.</p>
+    @else
+    <table class="min-w-full bg-white">
+        <tbody>
+            @foreach($recentHearings as $hearing)
+            <tr class="clickable-row" data-href="{{ route('hearings.show', $hearing->id) }}">
+                <th>
+                    <i class="bi bi-calendar-check"></i>
+                </th>
+                <td class="py-2 px-4 border-b">
+                    {{ $hearing->hearing_date ? $hearing->hearing_date->format('Y-m-d') : 'N/A' }}
+                    {{ $hearing->time ? \Carbon\Carbon::parse($hearing->time)->format('h:i A') : 'N/A' }}
+                </td>
+                <td class="py-2 px-4 border-b">
+                    <strong>{{ $hearing->user ? $hearing->user->name : 'Unknown User' }}</strong>
+                    added a hearing to Client
+                    <strong>{{ $hearing->client ? $hearing->client->clientFirstName . ' ' . $hearing->client->clientLastName : 'Unknown Client' }}</strong>
+                </td>
+                <td>
+                    <span style="color: #bbb; font-size: 0.8em;">{{ $hearing->created_at }}</span>
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @endif
+</div>
 @endif
 
 @if($filter === 'all' || $filter === 'events')
@@ -172,7 +172,7 @@
                     @php
                         $data = $notification->data;
                     @endphp
-                    <tr>
+                    <tr class="clickable-row" data-href="{{ $data['link'] ?? route('notifications.show', $notification->id) }}">
                         <th class="pr-4">
                             @if(Str::contains($data['title'], 'Deleted'))
                                 <i class="bi bi-trash text-red-500" style="font-size: 22px;"></i>
@@ -221,7 +221,7 @@
                     @php
                         $data = $notification->data; // data is already an array/object
                     @endphp
-                    <tr>
+                    <tr class="clickable-row" data-href="{{ $data['link'] ?? route('notifications.show', $notification->id) }}">
                         <th class="pr-4">
                             @if(Str::contains($data['title'], 'Deleted'))
                                 <i class="bi bi-trash text-red-500" style="font-size: 22px;"></i>
@@ -424,3 +424,16 @@
         margin-bottom: 0.5rem;
     }
 </style>
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const rows = document.querySelectorAll('.clickable-row');
+        rows.forEach(row => {
+            row.addEventListener('click', function() {
+                window.location = this.dataset.href;
+            });
+        });
+    });
+</script>
+@endsection

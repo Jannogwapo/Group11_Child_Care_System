@@ -49,7 +49,8 @@ class IncidentController extends Controller
         $this->notifyAdmins(
             'New Incident Reported',
             "A new incident of type '{$incident->incident_type}' has been reported by {$request->user()->name}.",
-            route('admin.logs', ['filter' => 'incidents']) // Link to the incidents tab in logs
+            route('incidents.show', $incident->id),
+            'incident'
         );
 
         return redirect()->route('events.index')->with('success', 'Incident reported successfully!');
@@ -83,7 +84,8 @@ class IncidentController extends Controller
             $this->notifyAdmins(
                 'Incident Deleted',
                 "An incident of type '{$incidentType}' has been deleted by {$userName}.",
-                route('admin.logs', ['filter' => 'incidents'])
+                route('admin.logs', ['filter' => 'incidents']),
+                'incident'
             );
 
             return redirect()->route('events.index')
@@ -148,7 +150,8 @@ class IncidentController extends Controller
             $this->notifyAdmins(
                 'Incident Updated',
                 "An incident of type '{$incident->incident_type}' has been updated by {$request->user()->name}.",
-                route('admin.logs', ['filter' => 'incidents'])
+                route('admin.logs', ['filter' => 'incidents']),
+                'incident'
             );
         }
 

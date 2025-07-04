@@ -296,6 +296,11 @@ class ClientController extends Controller
 
         try {
             $client = Client::create($validated);
+            $this->notifyAdmins(
+                'Client Added',
+                "Client {$client->clientFirstName} {$client->clientLastName} has been added by {$request->user()->name}.",
+                route('clients.show', $client->id)
+            );
             return redirect()->route('viewClient')->with('success', 'Client added successfully!');
         } catch (\Exception $e) {
             return back()->withInput()->with('error', 'Error adding client: ' . $e->getMessage());
@@ -343,7 +348,7 @@ class ClientController extends Controller
         try {
             // Get the original client data for comparison
             $originalClient = Client::find($client->id);
-            
+
             // Prepare update data
             $updateData = [
                 'clientLastName' => $request->input('lname'),
@@ -361,7 +366,7 @@ class ClientController extends Controller
                 'status_id' => $request->input('status_id'),
                 'location_id' => $request->input('location_id'),
             ];
-            
+
             // Check if there are actual changes
             $hasChanges = false;
             foreach ($updateData as $key => $value) {
@@ -370,7 +375,7 @@ class ClientController extends Controller
                     break;
                 }
             }
-            
+
             // Only update the updated_at timestamp if there are actual changes
             if ($hasChanges) {
                 $updateData['updated_at'] = now();
@@ -390,9 +395,10 @@ class ClientController extends Controller
                 $this->notifyAdmins(
                     'Client Updated',
                     "Client {$updateData['clientFirstName']} {$updateData['clientLastName']} has been updated by {$request->user()->name}.",
-                    route('admin.logs', ['filter' => 'clients'])
+                    route('clients.show', $client->id),
+                    'client'
                 );
-                
+
                 return redirect()->route('clients.view')
                     ->with('success', 'Client updated successfully!');
             } else {

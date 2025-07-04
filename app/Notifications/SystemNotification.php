@@ -11,12 +11,14 @@ class SystemNotification extends Notification
     protected $title;
     protected $message;
     protected $link;
+    protected $type;
 
-    public function __construct(string $title, string $message, string $link = null)
+    public function __construct(string $title, string $message, string $link = null, string $type = null)
     {
         $this->title = $title;
         $this->message = $message;
         $this->link = $link;
+        $this->type = $type;
     }
 
     public function via($notifiable): array
@@ -30,6 +32,7 @@ class SystemNotification extends Notification
             'title' => $this->title,
             'message' => $this->message,
             'link' => $this->link,
+            'type' => $this->type,
         ];
     }
-} 
+}

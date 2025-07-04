@@ -29,7 +29,7 @@ class HearingController extends Controller
         }
 
         $clients = $clientsQuery->orderBy('clientLastName')->get();
-        
+
         $branches = Branch::orderBy('branchName')->get();
         $statuses = Status::orderBy('status_name')->get();
         return view('client.addHearing', compact('clients', 'branches', 'statuses'));
@@ -55,7 +55,8 @@ class HearingController extends Controller
         $this->notifyAdmins(
             'New Hearing Scheduled',
             "A new hearing has been scheduled for client {$client->clientFirstName} {$client->clientLastName} by {$request->user()->name}.",
-            route('admin.logs', ['filter' => 'hearings'])
+            route('hearings.show', $hearing->id),
+            'hearing'
         );
 
         return redirect()->route('calendar.index')
@@ -93,7 +94,7 @@ $currentMonth = $request->input('month', Carbon::now()->format('Y-m'));
                                    ->where('time', '>=', $now->format('H:i:s'));
                             });
                   });
-    
+
     } elseif ($filter === 'editable') {
         $baseQuery->where('status', 'scheduled')
                   ->where(function ($query) use ($now) {
@@ -105,17 +106,17 @@ $currentMonth = $request->input('month', Carbon::now()->format('Y-m'));
                   });
     } elseif ($filter === 'finished') {
         $baseQuery->where('status', 'completed');
-    
+
     } elseif ($filter === 'postponed') {
         $baseQuery->where('status', 'postponed');
-    
+
     } elseif ($filter === 'ongoing') {
         $baseQuery->where('status', 'ongoing');
-    
+
     }elseif ($filter === 'all') {
         // No additional where clause (show all hearings)
     }
-    
+
     $hearings = $baseQuery->orderBy('hearing_date', 'desc')
                          ->orderBy('time', 'desc')
                          ->get()
@@ -157,12 +158,12 @@ $currentMonth = $request->input('month', Carbon::now()->format('Y-m'));
     public function edit(Request $request, Hearing $hearing) :View {
         $client = Client::find($hearing->client_id);
         $branch = Branch::find($hearing->branch_id);
-        
+
         // Handle initial status choice for first edit
         if ($hearing->edit_count === 1 && $request->has('initial_status')) {
             $hearing->status = 'postponed'; // Default to postponed for the form
         }
-        
+
         return view('client.editHearing', compact('hearing', 'client', 'branch'));
     }
 

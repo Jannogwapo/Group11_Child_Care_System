@@ -108,6 +108,7 @@ Route::delete('/activities/{activity}', [ActivityController::class, 'destroy'])-
 Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
 Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unreadCount');
+Route::get('/notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
 
     // Reports
         Route::prefix('reports')->group(function () {
@@ -122,7 +123,7 @@ Route::get('/notifications/unread-count', [NotificationController::class, 'getUn
             Route::get('/access', [AccessController::class, 'access'])->name('admin.access');
             Route::delete('/access/{user}', [AccessController::class, 'delete'])->name('admin.access.delete');
             Route::put('/toggle-user/{user}', [AccessController::class, 'toggleUser'])->name('admin.toggle-user');
-            
+
         });
 
         Route::middleware(['can:isAdmin'])->group(function () {
