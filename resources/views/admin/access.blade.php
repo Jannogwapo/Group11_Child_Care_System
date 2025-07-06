@@ -10,7 +10,7 @@ body {
     color: #222;
     font-size: 1.1rem;
 }
-.container {
+.containers {
     max-width: 1000px;
     margin: 2rem auto;
     background: #f9fafb;
@@ -172,7 +172,7 @@ input[type="submit"] {
 }
 </style>
 
-<div class="container mx-auto px-4 py-8">
+<div class="containers mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">User Access Management</h1>
     </div>
@@ -310,7 +310,7 @@ input[type="submit"] {
     </div>
 
     <!-- Request Section -->
-    <div class="bg-white rounded-lg shadow-lg p-6">
+    
         <h2 class="font-bold text-xl mb-4 mt-8">REQUEST</h2>
         @if($requests->isEmpty())
             <p class="text-gray-500">No requests found.</p>

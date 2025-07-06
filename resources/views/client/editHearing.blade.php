@@ -264,8 +264,8 @@
                     <div style="display: flex; align-items: center; gap: 18px;">
                         <label style="width: 160px; font-weight: 500;">Client Name</label>
                         <input type="hidden" name="client_id" value="{{ $client->id }}">
-                        <input type="text" class="form-control" 
-                               value="{{ $client->clientLastName }}, {{ $client->clientFirstName }}" 
+                        <input type="text" class="form-control"
+                               value="{{ $client->clientLastName }}, {{ $client->clientFirstName }}"
                                readonly style="flex: 1; background: #f8f9fa;">
                     </div>
 
@@ -273,27 +273,27 @@
                     <div style="display: flex; align-items: center; gap: 18px;">
                         <label style="width: 160px; font-weight: 500;">Branch</label>
                         <input type="hidden" name="branch_id" value="{{ $branch->id }}">
-                        <input type="text" class="form-control" 
-                               value="{{ $branch->branchName }}" 
+                        <input type="text" class="form-control"
+                               value="{{ $branch->branchName }}"
                                readonly style="flex: 1; background: #f8f9fa;">
                     </div>
 
                     <!-- Hearing Date -->
                     <div style="display: flex; align-items: center; gap: 18px;">
                         <label style="width: 160px; font-weight: 500;">Hearing Date</label>
-                        <input type="hidden" name="hearing_date" 
-                               value="{{ $hearing->hearing_date instanceof \Carbon\Carbon ? $hearing->hearing_date->format('Y-m-d') : $hearing->hearing_date }}">
-                        <input type="text" class="form-control" 
-                               value="{{ $hearing->hearing_date instanceof \Carbon\Carbon ? $hearing->hearing_date->format('F d, Y') : \Carbon\Carbon::parse($hearing->hearing_date)->format('F d, Y') }}" 
+                        <input type="hidden" name="hearing_date"
+                               value="{{ $hearing->hearing_date ? ($hearing->hearing_date instanceof \Carbon\Carbon ? $hearing->hearing_date->format('Y-m-d') : $hearing->hearing_date) : '' }}">
+                        <input type="text" class="form-control"
+                               value="{{ $hearing->hearing_date ? ($hearing->hearing_date instanceof \Carbon\Carbon ? $hearing->hearing_date->format('F d, Y') : \Carbon\Carbon::parse($hearing->hearing_date)->format('F d, Y')) : 'N/A' }}"
                                readonly style="flex: 1; background: #f8f9fa;">
                     </div>
 
                     <!-- Hearing Time -->
                     <div style="display: flex; align-items: center; gap: 18px;">
                         <label style="width: 160px; font-weight: 500;">Time</label>
-                        <input type="hidden" name="time" value="{{ \Carbon\Carbon::parse($hearing->time)->format('H:i') }}">
-                        <input type="text" class="form-control" 
-                               value="{{ \Carbon\Carbon::parse($hearing->time)->format('g:i A') }}" 
+                        <input type="hidden" name="time" value="{{ $hearing->time ? \Carbon\Carbon::parse($hearing->time)->format('H:i') : '' }}">
+                        <input type="text" class="form-control"
+                               value="{{ $hearing->time ? \Carbon\Carbon::parse($hearing->time)->format('g:i A') : 'N/A' }}"
                                readonly style="flex: 1; background: #f8f9fa;">
                     </div>
 
@@ -347,11 +347,11 @@
 
                     <!-- Submit Buttons -->
                     <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
-                        <a href="{{ route('calendar.index') }}" 
+                        <a href="{{ route('calendar.index') }}"
                            style="background: #f3f4f6; color: #374151; font-weight: 600; border-radius: 8px; padding: 10px 24px; text-decoration: none;">
                             Cancel
                         </a>
-                        <button type="submit" class="btn btn-primary" 
+                        <button type="submit" class="btn btn-primary"
                                 style="background: #21807a; color: #fff; font-weight: 600; border-radius: 8px; padding: 10px 32px;">
                             Update Hearing
                         </button>

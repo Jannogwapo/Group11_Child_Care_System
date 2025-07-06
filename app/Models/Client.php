@@ -82,6 +82,26 @@ class Client extends Model
     {
         return $this->belongsTo(Location::class, 'location_id');
     }
+
+    public function emergencyContacts()
+    {
+        return $this->hasMany(EmergencyContact::class);
+    }
+
+    public function primaryEmergencyContact()
+    {
+        return $this->hasOne(EmergencyContact::class)->where('priority', 'primary');
+    }
+
+    public function medicalRecord()
+    {
+        return $this->hasOne(MedicalRecord::class);
+    }
+
+    public function documents()
+    {
+        return $this->hasMany(Document::class);
+    }
     
     
 

@@ -83,28 +83,73 @@ $currentMonth = $request->input('month', Carbon::now()->format('Y-m'));
         });
     }
 
-    $now = Carbon::now();
+    $now = Carbon::now('Asia/Manila');
     if ($filter === 'upcoming') {
-        $baseQuery->where('status', 'scheduled')
-                  ->where(function ($query) use ($now) {
-                      $query->where('hearing_date', '>', $now->toDateString())
-                            ->orWhere(function ($q) use ($now) {
-                                $q->where('hearing_date', $now->toDateString())
-                                   ->where('time', '>=', $now->format('H:i:s'));
-                            });
+        $baseQuery->where(function ($query) use ($now) {
+            // scheduled in the future or today and time in the future
+            $query->where(function ($q) use ($now) {
+                $q->where('status', 'scheduled')
+                  ->where(function ($qq) use ($now) {
+                      $qq->where('hearing_date', '>', $now->toDateString())
+                         ->orWhere(function ($qqq) use ($now) {
+                             $qqq->where('hearing_date', $now->toDateString())
+                                 ->where('time', '>', $now->format('H:i:s'));
+                         });
                   });
-    
+            })
+            // OR ongoing-upcoming in the future or today and time in the future
+            ->orWhere(function ($q) use ($now) {
+                $q->where('status', 'ongoing-upcoming')
+                  ->where(function ($qq) use ($now) {
+                      $qq->where('hearing_date', '>', $now->toDateString())
+                         ->orWhere(function ($qqq) use ($now) {
+                             $qqq->where('hearing_date', $now->toDateString())
+                                 ->where('time', '>', $now->format('H:i:s'));
+                         });
+                  });
+            });
+        });
     } elseif ($filter === 'editable') {
-        $baseQuery->where('status', 'scheduled')
-                  ->where(function ($query) use ($now) {
-                      $query->where('hearing_date', '<', $now->toDateString())
-                            ->orWhere(function ($q) use ($now) {
-                                $q->where('hearing_date',  $now->toDateString())
-                                   ->where('time', '<=', $now->format('H:i:s'));
-                            });
+        $baseQuery->where(function ($query) use ($now) {
+            // scheduled in the past or today and time has passed
+            $query->where(function ($q) use ($now) {
+                $q->where('status', 'scheduled')
+                  ->where(function ($qq) use ($now) {
+                      $qq->where('hearing_date', '<', $now->toDateString())
+                         ->orWhere(function ($qqq) use ($now) {
+                             $qqq->where('hearing_date', $now->toDateString())
+                                 ->where('time', '<=', $now->format('H:i:s'));
+                         });
                   });
+            })
+            // OR ongoing-upcoming in the past or today and time has passed
+            ->orWhere(function ($q) use ($now) {
+                $q->where('status', 'ongoing-upcoming')
+                  ->where(function ($qq) use ($now) {
+                      $qq->where('hearing_date', '<', $now->toDateString())
+                         ->orWhere(function ($qqq) use ($now) {
+                             $qqq->where('hearing_date', $now->toDateString())
+                                 ->where('time', '<=', $now->format('H:i:s'));
+                         });
+                  });
+            });
+        });
     } elseif ($filter === 'finished') {
-        $baseQuery->where('status', 'completed');
+        // For finished filter, show only the last completed hearing for each reminder_code
+        $baseQuery->where('status', 'completed')
+                  ->whereIn('id', function($query) {
+                      $query->select(\DB::raw('MAX(id)'))
+                            ->from('hearings')
+                            ->where('status', 'completed')
+                            ->whereNotNull('reminder_code')
+                            ->groupBy('reminder_code')
+                            ->union(
+                                \DB::table('hearings')
+                                    ->select('id')
+                                    ->where('status', 'completed')
+                                    ->whereNull('reminder_code')
+                            );
+                  });
     
     } elseif ($filter === 'postponed') {
         $baseQuery->where('status', 'postponed');
@@ -180,35 +225,46 @@ $currentMonth = $request->input('month', Carbon::now()->format('Y-m'));
             'reminder_code' => 'nullable|string',
         ]);
 
-        // Update hearing data. Use mass assignment for better readability and security.
-        $hearing->update([
-            'client_id' => $request->client_id,
-            'branch_id' => $request->branch_id,
-            'hearing_date' => $request->hearing_date,
-            'time' => $request->time,
-            'status' => $request->status,
-            'judge_name' => null,
-            'edit_count' => $hearing->edit_count + 1,
-            'reminder_code' => $request->status === 'completed' ? null : $request->reminder_code,
-            'notes' => $request->notes,
-        ]);
+        // If status is 'completed', update all hearings with the same reminder_code to completed
+        if ($request->status === 'completed' && $hearing->reminder_code) {
+            // Update all hearings with the same reminder_code to completed
+            Hearing::where('reminder_code', $hearing->reminder_code)
+                  ->update([
+                      'status' => 'completed',
+                      'edit_count' => \DB::raw('edit_count + 1'),
+                      'notes' => $request->notes
+                  ]);
+        } else {
+            // Update hearing data. Use mass assignment for better readability and security.
+            $hearing->update([
+                'client_id' => $request->client_id,
+                'branch_id' => $request->branch_id,
+                'hearing_date' => $request->hearing_date,
+                'time' => $request->time,
+                'status' => $request->status,
+                'judge_name' => null,
+                'edit_count' => $hearing->edit_count + 1,
+                'reminder_code' => $request->reminder_code,
+                'notes' => $request->notes,
+            ]);
 
-        // If status is 'ongoing' or 'postponed', create a new hearing with the same reminder_code, client, branch, and judge, but new date and time
-        if (in_array($request->status, ['ongoing', 'postponed'])) {
-            // Mark the current hearing as postponed or ongoing
-            $hearing->status = $request->status;
-            $hearing->save();
+            // If status is 'ongoing' or 'postponed', create a new hearing with the same reminder_code, client, branch, and judge, but new date and time
+            if (in_array($request->status, ['ongoing', 'postponed'])) {
+                // Mark the current hearing as postponed or ongoing
+                $hearing->status = $request->status;
+                $hearing->save();
 
-            // Create a new hearing for the next date/time (if provided)
-            if ($request->next_hearing_date && $request->next_hearing_time) {
-                $newHearing = $hearing->replicate();
-                $newHearing->hearing_date = $request->next_hearing_date;
-                $newHearing->time = $request->next_hearing_time;
-                $newHearing->status = 'ongoing-upcoming';// New hearing starts as ongoing
-                $newHearing->edit_count = 1;
-                $newHearing->reminder_code = $hearing->reminder_code;
-                $newHearing->notes = $request->next_hearing_notes ?? null;
-                $newHearing->save();
+                // Create a new hearing for the next date/time (if provided)
+                if ($request->next_hearing_date && $request->next_hearing_time) {
+                    $newHearing = $hearing->replicate();
+                    $newHearing->hearing_date = $request->next_hearing_date;
+                    $newHearing->time = $request->next_hearing_time;
+                    $newHearing->status = 'ongoing-upcoming';// New hearing starts as ongoing
+                    $newHearing->edit_count = 1;
+                    $newHearing->reminder_code = $hearing->reminder_code;
+                    $newHearing->notes = $request->next_hearing_notes ?? null;
+                    $newHearing->save();
+                }
             }
         }
 

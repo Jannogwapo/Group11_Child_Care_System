@@ -3,8 +3,8 @@
 @section('title', 'Hearing Details')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="bg-white rounded-lg shadow-lg p-6">
+<div class="container mx-auto px-4 py-8 ">
+    <div class="bg-white rounded-lg shadow-lg p-4">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
             <h2 style="font-size: 2rem; font-weight: bold; color: #21807a; display: flex; align-items: center; gap: 10px;">
                 <span class="material-icons" style="font-size: 2rem; vertical-align: middle;">gavel</span>
@@ -12,13 +12,13 @@
             </h2>
             <div style="display: flex; gap: 12px;">
                 @if(request('filter') === 'editable')
-                    <a href="{{ route('hearings.edit', $hearing->id) }}" 
+                    <a href="{{ route('hearings.edit', $hearing->id) }}"
                        style="background: #21807a; color: #fff; font-weight: 600; border-radius: 8px; padding: 10px 24px; text-decoration: none;">
                         <span class="material-icons" style="font-size: 1.2rem; vertical-align: middle; margin-right: 4px;">edit</span>
                         Edit Hearing
                     </a>
                 @endif
-                <a href="{{ route('calendar.index') }}" 
+                <a href="{{ route('calendar.index') }}"
                    style="background: #5fd1b3; color: #fff; font-weight: 600; border-radius: 8px; padding: 10px 24px; text-decoration: none;">
                     <span class="material-icons" style="font-size: 1.2rem; vertical-align: middle; margin-right: 4px;">arrow_back</span>
                     Back to Calendar
@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 24px;">
+        <div style="display: flex; flex-direction: column; gap: 24px; padding: 24px;">
             <!-- Client Information -->
             <div style="background: #f8fdfa; border-radius: 12px; padding: 24px; margin-bottom: 0;">
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
@@ -58,11 +58,11 @@
                 <div style="display: flex; flex-wrap: wrap; gap: 32px;">
                     <div style="flex: 1; min-width: 120px;">
                         <div style="color: #888;">Date</div>
-                        <div style="font-weight: 500;">{{ \Carbon\Carbon::parse($hearing->hearing_date)->format('F j, Y') }}</div>
+                        <div style="font-weight: 500;">{{ $hearing->hearing_date ? \Carbon\Carbon::parse($hearing->hearing_date)->format('F j, Y') : 'N/A' }}</div>
                     </div>
                     <div style="flex: 1; min-width: 120px;">
                         <div style="color: #888;">Time</div>
-                        <div style="font-weight: 500;">{{ \Carbon\Carbon::parse($hearing->time)->format('g:i A') }}</div>
+                        <div style="font-weight: 500;">{{ $hearing->time ? \Carbon\Carbon::parse($hearing->time)->format('g:i A') : 'N/A' }}</div>
                     </div>
                     <div style="flex: 1; min-width: 120px;">
                         <div style="color: #888;">Status</div>
@@ -100,7 +100,7 @@
                 </div>
             </div>
 
-        
+
         </div>
 
         @if(isset($relatedHearings) && $relatedHearings->count() > 1)
@@ -120,7 +120,7 @@
                 return $date;
             })->first();
         @endphp
-        @if($nextHearing)
+        @if($nextHearing && $hearing->status !== 'completed')
         <!-- Next Scheduled Hearing Section -->
         <div style="background: #fffde7; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #ffe082;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
@@ -130,11 +130,11 @@
             <div style="display: flex; flex-wrap: wrap; gap: 32px;">
                 <div style="flex: 1; min-width: 120px;">
                     <div style="color: #888;">Date</div>
-                    <div style="font-weight: 500;">{{ \Carbon\Carbon::parse($nextHearing->hearing_date)->format('F j, Y') }}</div>
+                    <div style="font-weight: 500;">{{ $nextHearing->hearing_date ? \Carbon\Carbon::parse($nextHearing->hearing_date)->format('F j, Y') : 'N/A' }}</div>
                 </div>
                 <div style="flex: 1; min-width: 120px;">
                     <div style="color: #888;">Time</div>
-                    <div style="font-weight: 500;">{{ \Carbon\Carbon::parse($nextHearing->time)->format('g:i A') }}</div>
+                    <div style="font-weight: 500;">{{ $nextHearing->time ? \Carbon\Carbon::parse($nextHearing->time)->format('g:i A') : 'N/A' }}</div>
                 </div>
                 <div style="flex: 1; min-width: 120px;">
                     <div style="color: #888;">Status</div>
@@ -161,8 +161,8 @@
                 <tbody>
                     @foreach($relatedHearings as $rel)
                         <tr style="border-bottom:1px solid #e3f2fd;">
-                            <td style="padding:8px;">{{ \Carbon\Carbon::parse($rel->hearing_date)->format('F j, Y') }}</td>
-                            <td style="padding:8px;">{{ \Carbon\Carbon::parse($rel->time)->format('g:i A') }}</td>
+                            <td style="padding:8px;">{{ $rel->hearing_date ? \Carbon\Carbon::parse($rel->hearing_date)->format('F j, Y') : 'N/A' }}</td>
+                            <td style="padding:8px;">{{ $rel->time ? \Carbon\Carbon::parse($rel->time)->format('g:i A') : 'N/A' }}</td>
                             <td style="padding:8px;">{{ ucfirst($rel->status) }}</td>
                             <td style="padding:8px;">{{ $rel->notes ?? '-' }}</td>
                         </tr>

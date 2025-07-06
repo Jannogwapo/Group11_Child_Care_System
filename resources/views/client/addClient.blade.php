@@ -119,17 +119,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 18px;">
-                        <label for="location_id" style="width: 160px; font-weight: 500;">Remarks</label>
-                        <select id="location_id" class="form-control @error('location_id') is-invalid @enderror" name="location_id" required style="flex: 1;">
-                            <option value="">Remarks</option>
-                            @foreach($locations as $location)
-                                <option value="{{ $location->id }}" {{ old('location_id') == $location->id ? 'selected' : '' }}>
-                                    {{ $location->location }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                
                     <!-- Add more fields as needed -->
                     <div style="display: flex; justify-content: flex-end; margin-top: 24px;">
                         <button type="submit" class="btn btn-primary" style="background: #21807a; color: #fff; font-weight: 600; border-radius: 8px; padding: 10px 32px;">Add Client</button>

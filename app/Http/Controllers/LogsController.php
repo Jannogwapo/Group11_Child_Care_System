@@ -20,28 +20,43 @@ class LogsController extends Controller
         // Get the filter from the request (default to 'all')
         $filter = $request->get('filter', 'all');
 
-        // Get the current month
-        $currentMonth = now()->month;
+        // Initialize all collections
+        $allLogs = collect();
+        $recentClients = collect();
+        $recentHearings = collect();
+        $recentEvents = collect();
+        $recentIncidents = collect();
 
-        // Fetch data based on the filter
-        $recentClients = $filter === 'all' || $filter === 'clients'
-            ? Client::whereMonth('created_at', $currentMonth)->latest('created_at')->get()
-            : collect();
+        if ($filter === 'all') {
+            $allLogs = \App\Models\Notification::latest()->get();
+        }
 
-        $recentHearings = $filter === 'all' || $filter === 'hearings'
-            ? Hearing::whereMonth('created_at', $currentMonth)->latest('created_at')->get()
-            : collect();
+        if ($filter === 'clients') {
+            $recentClients = \App\Models\Notification::where('data', 'like', '%"title":"%Client %')
+                ->latest()
+                ->get();
+        }
 
-        $recentEvents = $filter === 'all' || $filter === 'events'
-            ? Event::whereMonth('created_at', $currentMonth)->latest('created_at')->get()
-            : collect();
+        if ($filter === 'hearings') {
+            // Assuming hearings also create notifications. If not, this needs adjustment.
+            $recentHearings = \App\Models\Hearing::with(['user', 'client'])->latest()->get();
+        }
 
-        $recentIncidents = $filter === 'all' || $filter === 'incidents'
-            ? Incident::whereMonth('created_at', $currentMonth)->latest('created_at')->get()
-            : collect();
+        if ($filter === 'events') {
+            $recentEvents = \App\Models\Notification::where('data', 'like', '%"title":"%Event %')
+                ->latest()
+                ->get();
+        }
+
+        if ($filter === 'incidents') {
+            $recentIncidents = \App\Models\Notification::where('data', 'like', '%"title":"%Incident %')
+                ->latest()
+                ->get();
+        }
 
         return view('admin.logs', compact(
             'filter',
+            'allLogs',
             'recentClients',
             'recentHearings',
             'recentEvents',
@@ -49,3 +64,4 @@ class LogsController extends Controller
         ));
     }
 }
+

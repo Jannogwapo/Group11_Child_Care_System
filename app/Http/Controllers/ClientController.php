@@ -26,7 +26,7 @@ class ClientController extends Controller
         $currentFilter = $request->input('filter', 'ALL');
         $genderFilter = $request->input('gender', null);
         $searchTerm = $request->input('search');
-        
+
         $query = Client::with([
             'gender',
             'status',
@@ -95,6 +95,8 @@ class ClientController extends Controller
         }
 
         $clients = $query->get();
+        // Sort: newest first by created_at
+        $clients = $clients->sortByDesc('created_at')->values();
         $cases = Cases::all();
 
         // Check if it's an AJAX request
@@ -118,7 +120,7 @@ class ClientController extends Controller
         $currentFilter = $request->input('filter', 'ALL');
         $genderFilter = $request->input('gender', null);
         $searchTerm = $request->input('search');
-        
+
         $query = Client::with([
             'gender',
             'status',
@@ -130,14 +132,14 @@ class ClientController extends Controller
         ]);
 
         // Get the current user's role and gender
-        $user = auth()->user(); 
+        $user = auth()->user();
         $userGender = $user->gender_id;
 
         // If not admin, filter by user's gender
         if (!Gate::allows('isAdmin')) {
             $query->where('clientgender', $userGender);
         }
-        
+
         // Apply gender filter if specified (only for admin)
         if (Gate::allows('isAdmin') && $genderFilter && $genderFilter !== 'all') {
             $genderId = $genderFilter === 'male' ? 1 : 2;
@@ -146,7 +148,7 @@ class ClientController extends Controller
 
         // Define location-based filters
         $locationFilters = ['DISCHARGED', 'ESCAPED', 'TRANSFER'];
-        
+
         if ($searchTerm) {
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('clientFirstName', 'like', '%' . $searchTerm . '%')
@@ -185,9 +187,9 @@ class ClientController extends Controller
                       $q->where('location', 'IN-HOUSE');
                   });
         }
-        
+
         $clients = $query->get();
-        
+
         // Group clients by their primary category
         $groupedClients = $clients->groupBy(function($client) use ($currentFilter) {
             // For ALL view, determine primary category based on location and case type
@@ -220,7 +222,7 @@ class ClientController extends Controller
         $isAStudent = IsAStudent::all();
         $isAPwd = IsAPwd::all();
         $branches = Branch::all();
-        
+
         // Get statistics
         $statistics = [
             'total' => $clients->count(),
@@ -244,10 +246,10 @@ class ClientController extends Controller
                                     $q->where('location', 'IN-HOUSE');
                                 })->count(),
         ];
-        
+
         return view('viewClient', compact(
-            'groupedClients', 
-            'currentFilter', 
+            'groupedClients',
+            'currentFilter',
             'genderFilter',
             'genders',
             'cases',
@@ -268,7 +270,7 @@ class ClientController extends Controller
         $statuses = Status::all();
         $branches = Branch::all();
         $locations = Location::all();
-        
+
         return view('client.addClient', compact(
             'genders',
             'cases',
@@ -310,7 +312,7 @@ class ClientController extends Controller
     public function edit(Client $client)
     {
         $user = auth()->user();
-        
+
         // If not admin, allow editing only if the client matches the user's gender
         if (!Gate::allows('isAdmin')) {
             if ($client->clientgender !== $user->gender_id) {
@@ -340,12 +342,11 @@ class ClientController extends Controller
 
     public function update(Request $request, Client $client)
     {
-        // Immediate debugging
-        \Log::info('Update method called for client ID: ' . $client->id);
-        \Log::info('Request data:', $request->all());
-
         try {
-            // Direct update without validation first to test
+            // Get the original client data for comparison
+            $originalClient = Client::find($client->id);
+            
+            // Prepare update data
             $updateData = [
                 'clientLastName' => $request->input('lname'),
                 'clientFirstName' => $request->input('fname'),
@@ -361,8 +362,21 @@ class ClientController extends Controller
                 'clientdateofadmission' => $request->input('admissionDate'),
                 'status_id' => $request->input('status_id'),
                 'location_id' => $request->input('location_id'),
-                'updated_at' => now(), // Manually set updated_at timestamp
             ];
+            
+            // Check if there are actual changes
+            $hasChanges = false;
+            foreach ($updateData as $key => $value) {
+                if ($originalClient->$key != $value) {
+                    $hasChanges = true;
+                    break;
+                }
+            }
+            
+            // Only update the updated_at timestamp if there are actual changes
+            if ($hasChanges) {
+                $updateData['updated_at'] = now();
+            }
 
             \Log::info('Attempting to update with data:', $updateData);
 
@@ -373,7 +387,14 @@ class ClientController extends Controller
 
             \Log::info('Update result:', ['success' => $updated]);
 
-            if ($updated) {
+            if ($updated && $hasChanges) {
+                // Create notification for admins about the client update
+                $this->notifyAdmins(
+                    'Client Updated',
+                    "Client {$updateData['clientFirstName']} {$updateData['clientLastName']} has been updated by {$request->user()->name}.",
+                    route('admin.logs', ['filter' => 'clients'])
+                );
+                
                 return redirect()->route('clients.view')
                     ->with('success', 'Client updated successfully!');
             } else {
@@ -381,7 +402,6 @@ class ClientController extends Controller
                     ->withInput()
                     ->with('error', 'No changes were made to the client record.');
             }
-
         } catch (\Exception $e) {
             \Log::error('Update failed:', [
                 'error' => $e->getMessage(),
@@ -419,3 +439,7 @@ class ClientController extends Controller
         return response()->json($clients);
     }
 }
+
+
+
+

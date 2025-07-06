@@ -8,7 +8,13 @@ class NotificationController extends Controller
 {
     public function markAsRead($id)
     {
-        auth()->user()->notifications()->findOrFail($id)->markAsRead();
+        $notification = auth()->user()->notifications()->findOrFail($id);
+        
+        // Only mark as read if it hasn't been read yet
+        if (is_null($notification->read_at)) {
+            $notification->markAsRead();
+        }
+        
         return response()->json(['success' => true]);
     }
 

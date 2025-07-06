@@ -114,7 +114,7 @@
                 @can('isAdmin')
                     <h5 class="mb-0">Overall Clients by Gender</h5>
                 @else
-                    <h5 class="mb-0">Your Client Statistics</h5>
+                    <h5 class="mb-0">Client Statistics</h5>
                 @endcan
             </div>
             <div class="card-body">
@@ -128,11 +128,11 @@
                 @can('isAdmin')
                     <h5 class="mb-0">In-House Clients by Gender</h5>
                 @else
-                    <h5 class="mb-0">Your In-House Clients</h5>
+                    <h5 class="mb-0">In-House Clients</h5>
                 @endcan
             </div>
-            <div class="card-body">
-                <canvas id="locationClientChart"></canvas>
+            <div class="card-body d-flex flex-column align-items-center justify-content-center" style="padding: 1.5rem 0;">
+                <canvas id="locationClientChart" style="max-width: 220px; max-height: 220px; width: 100%; height: 220px; display: block; margin: 0 auto;"></canvas>
             </div>
         </div>
     </div>
@@ -199,20 +199,17 @@
                 </table>
             </div>
         </div>
-        <div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card">
+    </div>
+    <div class="col-md-6">
+        <div class="card" style="max-width: 480px; width: 100%;">
             <div class="card-header">
-                <h5 class="mb-0">Discharge Client</h5>
+                <h5 class="mb-0">Discharged Client</h5>
             </div>
-            <div class="card-body">
-                <canvas id="dischargeClientChart"></canvas>
+            <div class="card-body d-flex flex-column align-items-center justify-content-center" style="padding: 1.5rem 0;">
+                <canvas id="dischargeClientChart" style="max-width: 320px; max-height: 220px; width: 100%; height: 220px; display: block; margin: 0 auto;"></canvas>
             </div>
         </div>
     </div>
-</div>
-    </div>
-
 </div>
 
 <div class="modal fade" id="weeklyHearingModal" tabindex="-1" aria-labelledby="weeklyHearingModalLabel" aria-hidden="true">
@@ -608,20 +605,39 @@
 
     // Location-based client chart
     const locationCtx = document.getElementById('locationClientChart').getContext('2d');
+    let locationLabels = {!! json_encode($locationStats['labels']) !!};
+    let locationData = {!! json_encode($locationStats['data']) !!};
+    let locationColors = [
+        'rgba(54, 162, 235, 0.8)', // Boys
+        'rgba(255, 99, 132, 0.8)'  // Girls
+    ];
+    let locationBorderColors = [
+        'rgba(54, 162, 235, 1)',
+        'rgba(255, 99, 132, 1)'
+    ];
+
+    if (!isAdmin) {
+        if (userGenderId == 1) { // Male social worker
+            locationLabels = [locationLabels[0]];
+            locationData = [locationData[0]];
+            locationColors = [locationColors[0]];
+            locationBorderColors = [locationBorderColors[0]];
+        } else if (userGenderId == 2) { // Female social worker
+            locationLabels = [locationLabels[1]];
+            locationData = [locationData[1]];
+            locationColors = [locationColors[1]];
+            locationBorderColors = [locationBorderColors[1]];
+        }
+    }
+
     new Chart(locationCtx, {
         type: 'pie',
         data: {
-            labels: {!! json_encode($locationStats['labels']) !!},
+            labels: locationLabels,
             datasets: [{
-                data: {!! json_encode($locationStats['data']) !!},
-                backgroundColor: [
-                    'rgba(54, 162, 235, 0.8)',
-                    'rgba(255, 99, 132, 0.8)'
-                ],
-                borderColor: [
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 99, 132, 1)'
-                ],
+                data: locationData,
+                backgroundColor: locationColors,
+                borderColor: locationBorderColors,
                 borderWidth: 1
             }]
         },

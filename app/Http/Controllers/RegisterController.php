@@ -18,16 +18,17 @@ class RegisterController extends Controller
     public function store(Request $request)
     {
         // Validate the form data
+     
         $validated = $request->validate([
             'username' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             'position' => 'required|integer|exists:user_role,id',
-            'gender' => 'required|integer|exists:genders,id',
+            'gender' => 'required|integer|exists:gender,id',
         ]);
+       
         
         
-
         try {
             // Create a new user
             User::create([
@@ -40,11 +41,11 @@ class RegisterController extends Controller
                 'email_verified_at' => now(),
                 'access_id' => 1,
                         ]);
-                        
-            return redirect('login')->with('success', 'Registration successful!');
+                  
+            return redirect()->route('login')->with('success', 'Registration successful!');
         } catch (\Exception $e) {
             // Log the error for debugging
-            \Log::error('Registration Error: ' . $e->getMessage());
+
 
             return back()->with('error', 'An unexpected error occurred. Please try again later.')->withInput();
         }

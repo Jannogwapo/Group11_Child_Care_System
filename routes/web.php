@@ -19,14 +19,11 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\BranchController;
 
 // IT user only
-Route::middleware(['auth', 'can:It'])->group(function () {
-    Route::get('/admin/report', [ReportController::class, 'report'])->name('admin.report');
-});
+
 
 Route::get('/', function () {
-    
-});
-// Public Routes
+    return redirect()->route('login');
+}); // Public Routes
 Route::middleware('guest')->group(function () {
     // Login Routes
     Route::get('/login', [LogInController::class, 'showLogInForm'])->name('login');
@@ -43,7 +40,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::middleware(['can:Access'])->group(function () {
-        
+
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Client Management
@@ -96,7 +93,6 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{incident}', [IncidentController::class, 'show'])->name('incidents.show');
             Route::get('/{incident}/edit', [IncidentController::class, 'edit'])->name('incidents.edit');
             Route::patch('/{incident}', [IncidentController::class, 'update'])->name('incidents.update');
-            Route::delete('/{incident}', [IncidentController::class, 'destroy'])->name('incidents.destroy');
         });
 
         // Activity Routes
@@ -119,21 +115,24 @@ Route::get('/notifications/unread-count', [NotificationController::class, 'getUn
             Route::get('/incidents', [EventController::class, 'incidents'])->name('reports.incidents');
             Route::get('/incidents/boy', [EventController::class, 'incidentsBoy'])->name('reports.incidents.boy');
             Route::get('/incidents/girl', [EventController::class, 'incidentsGirl'])->name('reports.incidents.girl');
+            Route::delete('/incident/{activity}', [EventController::class, 'destroy'])->name('incidents.destroy');
         });
 
         Route::middleware(['can:It'])->group(function () {
-            Route::get('/report', [ReportController::class, 'report'])->name('admin.report');
             Route::get('/access', [AccessController::class, 'access'])->name('admin.access');
             Route::delete('/access/{user}', [AccessController::class, 'delete'])->name('admin.access.delete');
-            
             Route::put('/toggle-user/{user}', [AccessController::class, 'toggleUser'])->name('admin.toggle-user');
-            Route::get('/report/download', [ReportController::class, 'downloadInHouse'])->name('admin.report.download');
+            
         });
 
         Route::middleware(['can:isAdmin'])->group(function () {
             Route::get('/logs', [LogsController::class, 'logs'])->name('admin.logs');
+            Route::get('/admin/report', [ReportController::class, 'report'])->name('admin.report');
+            Route::get('/report', [ReportController::class, 'report'])->name('admin.report');
+            Route::get('/report/download', [ReportController::class, 'downloadInHouse'])->name('admin.report.download');
+            Route::get('/report', [ReportController::class, 'report'])->name('admin.report');
             Route::get('/report', [\App\Http\Controllers\ReportController::class, 'report'])->name('admin.report.index');
-Route::get('/report/download', [\App\Http\Controllers\ReportController::class, 'downloadInHouse'])->name('admin.report.download');
+            Route::get('/report/download', [\App\Http\Controllers\ReportController::class, 'downloadInHouse'])->name('admin.report.download');
             Route::prefix('branches')->group(function () {
                 Route::get('/', [BranchController::class, 'index'])->name('branches.index');
                 Route::get('/create', [BranchController::class, 'create'])->name('branches.create');
@@ -143,14 +142,15 @@ Route::get('/report/download', [\App\Http\Controllers\ReportController::class, '
                 Route::delete('/{branch}', [BranchController::class, 'destroy'])->name('branches.destroy');
             });
         });
-    
+
     });
- 
+
     Route::post('/logout', [LogInController::class, 'logout'])->name('logout');
     Route::get('/logout', [LogInController::class, 'logout'])->name('logout');
 });
 
 // Define middleware for admin routes
+
 
 
 

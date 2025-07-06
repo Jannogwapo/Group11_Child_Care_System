@@ -33,7 +33,7 @@ class AddClient extends Controller
         $isAStudent = IsAStudent::all();
         $isAPwd = IsAPwd::all();
         $locations = Location::all();
-        $userGender = auth()->user()->gender_id;
+        $userGender = auth()->User->gender_id;
         $branches = Branch::all();
         return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations', 'userGender', 'branches'));
     }
@@ -51,9 +51,9 @@ class AddClient extends Controller
         $isAStudent = IsAStudent::all();
         $isAPwd = IsAPwd::all();
         $locations = Location::all();
-        $userGender = auth()->user()->gender_id;
+        $userGender = auth()->User->gender_id;
         $branches = Branch::all();
-  
+
         return view('client/addClient', compact('genders', 'cases', 'status', 'isAStudent', 'isAPwd', 'locations', 'userGender', 'branches'));
     }
 
@@ -82,7 +82,7 @@ class AddClient extends Controller
         if (Gate::allows('isAdmin')) {
             return redirect()->route('clients.view')->with('error', 'Unauthorized access.');
         }
-       
+
         // Get the user's gender
         $userGender = auth()->user()->gender_id;
 
@@ -103,7 +103,7 @@ class AddClient extends Controller
             'status_id' => 'required|integer|exists:status,id',
             'isAStudent' => 'required|integer|exists:isAStudent,id',
             'isAPwd' => 'required|integer|exists:isAPwd,id',
-            'location_id' => 'required|integer|exists:location,id',
+            'location_id' => 'integer|exists:location,id',
         ]);
 
         try {
@@ -126,7 +126,7 @@ class AddClient extends Controller
                 'isAStudent' => $validated['isAStudent'],
                 'isAPwd' => $validated['isAPwd'],
                 'user_id' => Auth::id(),
-                'location_id' => $validated['location_id'],
+                'location_id' => 1,
             ]);
 
             // Create notification for admins

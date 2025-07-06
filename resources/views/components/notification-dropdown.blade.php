@@ -34,10 +34,11 @@
     }
 @endphp
 
+@can('isAdmin')
 <div class="notification-dropdown">
     <div class="notification-badge" id="notificationBell">
         <i class="bi bi-bell"></i>
-        @if($notifications->where('read_at', null)->count() + $upcomingHearings->count() > 0)
+        @if($notifications->where('read_at', null)->count() > 0)
             <span class="notification-dot"></span>
         @endif
     </div>
@@ -51,11 +52,13 @@
             <div class="notification-list">
                 @forelse($notifications as $notification)
                     <a href="{{ $notification->data['link'] ?? '#' }}"
-                       class="notification-item">
+                       class="notification-item {{ is_null($notification->read_at) ? 'unread' : '' }}"
+                       data-notification-id="{{ $notification->id }}">
                         <div class="notification-content">
                             <h4>{{ $notification->data['title'] }}</h4>
                             <p>{{ $notification->data['message'] }}</p>
                             <small>{{ $notification->created_at->diffForHumans() }}</small>
+
                         </div>
                     </a>
                 @empty
@@ -74,7 +77,7 @@
                     <a href="{{ route('hearings.show', $hearing->id) }}" class="notification-item">
                         <div class="notification-content">
                             <h4>Hearing with {{ $hearing->client->clientFirstName }} {{ $hearing->client->clientLastName }}</h4>
-                            <p>Date: {{ \Carbon\Carbon::parse($hearing->hearing_date)->format('M d, Y') }} at {{ \Carbon\Carbon::parse($hearing->time)->format('h:i A') }}</p>
+                            <p>Date: {{ $hearing->hearing_date ? \Carbon\Carbon::parse($hearing->hearing_date)->format('M d, Y') : 'N/A' }} at {{ $hearing->time ? \Carbon\Carbon::parse($hearing->time)->format('h:i A') : 'N/A' }}</p>
                             <small>Location: {{ $hearing->branch->branchName ?? 'N/A' }}</small>
                             <br>
                             <small>Judge: {{ $hearing->branch->judgeName ?? 'N/A' }}</small>
@@ -188,6 +191,20 @@
         border-radius: 50%;
         z-index: 2;
     }
+
+    .notification-item.unread {
+        background-color: #f0f7ff;
+    }
+
+    .notification-item.unread:hover {
+        background-color: #e6f0fa;
+    }
+
+    .read-time {
+        display: block;
+        margin-top: 4px;
+        font-style: italic;
+    }
 </style>
 
 <script>
@@ -213,3 +230,8 @@
         }
     });
 </script>
+
+
+
+
+@endcan
