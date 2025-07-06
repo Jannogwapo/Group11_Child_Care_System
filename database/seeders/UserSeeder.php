@@ -15,8 +15,7 @@ class UserSeeder extends Seeder
         $adminRole = DB::table('user_role')->where('role_name', 'admin')->first();
         $socialWorkerRole = DB::table('user_role')->where('role_name', 'social worker')->first();
         $it = DB::table('user_role')->where('role_name', 'it tech')->first();
-
-        if (!$gender || !$adminRole || !$socialWorkerRole) {
+        if (!$gender || !$adminRole || !$socialWorkerRole || !$it || !$genders) {
             throw new \Exception('Missing required seed data: genders or user_role table is empty.');
         }
 

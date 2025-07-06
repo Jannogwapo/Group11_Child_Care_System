@@ -18,18 +18,17 @@ class RegisterController extends Controller
     public function store(Request $request)
     {
         // Validate the form data
-         dd(request()->all());
+     
         $validated = $request->validate([
             'username' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             'position' => 'required|integer|exists:user_role,id',
-            'gender' => 'required|integer|exists:genders,id',
-            'access_id'=>'required|integer|exists:access_logs,id',
+            'gender' => 'required|integer|exists:gender,id',
         ]);
        
         
-
+        
         try {
             // Create a new user
             User::create([
@@ -43,7 +42,7 @@ class RegisterController extends Controller
                 'access_id' => 1,
                         ]);
                   
-            return redirect('login')->with('success', 'Registration successful!');
+            return redirect()->route('login')->with('success', 'Registration successful!');
         } catch (\Exception $e) {
             // Log the error for debugging
 

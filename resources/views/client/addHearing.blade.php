@@ -169,7 +169,7 @@
                         <label for="client_id" style="width: 160px; font-weight: 500;">Client Name</label>
                         <select name="client_id" id="client_id" class="form-control @error('client_id') is-invalid @enderror" required style="flex: 1;">
                             <option value="">Select Client</option>
-                            @foreach($clients as $client)
+                            @foreach($clients->sortBy([['clientLastName', 'asc'], ['clientFirstName', 'asc']]) as $client)
                                 <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>
                                     {{ $client->clientLastName }}, {{ $client->clientFirstName }}
                                 </option>
@@ -255,5 +255,31 @@
         updateJudge();
         toggleNextFields();
     });
+</script>
+@endsection
+@section('scripts')
+<!-- Choices.js for searchable select -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const clientSelect = document.getElementById('client_id');
+    if (clientSelect) {
+        const choices = new Choices(clientSelect, {
+            searchEnabled: true,
+            itemSelectText: '',
+            shouldSort: false,
+            placeholder: true,
+            searchPlaceholderValue: 'Search clients...'
+        });
+        // Open dropdown on focus/click
+        clientSelect.addEventListener('focus', function() {
+            choices.showDropdown();
+        });
+        clientSelect.addEventListener('click', function() {
+            choices.showDropdown();
+        });
+    }
+});
 </script>
 @endsection

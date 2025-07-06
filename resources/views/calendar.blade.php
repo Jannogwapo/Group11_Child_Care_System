@@ -48,12 +48,12 @@
             <input type="hidden" name="month" value="{{ $currentMonth }}">
             @php
                 $filterButtons = [
-                    'upcoming' => ['icon' => 'bi-calendar-event', 'text' => 'Upcoming'],
-                    'ongoing' => ['icon' => 'bi-play-circle', 'text' => 'Ongoing Hearing'],
-                    'finished' => ['icon' => 'bi-check-circle', 'text' => 'Completed'],
-                    'postponed' => ['icon' => 'bi-clock-history', 'text' => 'Postponed'],
-                    'all' => ['icon' => 'bi-grid', 'text' => 'All'],
-                    'editable' => ['icon' => 'bi-pencil-square', 'text' => '']
+                    'upcoming' => ['icon' => 'bi-calendar-event', 'text' => 'Upcoming', 'color' => '#2196F3'],
+                    'ongoing' => ['icon' => 'bi-play-circle', 'text' => 'Ongoing', 'color' => '#FF9800'],
+                    'finished' => ['icon' => 'bi-check-circle', 'text' => 'Completed', 'color' => '#4CAF50'],
+                    'postponed' => ['icon' => 'bi-clock-history', 'text' => 'Postponed', 'color' => '#F44336'],
+                    'all' => ['icon' => 'bi-grid', 'text' => 'All', 'color' => '#607D8B'],
+                    'editable' => ['icon' => 'bi-pencil-square', 'text' => '', 'color' => '#FFC107']
                 ];
             @endphp
             @foreach($filterButtons as $value => $button)
@@ -68,6 +68,22 @@
                 </button>
             @endforeach
         </form>
+    </div>
+
+    <!-- Legend for Calendar Dots -->
+    <div class="calendar-legend mb-6">
+        <table class="calendar-legend-table">
+            <tbody>
+                <tr>
+                    <td class="calendar-legend-title">Legend:</td>
+                    <td><span class="calendar-legend-dot" style="background-color: #2196F3;"></span><span class="calendar-legend-label">Upcoming</span></td>
+                    <td><span class="calendar-legend-dot" style="background-color: #FF9800;"></span><span class="calendar-legend-label">Ongoing</span></td>
+                    <td><span class="calendar-legend-dot" style="background-color: #4CAF50;"></span><span class="calendar-legend-label">Completed</span></td>
+                    <td><span class="calendar-legend-dot" style="background-color: #F44336;"></span><span class="calendar-legend-label">Postponed</span></td>
+                    <td><span class="calendar-legend-dot" style="background-color: #FFC107;"></span><span class="calendar-legend-label">Editable</span></td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
     <!-- Calendar Section -->
@@ -113,7 +129,7 @@
                 $currentDay = 1;
                 $firstDayOfMonth = \Carbon\Carbon::parse($currentMonth)->startOfMonth()->dayOfWeek;
                 $daysInMonth = \Carbon\Carbon::parse($currentMonth)->daysInMonth;
-                $today = \Carbon\Carbon::now();
+                $today = \Carbon\Carbon::now('Asia/Manila');
             @endphp
 
             @for($week = 0; $week < 6; $week++)
@@ -145,34 +161,88 @@
                                     $filteredHearings = [];
                                     if (isset($hearings[$dateStr])) {
                                         foreach ($hearings[$dateStr] as $hearing) {
-                                            if ($activeFilter === 'upcoming'
-                                                && $hearing->status === 'scheduled'
-                                                ||$activeFilter ==='ongoing-upcoming'
-                                                && (
-                                                    $dateStr > $today->format('Y-m-d')
-                                                    || ($dateStr === $today->format('Y-m-d') && $hearing->time <= $today->format('H:i:s'))
-                                                )) {
+                                            // UPCOMING: scheduled or ongoing-upcoming, in the future or today and time in the future
+                                            if ($activeFilter === 'upcoming') {
+                                                if (
+                                                    (
+                                                        $hearing->status === 'scheduled' ||
+                                                        $hearing->status === 'ongoing-upcoming'
+                                                    ) &&
+                                                    (
+                                                        $dateStr > $today->format('Y-m-d') ||
+                                                        ($dateStr === $today->format('Y-m-d') && $hearing->time > $today->format('H:i:s'))
+                                                    )
+                                                ) {
+                                                    $filteredHearings[] = $hearing;
+                                                }
+                                            }
+                                            // EDITABLE: scheduled or ongoing-upcoming, in the past or today and time has passed
+                                            elseif ($activeFilter === 'editable') {
+                                                if (
+                                                    (
+                                                        $hearing->status === 'scheduled' ||
+                                                        $hearing->status === 'ongoing-upcoming'
+                                                    ) &&
+                                                    (
+                                                        $dateStr < $today->format('Y-m-d') ||
+                                                        ($dateStr === $today->format('Y-m-d') && $hearing->time <= $today->format('H:i:s'))
+                                                    )
+                                                ) {
+                                                    $filteredHearings[] = $hearing;
+                                                }
+                                            }
+                                            // ONGOING
+                                            elseif ($activeFilter === 'ongoing' && $hearing->status === 'ongoing') {
                                                 $filteredHearings[] = $hearing;
-                                            } elseif ($activeFilter === 'editable'
-                                                && $hearing->status === 'scheduled'
-                                                && (
-                                                    $dateStr < $today->format('Y-m-d')
-                                                    || ($dateStr === $today->format('Y-m-d') && $hearing->time <= $today->format('H:i:s'))
-                                                )) {
+                                            }
+                                            // FINISHED
+                                            elseif ($activeFilter === 'finished' && $hearing->status === 'completed') {
                                                 $filteredHearings[] = $hearing;
-                                            } elseif ($activeFilter === 'ongoing' && in_array($hearing->status, ['ongoing', 'ongoing-upcoming'])) {
+                                            }
+                                            // POSTPONED
+                                            elseif ($activeFilter === 'postponed' && $hearing->status === 'postponed') {
                                                 $filteredHearings[] = $hearing;
-                                            } elseif ($activeFilter === 'finished' && $hearing->status === 'completed') {
-                                                $filteredHearings[] = $hearing;
-                                            } elseif ($activeFilter === 'postponed' && $hearing->status === 'postponed') {
-                                                $filteredHearings[] = $hearing;
-                                            } elseif ($activeFilter === 'all') {
+                                            }
+                                            // ALL
+                                            elseif ($activeFilter === 'all') {
                                                 $filteredHearings[] = $hearing;
                                             }
                                         }
                                     }
                                 @endphp
                                 @if(count($filteredHearings) > 0)
+                                    @if($activeFilter === 'all')
+                                        @php
+                                            $statusColors = [
+                                                'scheduled' => '#2196F3',
+                                                'ongoing' => '#FF9800',
+                                                'ongoing-upcoming' => '#FF9800',
+                                                'completed' => '#4CAF50',
+                                                'postponed' => '#F44336'
+                                            ];
+                                            $statusCounts = [];
+                                            foreach($filteredHearings as $hearing) {
+                                                $status = $hearing->status;
+                                                if (!isset($statusCounts[$status])) {
+                                                    $statusCounts[$status] = 0;
+                                                }
+                                                $statusCounts[$status]++;
+                                            }
+                                        @endphp
+                                        @foreach($statusCounts as $status => $count)
+                                            <span style="display:inline-block;
+                                                width:8px;
+                                                height:8px;
+                                                background:{{ $statusColors[$status] ?? '#607D8B' }};
+                                                border-radius:50%;
+                                                position:absolute;
+                                                top:{{ 8 + ($loop->index * 12) }}px;
+                                                right:8px;
+                                                cursor:pointer;"
+                                                onclick="showCalendarPopup(event, '{{ $date->format('Y-m-d') }}')"
+                                                title="{{ ucfirst(str_replace('-', ' ', $status)) }} hearing{{ $count > 1 ? 's' : '' }} ({{ $count }})"></span>
+                                        @endforeach
+                                    @else
                                     <span style="display:inline-block;
                                         width:10px;
                                         height:10px;
@@ -196,6 +266,7 @@
                                             ($activeFilter === 'editable' ? 'Editable hearing' :
                                             ($activeFilter === 'ongoing' ? 'Ongoing hearing' : 'All hearings'))))
                                         }}"></span>
+                                    @endif
                                 @endif
                                 @php $currentDay++; @endphp
                             @endif
@@ -280,12 +351,58 @@
         color: #222;
         font-weight: 600;
         cursor: pointer;
-        transition: background 0.2s, color 0.2s;
+        transition: background-color 0.2s, color 0.2s;
         text-decoration: none;
     }
-    .case-filter-btn.active, .case-filter-btn:hover {
-        background: var(--primary-color, #2563eb);
-        color: var(--text-color, #fff);
+    .case-filter-btn:hover {
+        background-color: #d1d9e4;
+    }
+    @foreach($filterButtons as $value => $button)
+        @if(isset($button['color']))
+            .case-filter-btn[value="{{ $value }}"].active,
+            .case-filter-btn[value="{{ $value }}"]:hover {
+                background-color: {{ $button['color'] }};
+                color: #fff;
+            }
+        @endif
+    @endforeach
+    .calendar-legend {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        padding: 16px 32px;
+        margin-bottom: 1.5rem;
+        width: 100%;
+        overflow-x: auto;
+    }
+    .calendar-legend-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 0;
+    }
+    .calendar-legend-title {
+        font-weight: bold;
+        color: #374151;
+        padding-right: 18px;
+        white-space: nowrap;
+        font-size: 1rem;
+    }
+    .calendar-legend-dot {
+        display: inline-block;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2.5px solid #333;
+        margin-right: 8px;
+        vertical-align: middle;
+        box-sizing: border-box;
+    }
+    .calendar-legend-label {
+        font-weight: 500;
+        color: #222;
+        font-size: 1rem;
+        margin-right: 18px;
+        vertical-align: middle;
     }
 </style>
 
@@ -327,22 +444,41 @@
 
         const filteredHearings = hearingsData[date] ? hearingsData[date] : [];
         const isEditableFilter = @json(request('filter')) === 'editable';
+        const isAdmin = @json($isAdmin);
 
         if (filteredHearings.length > 0) {
             html += `<table class="w-full mb-4"><tbody>`;
             filteredHearings.forEach(hearing => {
+                // Get gender icon for admin users
+                let genderIcon = '';
+                if (isAdmin && hearing.client && hearing.client.gender) {
+                    const genderId = hearing.client.gender.id || hearing.client.clientgender;
+                    if (genderId === 1) {
+                        genderIcon = '<span class="mr-2">👨</span>';
+                    } else if (genderId === 2) {
+                        genderIcon = '<span class="mr-2">👩</span>';
+                    }
+                }
+                
                 html += `
                 <tr>
                     <td class="p-4 align-top w-3/4">
-                        <div><strong>Client:</strong> ${hearing.client.clientLastName}, ${hearing.client.clientFirstName}</div>
+                        <div class="flex items-center">
+                            
+                            <div>
+                            ${genderIcon}
+                                <strong>  Client:</strong> ${hearing.client.clientLastName}, ${hearing.client.clientFirstName}
+                               
+                            </div>
+                        </div>
                     </td>
                     <td class="p-4 w-1/4 text-right">
                         <div class="flex flex-col space-y-2 items-end">
-                            
+                            ${isEditableFilter ? `
                                 <a href="/hearings/${hearing.id}/edit" class="px-3 py-1 bg-blue-500 text-black rounded text-xs w-32 text-center">
                                     <i class="bi bi-pencil-square"></i>
-                                </a>  
-                            
+                                </a>
+                            ` : ''}
                             <a href="/hearings/${hearing.id}" class="px-3 py-1 bg-green-500 text-black rounded text-xs w-32 text-center">
                                 <i class="bi bi-eye"></i>
                             </a>
@@ -409,13 +545,13 @@
                     if ($activeFilter === 'ongoing') {
                         return $isOngoing;
                     } elseif ($activeFilter === 'upcoming') {
-                        return $isInHouse && $hearing->status === 'scheduled';
+                        return $isInHouse && $isOngoing;
                     } elseif ($activeFilter === 'finished') {
                         return $isInHouse && $hearing->status === 'completed';
                     } elseif ($activeFilter === 'postponed') {
                         return $isInHouse && $hearing->status === 'postponed';
                     } elseif ($activeFilter === 'editable') {
-                        return $isInHouse && $hearing->status === 'scheduled';
+                        return $isInHouse && $isOngoing;
                     } elseif ($activeFilter === 'all') {
                         return $isInHouse || $isOngoing;
                     }

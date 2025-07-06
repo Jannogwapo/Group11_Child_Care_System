@@ -3,8 +3,8 @@
 @section('title', 'Hearing Details')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="bg-white rounded-lg shadow-lg p-6">
+<div class="container mx-auto px-4 py-8 ">
+    <div class="bg-white rounded-lg shadow-lg p-4">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
             <h2 style="font-size: 2rem; font-weight: bold; color: #21807a; display: flex; align-items: center; gap: 10px;">
                 <span class="material-icons" style="font-size: 2rem; vertical-align: middle;">gavel</span>
@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 24px;">
+        <div style="display: flex; flex-direction: column; gap: 24px; padding: 24px;">
             <!-- Client Information -->
             <div style="background: #f8fdfa; border-radius: 12px; padding: 24px; margin-bottom: 0;">
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
@@ -120,7 +120,7 @@
                 return $date;
             })->first();
         @endphp
-        @if($nextHearing)
+        @if($nextHearing && $hearing->status !== 'completed')
         <!-- Next Scheduled Hearing Section -->
         <div style="background: #fffde7; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #ffe082;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">

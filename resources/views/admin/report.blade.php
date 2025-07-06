@@ -19,6 +19,14 @@
                     <label for="as_of" class="form-label mb-0">As of Month:</label>
                     <input type="month" name="as_of" id="as_of" class="form-control" value="{{ request('as_of', now()->format('Y-m')) }}">
                 </div>
+                <div>
+                    <label for="gender" class="form-label mb-0">Gender:</label>
+                    <select name="gender" id="gender" class="form-select">
+                        <option value="">All</option>
+                        <option value="male" {{ request('gender') == 'male' ? 'selected' : '' }}>Male</option>
+                        <option value="female" {{ request('gender') == 'female' ? 'selected' : '' }}>Female</option>
+                    </select>
+                </div>
                 <button type="submit" class="btn btn-primary ms-2">Filter</button>
             </form>
             <div class="dropdown">
@@ -27,17 +35,17 @@
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="downloadDropdown">
                     <li>
-                        <a class="dropdown-item" href="{{ route('admin.report.download', ['format' => 'excel', 'as_of' => request('as_of', now()->format('Y-m'))]) }}">
+                        <a class="dropdown-item" href="{{ route('admin.report.download', ['format' => 'excel', 'as_of' => request('as_of', now()->format('Y-m')), 'gender' => request('gender')]) }}">
                             Excel
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="{{ route('admin.report.download', ['format' => 'pdf', 'as_of' => request('as_of', now()->format('Y-m'))]) }}">
+                        <a class="dropdown-item" href="{{ route('admin.report.download', ['format' => 'pdf', 'as_of' => request('as_of', now()->format('Y-m')), 'gender' => request('gender')]) }}">
                             PDF
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="{{ route('admin.report.download', ['format' => 'word', 'as_of' => request('as_of', now()->format('Y-m'))]) }}">
+                        <a class="dropdown-item" href="{{ route('admin.report.download', ['format' => 'word', 'as_of' => request('as_of', now()->format('Y-m')), 'gender' => request('gender')]) }}">
                             Word
                         </a>
                     </li>

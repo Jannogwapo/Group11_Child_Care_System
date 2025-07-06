@@ -95,6 +95,8 @@ class ClientController extends Controller
         }
 
         $clients = $query->get();
+        // Sort: newest first by created_at
+        $clients = $clients->sortByDesc('created_at')->values();
         $cases = Cases::all();
 
         // Check if it's an AJAX request
