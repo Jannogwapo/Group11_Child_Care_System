@@ -123,16 +123,12 @@
         </div>
     </div>
     <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                @can('isAdmin')
-                    <h5 class="mb-0">In-House Clients by Gender</h5>
-                @else
-                    <h5 class="mb-0">In-House Clients</h5>
-                @endcan
+        <div class="card inhouse-case-card">
+            <div class="card-header inhouse-case-header">
+                <h5 class="mb-0">In-House Clients by Case Type</h5>
             </div>
-            <div class="card-body d-flex flex-column align-items-center justify-content-center" style="padding: 1.5rem 0;">
-                <canvas id="locationClientChart" style="max-width: 220px; max-height: 220px; width: 100%; height: 220px; display: block; margin: 0 auto;"></canvas>
+            <div class="card-body inhouse-case-body">
+                <canvas id="inHouseByCaseChart"></canvas>
             </div>
         </div>
     </div>
@@ -225,6 +221,68 @@
     </div>
   </div>
 </div>
+
+@push('scripts')
+<script>
+const isAdmin = {!! json_encode(Gate::allows('isAdmin')) !!};
+const userGenderId = {!! json_encode(auth()->user()->gender_id) !!};
+const inHouseByCaseLabels = {!! json_encode($inHouseByCaseLabels) !!};
+const inHouseByCaseBoys = {!! json_encode($inHouseByCaseBoys) !!};
+const inHouseByCaseGirls = {!! json_encode($inHouseByCaseGirls) !!};
+const inHouseByCaseCanvas = document.getElementById('inHouseByCaseChart');
+if (inHouseByCaseCanvas) {
+    const inHouseByCaseCtx = inHouseByCaseCanvas.getContext('2d');
+    new Chart(inHouseByCaseCtx, {
+        type: 'line',
+        data: {
+            labels: inHouseByCaseLabels,
+            datasets: isAdmin ? [
+                {
+                    label: 'Boys',
+                    data: inHouseByCaseBoys,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: '#36A2EB',
+                    borderWidth: 2,
+                    fill: false
+                },
+                {
+                    label: 'Girls',
+                    data: inHouseByCaseGirls,
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: '#FF69B4',
+                    borderWidth: 2,
+                    fill: false
+                }
+            ] : [
+                {
+                    label: userGenderId == 1 ? 'Boys' : 'Girls',
+                    data: userGenderId == 1 ? inHouseByCaseBoys : inHouseByCaseGirls,
+                    backgroundColor: userGenderId == 1 ? '#36A2EB' : '#FF69B4',
+                    borderColor: userGenderId == 1 ? '#36A2EB' : '#FF69B4',
+                    borderWidth: 2,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true, position: 'top' }
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: 'Case Type' }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Number of Clients' }
+                }
+            }
+        }
+    });
+}
+</script>
+@endpush
 
 </div>
 
@@ -416,6 +474,43 @@
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 119, 204, 0.2);
     }
+/* Improved In-House Clients by Case Type Chart Card */
+#inHouseByCaseChart {
+    background: #f0f7ff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(54,162,235,0.08);
+    padding: 1rem;
+    margin-top: 1rem;
+    max-width: 420px;
+    width: 100%;
+    height: 260px !important;
+    display: block;
+}
+.inhouse-case-card {
+    background: #f8fafc;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(54,162,235,0.08);
+    border: none;
+    margin-bottom: 2rem;
+}
+.inhouse-case-header {
+    background: linear-gradient(90deg, #7AE2CF 0%, #36A2EB 100%);
+    border-radius: 14px 14px 0 0;
+    color: #1A3A34;
+    font-weight: bold;
+    font-size: 1.15rem;
+    padding: 1rem 1.2rem;
+    border-bottom: none;
+    letter-spacing: 0.5px;
+}
+.inhouse-case-body {
+    padding: 1.5rem 1.2rem 1.2rem 1.2rem;
+    background: #fff;
+    border-radius: 0 0 14px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 </style>
 @endsection
 
@@ -489,8 +584,6 @@
 <script>
     const clientStats = {!! json_encode($clientStats ?? ['labels' => [], 'boys' => [], 'girls' => []]) !!};
     const dischargeStats = {!! json_encode($dischargeStats ?? ['labels' => [], 'boys' => [], 'girls' => []]) !!};
-    const isAdmin = {!! json_encode(Gate::allows('isAdmin')) !!};
-    const userGenderId = {!! json_encode(auth()->user()->gender_id) !!};
 
     // Grouped Bar Chart for Boys and Girls per Case Type
     const overallClientCtx = document.getElementById('overallClientChart').getContext('2d');
@@ -631,7 +724,7 @@
     }
 
     new Chart(locationCtx, {
-        type: 'pie',
+        type: 'line',
         data: {
             labels: locationLabels,
             datasets: [{

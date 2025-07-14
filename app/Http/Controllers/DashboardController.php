@@ -140,6 +140,30 @@ class DashboardController extends Controller
             })
             ->count();
 
+        // In-House Clients by Case Type for Social Worker
+        $inHouseByCaseLabels = [];
+        $inHouseByCaseBoys = [];
+        $inHouseByCaseGirls = [];
+        $cases = \App\Models\Cases::all();
+        if (!Gate::allows('isAdmin')) {
+            $userGender = $user->gender_id;
+            foreach ($cases as $case) {
+                $count = $case->clients()
+                    ->where('location_id', 1)
+                    ->where('clientgender', $userGender)
+                    ->count();
+                $inHouseByCaseLabels[] = $case->case_name;
+                $inHouseByCaseBoys[] = $userGender == 1 ? $count : 0;
+                $inHouseByCaseGirls[] = $userGender == 2 ? $count : 0;
+            }
+        } else {
+            foreach ($cases as $case) {
+                $inHouseByCaseLabels[] = $case->case_name;
+                $inHouseByCaseBoys[] = $case->clients()->where('location_id', 1)->where('clientgender', 1)->count();
+                $inHouseByCaseGirls[] = $case->clients()->where('location_id', 1)->where('clientgender', 2)->count();
+            }
+        }
+
         $data = [
             'myClients' => $clientCount,
             'totalClients' => $totalClients,
@@ -163,6 +187,9 @@ class DashboardController extends Controller
             'upcomingHearings' => $upcomingHearings,
             'startOfWeek' => $startOfWeek,
             'days' => $days,
+            'inHouseByCaseLabels' => $inHouseByCaseLabels,
+            'inHouseByCaseBoys' => $inHouseByCaseBoys,
+            'inHouseByCaseGirls' => $inHouseByCaseGirls,
         ];
 
         return view('dashboard', $data);
